@@ -1,38 +1,18 @@
-import axios from 'axios'
-import { useLocalStorage } from '../hooks/useLocalStorage'
-
-const API_URL = import.meta.env.VITE_BACKEND_URL
-
-const [getToken, setToken, removeToken] = useLocalStorage('authToken')
+import api from './api'
 
 export const callTest = async (url, body, method) => {
-  if (method === 'POST') {
-    const response = await axios.post(`${API_URL}/api/${url}`, body, {
-      headers: {
-        Authorization: `Bearer ${getToken()}`,
-      },
-    })
-    return response
-  } else if (method === 'GET') {
-    const response = await axios.get(`${API_URL}/api/${url}`, {
-      headers: {
-        Authorization: `Bearer ${getToken()}`,
-      },
-    })
-    return response
-  } else if (method === 'DELETE') {
-    const response = await axios.delete(`${API_URL}/api/${url}`, {
-      headers: {
-        Authorization: `Bearer ${getToken()}`,
-      },
-    })
-    return response
-  } else if (method === 'PUT') {
-    const response = await axios.put(`${API_URL}/api/${url}`, body, {
-      headers: {
-        Authorization: `Bearer ${getToken()}`,
-      },
-    })
-    return response
-  } else throw `Metodo ${method} invalido`
+  const path = `/api/${url}`
+
+  switch (method) {
+    case 'POST':
+      return api.post(path, body)
+    case 'GET':
+      return api.get(path)
+    case 'DELETE':
+      return api.delete(path)
+    case 'PUT':
+      return api.put(path, body)
+    default:
+      throw new Error(`Metodo ${method} invalido`)
+  }
 }

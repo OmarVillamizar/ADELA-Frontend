@@ -68,10 +68,7 @@ const ResultadosGrupo = () => {
       const allCuestionarios = await listarCuestionarios()
       setCuestionarios(allCuestionarios)
     } catch (error) {
-      console.error('Error fetching datos:', error)
-      if (error.response) {
-        console.log('Error response data:', error.response.data)
-      }
+      console.error('Error fetching datos:', error.code, error.message)
     }
   }
 
@@ -87,10 +84,7 @@ const ResultadosGrupo = () => {
       cuestionarios[idx].bloqueado = !cuestionarios[idx].bloqueado
       setGrupo({ ...grupo, cuestionarios: cuestionarios })
     } catch (error) {
-      console.error('Error fetching datos:', error)
-      if (error.response) {
-        console.log('Error response data:', error.response.data)
-      }
+      console.error('Error fetching datos:', error.code, error.message)
     }
   }
 
