@@ -175,7 +175,10 @@ const EstudianteVistaCuestionario = () => {
         </CTabPane>
 
         <CTabPane visible={activeTab === 1}>
-          {renderEstado(resueltos, 'Todavía no has resuelto ningún cuestionario.')}
+          {renderEstado(
+            resueltos,
+            'Todavía no has resuelto ningún cuestionario.',
+          )}
           <CRow className="gy-4" xs={{ cols: 1 }} sm={{ cols: 2 }}>
             {resueltos.map((el, id) => (
               <CCol key={id + 'resuelto'} xs={12} md={6} lg={4}>

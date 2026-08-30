@@ -64,30 +64,36 @@ const ResponderCuestionario = () => {
   }, [id])
 
   const handleChange = (preguntaIndex, opcionId) => {
-    const nuevasRespuestas = [...respuestasSeleccionadas]
-    if (selMul[preguntaIndex]) {
-      if (nuevasRespuestas[preguntaIndex].opts.includes(opcionId)) {
-        nuevasRespuestas[preguntaIndex].opts = nuevasRespuestas[
-          preguntaIndex
-        ].opts.filter((e) => e !== opcionId)
-      } else {
-        nuevasRespuestas[preguntaIndex].opts.push(opcionId)
-      }
-    } else {
-      nuevasRespuestas[preguntaIndex].opts = [opcionId]
-    }
-    setRespuestasSeleccionadas(nuevasRespuestas)
+    setRespuestasSeleccionadas((previas) =>
+      previas.map((respuesta, idx) => {
+        if (idx !== preguntaIndex) return respuesta
+        if (!selMul[preguntaIndex]) return { opts: [opcionId] }
+        const yaEstaba = respuesta.opts.includes(opcionId)
+        return {
+          opts: yaEstaba
+            ? respuesta.opts.filter((e) => e !== opcionId)
+            : [...respuesta.opts, opcionId],
+        }
+      }),
+    )
   }
 
   const handleSubmit = async () => {
-    if (
-      respuestasSeleccionadas.some((respuesta, idx) => {
+    // La flecha usaba llaves sin return, asi que .some() siempre daba false y
+    // esta validacion no se ejecutaba nunca: el envio incompleto llegaba al
+    // servidor y volvia como un error generico sin decir que preguntas faltaban.
+    const sinResponder = respuestasSeleccionadas
+      .map((respuesta, idx) =>
         !selMul[idx] && respuesta.opts.length !== 1
-      })
-    ) {
+          ? cuestionario.preguntas[idx].orden
+          : null,
+      )
+      .filter((orden) => orden !== null)
+
+    if (sinResponder.length > 0) {
       Swal.fire(
-        'Advertencia',
-        'Debes seleccionar una opción para cada pregunta que no sea de selección múltiple.',
+        'Faltan respuestas',
+        `Responde las preguntas ${sinResponder.join(', ')} antes de enviar.`,
         'warning',
       )
       return
@@ -195,8 +201,9 @@ const ResponderCuestionario = () => {
                           >
                             <CCard
                               className={`p-3 border ${
-                                respuestasSeleccionadas[preguntaIndex] ===
-                                opcion.id
+                                respuestasSeleccionadas[
+                                  preguntaIndex
+                                ].opts.includes(opcion.id)
                                   ? 'border-primary bg-light'
                                   : ''
                               }`}

@@ -13,5 +13,9 @@ export const updateUserInfo = async (user) => {
     user.tipoUsuario === 'ESTUDIANTE' ? 'estudiantes' : 'profesores'
 
   const response = await api.put(`/api/${endpoint}`, user)
-  return { ok: response.status === 200, data: response.data, status: response.status }
+  return {
+    ok: response.status === 200,
+    data: response.data,
+    status: response.status,
+  }
 }
