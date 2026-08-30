@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   CCard,
   CCardBody,
@@ -21,6 +21,9 @@ import {
 
 const ResponderCuestionario = () => {
   const { id } = useParams()
+  const [searchParams] = useSearchParams()
+  // Id de la asignación concreta: el mismo cuestionario puede estar asignado en varios grupos
+  const asignacionId = searchParams.get('asignacion')
   const navigate = useNavigate()
   const [cuestionario, setCuestionario] = useState(null)
   const [respuestasSeleccionadas, setRespuestasSeleccionadas] = useState([
@@ -92,6 +95,7 @@ const ResponderCuestionario = () => {
 
     const respuestasDTO = {
       cuestionarioId: parseInt(id),
+      resultadoCuestionarioId: asignacionId ? parseInt(asignacionId) : null,
       opcionesSeleccionadasId: respuestasSeleccionadas.flatMap((el) => el.opts),
     }
 

@@ -26,3 +26,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 src/views/testAPI
+.atl/
+.env.example
+AGENTS.md
+CLAUDE.md

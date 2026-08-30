@@ -144,7 +144,7 @@ const EstudianteVistaCuestionario = () => {
                     </div>
                     <div className="text-center mt-3">
                       <Link
-                        to={`/cuestionario/${el.cuestionario.id}/responder`}
+                        to={`/cuestionario/${el.cuestionario.id}/responder?asignacion=${el.id}`}
                       >
                         <CButton
                           color="primary"
