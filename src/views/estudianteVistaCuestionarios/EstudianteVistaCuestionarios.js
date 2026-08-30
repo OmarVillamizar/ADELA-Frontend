@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useOutletContext, useSearchParams } from 'react-router-dom'
+import PropTypes from 'prop-types'
 import {
   CAlert,
   CCard,
@@ -15,6 +16,7 @@ import {
   CButton,
   CBadge,
   CCardHeader,
+  CSpinner,
 } from '@coreui/react'
 import { getMisCuestionarios } from '../../util/services/cuestionarioService'
 import { dateFromMsToString } from '../../util/dateUtils'
@@ -25,41 +27,45 @@ import './VistaCuestionario.css'
 const EstudianteVistaCuestionario = () => {
   const user = useOutletContext()
   const [activeTab, setActiveTab] = useState(0)
-  const [pendientes, setPendientes] = useState([
-    {
-      id: 0,
-      cuestionario: {},
-      estudiante: {},
-      fechaAplicacion: null,
-      fechaResolucion: null,
-      grupo: { nombre: '', profesorNombre: '' },
-    },
-  ])
-  const [resueltos, setResueltos] = useState([
-    {
-      id: 0,
-      cuestionario: {},
-      estudiante: {},
-      fechaAplicacion: null,
-      fechaResolucion: null,
-      grupo: { nombre: '', profesorNombre: '' },
-    },
-  ])
+  const [pendientes, setPendientes] = useState([])
+  const [resueltos, setResueltos] = useState([])
+  const [cargando, setCargando] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     getMisCuestionarios()
       .then((response) => {
-        if (response.ok) {
-          setPendientes(response.data.pendientes)
-          setResueltos(response.data.resueltos)
-        } else {
-          throw response
-        }
+        setPendientes(response.data.pendientes)
+        setResueltos(response.data.resueltos)
       })
-      .catch((error) => {
-        console.error('Error fetching cuestionarios:', error)
+      .catch((err) => {
+        console.error('Error fetching cuestionarios:', err)
+        setError(err)
       })
+      .finally(() => setCargando(false))
   }, [])
+
+  const Aviso = ({ color, children }) => (
+    <CAlert color={color} className="mt-3">
+      {children}
+    </CAlert>
+  )
+  Aviso.propTypes = {
+    color: PropTypes.string.isRequired,
+    children: PropTypes.node.isRequired,
+  }
+
+  const renderEstado = (lista, vacio) => {
+    if (cargando) return <CSpinner color="primary" className="mt-3" />
+    if (error)
+      return (
+        <Aviso color="danger">
+          No se pudieron cargar tus cuestionarios. {error.message}
+        </Aviso>
+      )
+    if (lista.length === 0) return <Aviso color="info">{vacio}</Aviso>
+    return null
+  }
 
   return (
     <div>
@@ -98,7 +104,7 @@ const EstudianteVistaCuestionario = () => {
           >
             <CIcon icon={cilClock} className="me-2" />
             Pendientes
-            {pendientes.length > 0 && (
+            {!cargando && !error && pendientes.length > 0 && (
               <CBadge color="danger" shape="rounded-pill" className="ms-2">
                 {pendientes.length}
               </CBadge>
@@ -119,6 +125,7 @@ const EstudianteVistaCuestionario = () => {
 
       <CTabContent>
         <CTabPane visible={activeTab === 0}>
+          {renderEstado(pendientes, 'Aún no tienes cuestionarios asignados.')}
           <CRow className="gy-4" xs={{ cols: 1 }} sm={{ cols: 2 }}>
             {pendientes.map((el, id) => (
               <CCol key={id + 'pendiente'} xs={12} md={6} lg={4}>
@@ -168,6 +175,7 @@ const EstudianteVistaCuestionario = () => {
         </CTabPane>
 
         <CTabPane visible={activeTab === 1}>
+          {renderEstado(resueltos, 'Todavía no has resuelto ningún cuestionario.')}
           <CRow className="gy-4" xs={{ cols: 1 }} sm={{ cols: 2 }}>
             {resueltos.map((el, id) => (
               <CCol key={id + 'resuelto'} xs={12} md={6} lg={4}>

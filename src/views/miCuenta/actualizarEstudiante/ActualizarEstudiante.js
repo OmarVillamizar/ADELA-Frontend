@@ -23,7 +23,8 @@ const ActualizarEstudiante = () => {
 
   const [formData, setFormData] = useState({
     codigo: user.codigo,
-    fechaNacimiento: dateFromMsToString(user.fechaNacimiento),
+    // Cadena vacía, no el guión: este valor entra en un <input type="date">.
+    fechaNacimiento: dateFromMsToString(user.fechaNacimiento, ''),
     genero: user.genero,
   })
 
