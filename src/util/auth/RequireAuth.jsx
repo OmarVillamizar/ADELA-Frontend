@@ -1,39 +1,25 @@
 import { Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from './AuthProvider'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { CSpinner } from '@coreui/react'
 import { getRole } from '../userUtils'
 
 function RequireAuth({ roles }) {
-  const [loading, setLoading] = useState(true)
-  const [user, setUser] = useState(null)
-  let auth = useAuth()
+  const { user, cargando } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
-    ;(async () => {
-      const nuser = await auth.getUser()
+    if (cargando) return
+    if (!user) {
+      navigate('/login')
+      return
+    }
+    if (!roles.includes(getRole(user))) {
+      navigate('/')
+    }
+  }, [user, cargando, roles, navigate])
 
-      setUser(nuser)
-
-      if (!nuser) {
-        // Redirect them to the /login page, but save the current location they were
-        // trying to go to when they were redirected. This allows us to send them
-        // along to that page after they login, which is a nicer user experience
-        // than dropping them off on the home page.
-        navigate('/login')
-      } else {
-        const rol = getRole(nuser)
-
-        if (!roles.includes(rol)) {
-          navigate('/')
-        }
-      }
-      setLoading(false)
-    })()
-  }, [])
-
-  return loading ? <CSpinner variant="grow" /> : <Outlet context={user} />
+  return cargando ? <CSpinner variant="grow" /> : <Outlet context={user} />
 }
 
 export default RequireAuth

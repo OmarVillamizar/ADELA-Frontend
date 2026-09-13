@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 
 import {
@@ -19,24 +19,17 @@ import { getRole } from '../util/userUtils'
 import CHAEA_BAR from 'src/assets/images/chaea_bar.png'
 const AppSidebar = () => {
   const dispatch = useDispatch()
-  const auth = useAuth()
-  const [rol, setRol] = useState([])
+  // El usuario llega del contexto: antes esta vista repetia /api/user/info en
+  // cada navegacion, duplicando la que ya hacia RequireAuth.
+  const { user, cargando } = useAuth()
   const navigate = useNavigate()
   useEffect(() => {
-    ;(async () => {
-      const nuser = await auth.getUser()
-      if (!nuser) {
-        // Redirect them to the /login page, but save the current location they were
-        // trying to go to when they were redirected. This allows us to send them
-        // along to that page after they login, which is a nicer user experience
-        // than dropping them off on the home page.
-        navigate('/login')
-      } else {
-        const rol = getRole(nuser)
-        setRol(rol)
-      }
-    })()
-  }, [])
+    if (cargando) return
+    if (!user) {
+      navigate('/login')
+    }
+  }, [user, cargando, navigate])
+  const rol = user ? getRole(user) : []
   const unfoldable = useSelector((state) => state.sidebarUnfoldable)
   const sidebarShow = useSelector((state) => state.sidebarShow)
 
