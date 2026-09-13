@@ -68,7 +68,7 @@ const AsignarRoles = () => {
   }
 
   const handleElevar = async (email, rol) => {
-    if (rol.descripcion === 'ADMINISTRADOR') {
+    if (rol === 'ADMINISTRADOR') {
       Swal.fire('Advertencia', 'Este profesor ya es administrador.', 'info')
       return
     }
@@ -82,7 +82,7 @@ const AsignarRoles = () => {
       // Actualizar la lista de profesores activos si es necesario
       const nuevosActivos = profesoresActivos.map((profesor) =>
         profesor.email === email
-          ? { ...profesor, rol: { descripcion: 'ADMINISTRADOR' } }
+          ? { ...profesor, rol: 'ADMINISTRADOR' }
           : profesor,
       )
       setProfesoresActivos(nuevosActivos)
@@ -92,7 +92,7 @@ const AsignarRoles = () => {
   }
 
   const handleBajar = async (email, rol) => {
-    if (rol.descripcion === 'PROFESOR') {
+    if (rol === 'PROFESOR') {
       Swal.fire('Advertencia', 'Este profesor ya es administrador.', 'info')
       return
     }
@@ -106,7 +106,7 @@ const AsignarRoles = () => {
       // Actualizar la lista de profesores activos si es necesario
       const nuevosActivos = profesoresActivos.map((profesor) =>
         profesor.email === email
-          ? { ...profesor, rol: { descripcion: 'PROFESOR' } }
+          ? { ...profesor, rol: 'PROFESOR' }
           : profesor,
       )
       setProfesoresActivos(nuevosActivos)
@@ -156,7 +156,7 @@ const AsignarRoles = () => {
                   <CTableDataCell>{profesor.email}</CTableDataCell>
 
                   <CTableDataCell>
-                    {profesor.rol.descripcion !== 'ADMINISTRADOR' ? (
+                    {profesor.rol !== 'ADMINISTRADOR' ? (
                       <CButton
                         color="warning"
                         size="sm"
