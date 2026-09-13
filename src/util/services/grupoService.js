@@ -7,14 +7,11 @@ export const getGroups = async () => {
 }
 
 // Obtener información de los profesores
-export const getProfesores = async () => {
-  const response = await api.get('/api/profesores')
-  return response.data
-}
-
 // Obtener información de los estudiantes
-export const getEstudiantes = async () => {
-  const response = await api.get('/api/estudiantes')
+// Busqueda paginada: el servidor devuelve como mucho `size` coincidencias.
+// Antes se descargaba la tabla entera para filtrar en el navegador.
+export const buscarEstudiantes = async (q, size = 20) => {
+  const response = await api.get('/api/estudiantes', { params: { q, size } })
   return response.data
 }
 

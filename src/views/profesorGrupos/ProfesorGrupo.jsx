@@ -3,7 +3,7 @@ import { useNavigate, useParams, useOutletContext } from 'react-router-dom'
 import {
   addStudentsToGroup,
   deleteStudentFromGroup,
-  getEstudiantes,
+  buscarEstudiantes,
   getGroupById,
 } from '../../util/services/grupoService'
 import {
@@ -43,7 +43,6 @@ const ProfesorGrupo = () => {
   const currentGrupoId = id
   const [suggestions, setSuggestions] = useState([])
 
-  const [students, setStudents] = useState([])
   const [newStudentEmail, setNewStudentEmail] = useState('')
   const [search, setSearch] = useState('')
   const [selectedNewStudents, setSelectedNewStudents] = useState([])
@@ -55,29 +54,26 @@ const ProfesorGrupo = () => {
       setGrupo(el)
       const bools = el.estudiantes.map(() => true)
       setSearchStudentList(bools)
-      getEstudiantes().then((el) => {
-        setStudents(el)
-      })
     })
   }, [])
 
-  const getSuggestions = (value) => {
-    const inputValue = value.trim().toLowerCase()
-    const inputLength = inputValue.length
-
-    return inputLength === 0
-      ? []
-      : students.filter((student) =>
-          student.email.toLowerCase().includes(inputValue),
-        )
-  }
 
   const getSuggestionValue = (suggestion) => suggestion.email
 
   const renderSuggestion = (suggestion) => <div>{suggestion.email}</div>
 
   const onSuggestionsFetchRequested = ({ value }) => {
-    setSuggestions(getSuggestions(value))
+    const termino = value.trim()
+    if (termino.length < 2) {
+      setSuggestions([])
+      return
+    }
+    buscarEstudiantes(termino)
+      .then(setSuggestions)
+      .catch((error) => {
+        console.error('Error buscando estudiantes:', error.code, error.message)
+        setSuggestions([])
+      })
   }
 
   const onSuggestionsClearRequested = () => {

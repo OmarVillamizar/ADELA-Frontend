@@ -30,8 +30,7 @@ import {
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import {
   getGroups,
-  getProfesores,
-  getEstudiantes,
+  buscarEstudiantes,
   deleteGrupo,
   createGrupo,
   addStudentsToGroup,
@@ -45,7 +44,6 @@ const ProfesorGrupos = () => {
   const [grupos, setGrupos] = useState([])
   const [expandedGrupoId, setExpandedGrupoId] = useState(null)
   const [emails, setEmails] = useState('')
-  const [students, setStudents] = useState([])
   const [suggestions, setSuggestions] = useState([])
   const [selectedStudents, setSelectedStudents] = useState([])
   const [currentGrupoId, setCurrentGrupoId] = useState(null)
@@ -60,21 +58,6 @@ const ProfesorGrupos = () => {
       })
   }, [])
 
-  useEffect(() => {
-    getProfesores()
-      .then((data) => setProfesores(data))
-      .catch((error) => {
-        console.error('Error fetching profesores:', error)
-      })
-  }, [])
-
-  useEffect(() => {
-    getEstudiantes()
-      .then((data) => setStudents(data))
-      .catch((error) => {
-        console.error('Error fetching estudiantes:', error)
-      })
-  }, [])
 
   const handleDelete = (grupo) => {
     Swal.fire({
@@ -219,23 +202,25 @@ const ProfesorGrupos = () => {
       })
   }
 
-  const getSuggestions = (value) => {
-    const inputValue = value.trim().toLowerCase()
-    const inputLength = inputValue.length
-
-    return inputLength === 0
-      ? []
-      : students.filter((student) =>
-          student.email.toLowerCase().includes(inputValue),
-        )
-  }
 
   const getSuggestionValue = (suggestion) => suggestion.email
 
   const renderSuggestion = (suggestion) => <div>{suggestion.email}</div>
 
   const onSuggestionsFetchRequested = ({ value }) => {
-    setSuggestions(getSuggestions(value))
+    const termino = value.trim()
+    // Con menos de dos caracteres la consulta devolveria medio padron sin acotar
+    // nada; el usuario todavia no ha escrito lo suficiente para buscar.
+    if (termino.length < 2) {
+      setSuggestions([])
+      return
+    }
+    buscarEstudiantes(termino)
+      .then(setSuggestions)
+      .catch((error) => {
+        console.error('Error buscando estudiantes:', error.code, error.message)
+        setSuggestions([])
+      })
   }
 
   const onSuggestionsClearRequested = () => {
