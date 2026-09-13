@@ -15,14 +15,14 @@ export function getRoleKey(value) {
 
 export const getRole = (user) => {
   if (!user || !user.estado || !user.tipoUsuario) {
-    throw 'Error: usuario inválido'
+    throw new Error('Error: usuario inválido')
   }
   const userType = user.tipoUsuario
   if (userType === 'ESTUDIANTE') {
     if (user.estado === 'INACTIVA') return Roles.ESTUDIANTE_INACTIVO
     if (user.estado === 'INCOMPLETA') return Roles.ESTUDIANTE_INCOMPLETO
     if (user.estado === 'ACTIVA') return Roles.ESTUDIANTE_ACTIVO
-    throw `Error: estado de estudiante inválido (${user.estado})`
+    throw new Error(`Error: estado de estudiante inválido (${user.estado})`)
   } else if (userType === 'PROFESOR' || userType === 'ADMINISTRADOR') {
     if (user.estado === 'INACTIVA') return Roles.PROFESOR_INACTIVO
     if (user.estado === 'INCOMPLETA') return Roles.PROFESOR_INCOMPLETO
@@ -31,10 +31,10 @@ export const getRole = (user) => {
       if (user.estadoProfesor === 'ACTIVA') {
         if (user.rol === 'PROFESOR') return Roles.PROFESOR_ACTIVO
         if (user.rol === 'ADMINISTRADOR') return Roles.ADMINISTRADOR
-        throw `Error: rol de profesor inválido (${user.rol})`
+        throw new Error(`Error: rol de profesor inválido (${user.rol})`)
       }
-      throw `Error: estado de profesor activo inválido (${user.estadoProfesor})`
+      throw new Error(`Error: estado de profesor activo inválido (${user.estadoProfesor})`)
     }
-    throw `Error: estado de profesor inválido (${user.estado})`
+    throw new Error(`Error: estado de profesor inválido (${user.estado})`)
   }
 }

@@ -29,7 +29,13 @@ const AppSidebar = () => {
       navigate('/login')
     }
   }, [user, cargando, navigate])
-  const rol = user ? getRole(user) : []
+  // En el render: si getRole lanza, se lleva por delante toda la pantalla.
+  let rol = []
+  try {
+    if (user) rol = getRole(user)
+  } catch (error) {
+    console.error('No se pudo determinar el rol del usuario:', error)
+  }
   const unfoldable = useSelector((state) => state.sidebarUnfoldable)
   const sidebarShow = useSelector((state) => state.sidebarShow)
 

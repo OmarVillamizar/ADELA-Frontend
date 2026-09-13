@@ -14,8 +14,15 @@ function RequireAuth({ roles }) {
       navigate('/login')
       return
     }
-    if (!roles.includes(getRole(user))) {
-      navigate('/')
+    // Un usuario en un estado que getRole no sabe clasificar no debe quedarse en
+    // una pantalla a la que quiza no tiene acceso: se trata como sesion invalida.
+    try {
+      if (!roles.includes(getRole(user))) {
+        navigate('/')
+      }
+    } catch (error) {
+      console.error('No se pudo determinar el rol del usuario:', error)
+      navigate('/login')
     }
   }, [user, cargando, roles, navigate])
 

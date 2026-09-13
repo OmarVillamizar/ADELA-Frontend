@@ -31,8 +31,10 @@ const ReporteGrupo = () => {
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(true)
 
+  // usePDF congela las opciones del primer render, cuando reporte todavia es
+  // null: el nombre quedaba fijado como "reporte-grupo-undefined.pdf". El nombre
+  // se pasa en la llamada, que ya ocurre con el reporte cargado.
   const { toPDF, targetRef } = usePDF({
-    filename: `reporte-grupo-${reporte?.grupo?.nombre}.pdf`,
     page: {
       margin: 20,
       format: 'a4',
@@ -64,7 +66,7 @@ const ReporteGrupo = () => {
 
   const handleDownloadPDF = async () => {
     try {
-      await toPDF()
+      await toPDF({ filename: `reporte-grupo-${reporte?.grupo?.nombre}.pdf` })
       Swal.fire({
         icon: 'success',
         title: 'Éxito',
