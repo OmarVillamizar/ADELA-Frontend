@@ -88,8 +88,12 @@ const ActualizarEstudiante = () => {
         <CForm className="row g-4" onSubmit={handleSubmit}>
           <CCol md={6}>
             <CFormFloating>
+              {/* type="number" ignora maxLength, asi que el campo es de texto con
+                  teclado numerico. El limite son los 8 caracteres de la columna. */}
               <CFormInput
-                type="number"
+                type="text"
+                inputMode="numeric"
+                maxLength={8}
                 id="inputCodigoNumber"
                 placeholder="Ingrese código"
                 name="codigo"

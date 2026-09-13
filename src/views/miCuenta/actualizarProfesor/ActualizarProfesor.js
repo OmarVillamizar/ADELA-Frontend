@@ -90,8 +90,12 @@ const ActualizarCuentaProfesor = () => {
           <CForm onSubmit={handleSubmit}>
             <CRow className="g-3">
               <CCol md={6}>
+                {/* type="number" ignora maxLength, asi que el campo es de texto con
+                    teclado numerico. El limite son los 8 caracteres de la columna. */}
                 <CFormInput
-                  type="number" // Modificado para aceptar solo números
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={8}
                   id="inputCodigoNumber"
                   label="Código de Profesor"
                   name="codigo"
