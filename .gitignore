@@ -2,7 +2,6 @@
 
 # dependencies
 /node_modules
-package-lock.json
 yarn.lock
 
 .env
@@ -27,6 +26,5 @@ yarn-debug.log*
 yarn-error.log*
 src/views/testAPI
 .atl/
-.env.example
 AGENTS.md
 CLAUDE.md
