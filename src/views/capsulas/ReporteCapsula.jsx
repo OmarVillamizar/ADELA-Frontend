@@ -52,7 +52,7 @@ const ReporteCapsula = () => {
     )
   }
 
-  const { capsula, categorias, participantes, totalRespuestas } = reporte
+  const { capsula, estilos, participantes, totalRespuestas } = reporte
 
   const descargar = async () => {
     try {
@@ -124,9 +124,9 @@ const ReporteCapsula = () => {
                       {capsula.abierta ? 'abierta' : 'cerrada'}
                     </p>
                     <p className="mb-1">
-                      <strong>Promedio por categoría:</strong>
+                      <strong>Promedio por estilo:</strong>
                     </p>
-                    {categorias.map((c) => (
+                    {estilos.map((c) => (
                       <p key={c.nombre} className="mb-1">
                         {c.nombre}: {c.promedio.toFixed(2)}
                       </p>
@@ -136,12 +136,12 @@ const ReporteCapsula = () => {
                     <h6>Estilo predominante</h6>
                     <CChartBar
                       data={{
-                        labels: categorias.map((c) => c.nombre),
+                        labels: estilos.map((c) => c.nombre),
                         datasets: [
                           {
                             label: 'Personas',
                             backgroundColor: '#4BC0C0',
-                            data: categorias.map((c) => c.predominantes),
+                            data: estilos.map((c) => c.predominantes),
                           },
                         ],
                       }}
@@ -161,7 +161,7 @@ const ReporteCapsula = () => {
 
                 <h6 className="mt-4">Promedios</h6>
                 <GraficasResultado
-                  categorias={categorias}
+                  estilos={estilos}
                   etiqueta="Promedio"
                   valor={(c) => c.promedio}
                 />

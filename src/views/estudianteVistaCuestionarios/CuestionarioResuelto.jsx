@@ -40,7 +40,7 @@ const ResultadoCuestionario = () => {
       genero: '',
     },
     preguntas: [{ pregunta: '', orden: 0, respuestas: [''] }],
-    categorias: [{ nombre: '', valorMinimo: 0, valorMaximo: 0, valor: 0 }],
+    estilos: [{ nombre: '', valorMinimo: 0, valorMaximo: 0, valor: 0 }],
   })
 
   const { toPDF, targetRef } = usePDF({
@@ -195,18 +195,18 @@ const ResultadoCuestionario = () => {
                         )}
                       </p>
                     </CCol>
-                    {/* Promedios por Categoría */}
+                    {/* Promedios por Estilo */}
                     <CCol md={12}>
-                      <h6>Promedios por Categoría</h6>
+                      <h6>Promedios por Estilo</h6>
                       <div className="mt-3">
                         <CRow>
-                          {resultado.categorias.map((categoria, index) => (
+                          {resultado.estilos.map((estilo, index) => (
                             <CCol md={3} key={index}>
                               <p>
-                                <strong>{categoria.nombre}:</strong>{' '}
-                                {Number.isNaN(Number(categoria.valor))
+                                <strong>{estilo.nombre}:</strong>{' '}
+                                {Number.isNaN(Number(estilo.valor))
                                   ? 0
-                                  : Number(categoria.valor).toFixed(2)}
+                                  : Number(estilo.valor).toFixed(2)}
                               </p>
                             </CCol>
                           ))}
@@ -216,7 +216,7 @@ const ResultadoCuestionario = () => {
                   </CRow>
 
                   <GraficasResultado
-                    categorias={resultado.categorias}
+                    estilos={resultado.estilos}
                     etiqueta={resultado.estudiante.nombre}
                   />
 

@@ -174,17 +174,17 @@ const ReporteGrupo = () => {
                       {reporte.estudiantesNoResuelto.length}
                     </p>
                     <p>
-                      <strong>Promedios por Categoría:</strong>
+                      <strong>Promedios por Estilo:</strong>
                     </p>
                     <div className="mt-3">
                       <CRow>
-                        {reporte.categorias.map((categoria, index) => (
+                        {reporte.estilos.map((estilo, index) => (
                           <CCol md={6} key={index}>
                             <p>
-                              <strong>{categoria.nombre}:</strong>{' '}
-                              {Number.isNaN(Number(categoria.valor))
+                              <strong>{estilo.nombre}:</strong>{' '}
+                              {Number.isNaN(Number(estilo.valor))
                                 ? 0
-                                : Number(categoria.valor).toFixed(2)}
+                                : Number(estilo.valor).toFixed(2)}
                             </p>
                           </CCol>
                         ))}
@@ -194,12 +194,12 @@ const ReporteGrupo = () => {
                   <CCol md={6}>
                     <CChartBar
                       data={{
-                        labels: reporte.categorias.map((c) => c.nombre),
+                        labels: reporte.estilos.map((c) => c.nombre),
                         datasets: [
                           {
-                            label: 'Promedio por Categoría',
+                            label: 'Promedio por Estilo',
                             backgroundColor: '#36A2EB',
-                            data: reporte.categorias.map((c) => c.valor),
+                            data: reporte.estilos.map((c) => c.valor),
                           },
                         ],
                       }}
@@ -208,10 +208,10 @@ const ReporteGrupo = () => {
                         scales: {
                           y: {
                             max: Math.max(
-                              ...reporte.categorias.map((c) => c.valorMaximo),
+                              ...reporte.estilos.map((c) => c.valorMaximo),
                             ),
                             min: Math.min(
-                              ...reporte.categorias.map((c) => c.valorMinimo),
+                              ...reporte.estilos.map((c) => c.valorMinimo),
                             ),
                           },
                         },
@@ -224,11 +224,11 @@ const ReporteGrupo = () => {
                   <CCol md={6}>
                     <CChartRadar
                       data={{
-                        labels: reporte.categorias.map((c) => c.nombre),
+                        labels: reporte.estilos.map((c) => c.nombre),
                         datasets: [
                           {
-                            label: 'Promedio por Categoría',
-                            data: reporte.categorias.map((c) => c.valor),
+                            label: 'Promedio por Estilo',
+                            data: reporte.estilos.map((c) => c.valor),
                             backgroundColor: 'rgba(75,192,192,0.2)',
                             borderColor: 'rgba(75,192,192,1)',
                             pointBackgroundColor: 'rgba(75,192,192,1)',
@@ -239,10 +239,10 @@ const ReporteGrupo = () => {
                         scales: {
                           r: {
                             suggestedMin: Math.max(
-                              ...reporte.categorias.map((c) => c.valorMinimo),
+                              ...reporte.estilos.map((c) => c.valorMinimo),
                             ),
                             suggestedMax: Math.min(
-                              ...reporte.categorias.map((c) => c.valorMaximo),
+                              ...reporte.estilos.map((c) => c.valorMaximo),
                             ),
                           },
                         },
@@ -252,11 +252,11 @@ const ReporteGrupo = () => {
                   <CCol md={6}>
                     <CChartPolarArea
                       data={{
-                        labels: reporte.categorias.map((c) => c.nombre),
+                        labels: reporte.estilos.map((c) => c.nombre),
                         datasets: [
                           {
-                            label: 'Promedio por Categoría',
-                            data: reporte.categorias.map((c) => c.valor),
+                            label: 'Promedio por Estilo',
+                            data: reporte.estilos.map((c) => c.valor),
                           },
                         ],
                       }}
@@ -264,10 +264,10 @@ const ReporteGrupo = () => {
                         scales: {
                           r: {
                             suggestedMin: Math.max(
-                              ...reporte.categorias.map((c) => c.valorMinimo),
+                              ...reporte.estilos.map((c) => c.valorMinimo),
                             ),
                             suggestedMax: Math.min(
-                              ...reporte.categorias.map((c) => c.valorMaximo),
+                              ...reporte.estilos.map((c) => c.valorMaximo),
                             ),
                           },
                         },

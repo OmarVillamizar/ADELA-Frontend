@@ -4,18 +4,14 @@ import { CCol, CRow } from '@coreui/react'
 import { CChartBar, CChartRadar } from '@coreui/react-chartjs'
 
 /**
- * Barras y radar del puntaje por categoría, en la escala del cuestionario.
+ * Barras y radar del puntaje por estilo, en la escala del cuestionario.
  * Lo usan el resultado del estudiante, el de una cápsula y su reporte.
  */
-const GraficasResultado = ({
-  categorias,
-  etiqueta,
-  valor = (c) => c.valor,
-}) => {
-  const minimo = Math.min(...categorias.map((c) => c.valorMinimo))
-  const maximo = Math.max(...categorias.map((c) => c.valorMaximo))
-  const labels = categorias.map((c) => c.nombre)
-  const datos = categorias.map(valor)
+const GraficasResultado = ({ estilos, etiqueta, valor = (c) => c.valor }) => {
+  const minimo = Math.min(...estilos.map((c) => c.valorMinimo))
+  const maximo = Math.max(...estilos.map((c) => c.valorMaximo))
+  const labels = estilos.map((c) => c.nombre)
+  const datos = estilos.map(valor)
 
   return (
     <CRow>
@@ -60,7 +56,7 @@ const GraficasResultado = ({
 }
 
 GraficasResultado.propTypes = {
-  categorias: PropTypes.arrayOf(
+  estilos: PropTypes.arrayOf(
     PropTypes.shape({
       nombre: PropTypes.string,
       valorMinimo: PropTypes.number,

@@ -58,17 +58,17 @@ export const recordarResultado = (codigoCapsula, codigoResultado) => {
 }
 
 /**
- * Nombres de las categorías con mayor puntaje normalizado a su rango, con el
+ * Nombres de los estilos con mayor puntaje normalizado a su rango, con el
  * mismo criterio que el reporte del profesor. Empates devuelven varias.
  */
-export const estilosPredominantes = (categorias) => {
-  const normalizado = categorias.map((c) => {
+export const estilosPredominantes = (estilos) => {
+  const normalizado = estilos.map((c) => {
     const rango = c.valorMaximo - c.valorMinimo
     return rango > 0 ? (c.valor - c.valorMinimo) / rango : c.valor
   })
   const max = Math.max(...normalizado)
-  if (!Number.isFinite(max) || categorias.every((c) => !c.valor)) return []
-  return categorias
+  if (!Number.isFinite(max) || estilos.every((c) => !c.valor)) return []
+  return estilos
     .filter((_, i) => max - normalizado[i] < 1e-9)
     .map((c) => c.nombre)
 }

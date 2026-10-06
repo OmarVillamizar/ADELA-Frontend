@@ -76,7 +76,7 @@ const ResultadoCapsula = () => {
 
   const codigoVisible = formatearCodigo(resultado.codigo)
   const enlace = `${window.location.origin}/r/${resultado.codigo}`
-  const predominantes = estilosPredominantes(resultado.categorias)
+  const predominantes = estilosPredominantes(resultado.estilos)
 
   const copiar = async () => {
     try {
@@ -159,17 +159,17 @@ const ResultadoCapsula = () => {
             </CCardHeader>
             <CCardBody>
               <CRow className="mb-3">
-                {resultado.categorias.map((categoria) => (
-                  <CCol xs={6} md={3} key={categoria.nombre}>
+                {resultado.estilos.map((estilo) => (
+                  <CCol xs={6} md={3} key={estilo.nombre}>
                     <p className="mb-1">
-                      <strong>{categoria.nombre}:</strong>{' '}
-                      {Number(categoria.valor).toFixed(2)}
+                      <strong>{estilo.nombre}:</strong>{' '}
+                      {Number(estilo.valor).toFixed(2)}
                     </p>
                   </CCol>
                 ))}
               </CRow>
               <GraficasResultado
-                categorias={resultado.categorias}
+                estilos={resultado.estilos}
                 etiqueta={resultado.nombre || 'Tu resultado'}
               />
               <h6 className="mt-4">Preguntas</h6>

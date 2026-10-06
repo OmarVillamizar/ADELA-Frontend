@@ -509,14 +509,14 @@ const ResultadosGrupo = () => {
                             Estilos de Aprendizaje
                           </h6>
                           <div className="d-flex flex-wrap gap-2">
-                            {selectedCuestionario.categorias.map(
-                              (categoria, index) => (
+                            {selectedCuestionario.estilos.map(
+                              (estilo, index) => (
                                 <CBadge
                                   key={index}
                                   color="light"
                                   className="text-dark"
                                 >
-                                  {categoria.nombre}
+                                  {estilo.nombre}
                                 </CBadge>
                               ),
                             )}

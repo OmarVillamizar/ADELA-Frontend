@@ -277,9 +277,9 @@ const ProfesorVistaCuestionarios = () => {
               <div className="learning-styles-section">
                 <h5 className="section-title">Estilos de Aprendizaje:</h5>
                 <ul className="categories-list">
-                  {selectedCuestionario.categorias.map((categoria, index) => (
+                  {selectedCuestionario.estilos.map((estilo, index) => (
                     <li key={index} className="category-item">
-                      {categoria.nombre}
+                      {estilo.nombre}
                     </li>
                   ))}
                 </ul>

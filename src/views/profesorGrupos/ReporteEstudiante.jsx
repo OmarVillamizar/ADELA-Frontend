@@ -46,7 +46,7 @@ const ReporteEstudiante = () => {
       nombre: '',
     },
     preguntas: [{ pregunta: '', orden: 0, respuestas: [''] }],
-    categorias: [{ nombre: '', valorMinimo: 0, valorMaximo: 0, valor: 0 }],
+    estilos: [{ nombre: '', valorMinimo: 0, valorMaximo: 0, valor: 0 }],
   })
 
   const { toPDF, targetRef } = usePDF({
@@ -199,16 +199,16 @@ const ReporteEstudiante = () => {
                       </p>
                     </CCol>
                     <CCol md={6}>
-                      <h6>Promedios por Categoría</h6>
+                      <h6>Promedios por Estilo</h6>
                       <div className="mt-3">
                         <CRow>
-                          {resultado.categorias.map((categoria, index) => (
+                          {resultado.estilos.map((estilo, index) => (
                             <CCol md={6} key={index}>
                               <p>
-                                <strong>{categoria.nombre}:</strong>{' '}
-                                {Number.isNaN(Number(categoria.valor))
+                                <strong>{estilo.nombre}:</strong>{' '}
+                                {Number.isNaN(Number(estilo.valor))
                                   ? 0
-                                  : Number(categoria.valor).toFixed(2)}
+                                  : Number(estilo.valor).toFixed(2)}
                               </p>
                             </CCol>
                           ))}
@@ -221,12 +221,12 @@ const ReporteEstudiante = () => {
                     <CCol>
                       <CChartBar
                         data={{
-                          labels: resultado.categorias.map((e) => e.nombre),
+                          labels: resultado.estilos.map((e) => e.nombre),
                           datasets: [
                             {
                               label: resultado.estudiante.nombre,
                               backgroundColor: '#36A2EB',
-                              data: resultado.categorias.map((e) => e.valor),
+                              data: resultado.estilos.map((e) => e.valor),
                             },
                           ],
                         }}
@@ -235,14 +235,10 @@ const ReporteEstudiante = () => {
                           scales: {
                             y: {
                               max: Math.max(
-                                ...resultado.categorias.map(
-                                  (c) => c.valorMaximo,
-                                ),
+                                ...resultado.estilos.map((c) => c.valorMaximo),
                               ),
                               min: Math.min(
-                                ...resultado.categorias.map(
-                                  (c) => c.valorMinimo,
-                                ),
+                                ...resultado.estilos.map((c) => c.valorMinimo),
                               ),
                             },
                           },
@@ -252,11 +248,11 @@ const ReporteEstudiante = () => {
                     <CCol>
                       <CChartRadar
                         data={{
-                          labels: resultado.categorias.map((e) => e.nombre),
+                          labels: resultado.estilos.map((e) => e.nombre),
                           datasets: [
                             {
                               label: resultado.estudiante.nombre,
-                              data: resultado.categorias.map((e) => e.valor),
+                              data: resultado.estilos.map((e) => e.valor),
                               backgroundColor: 'rgba(75,192,192,0.2)',
                               borderColor: 'rgba(75,192,192,1)',
                               pointBackgroundColor: 'rgba(75,192,192,1)',
@@ -267,14 +263,10 @@ const ReporteEstudiante = () => {
                           scales: {
                             r: {
                               suggestedMin: Math.max(
-                                ...resultado.categorias.map(
-                                  (e) => e.valorMinimo,
-                                ),
+                                ...resultado.estilos.map((e) => e.valorMinimo),
                               ),
                               suggestedMax: Math.min(
-                                ...resultado.categorias.map(
-                                  (e) => e.valorMaximo,
-                                ),
+                                ...resultado.estilos.map((e) => e.valorMaximo),
                               ),
                             },
                           },

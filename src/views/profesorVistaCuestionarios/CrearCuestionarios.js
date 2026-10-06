@@ -32,11 +32,11 @@ const CrearCuestionario = () => {
   const [descripcion, setDescripcion] = useState('')
   const [autor, setAutor] = useState('')
   const [version, setVersion] = useState('')
-  const [categoriaNombre, setCategoriaNombre] = useState('')
-  const [categorias, setCategorias] = useState([])
+  const [estiloNombre, setEstiloNombre] = useState('')
+  const [estilos, setEstilos] = useState([])
   const [preguntaTitulo, setPreguntaTitulo] = useState('')
   const [preguntaSelecMulti, setPreguntaSelecMulti] = useState(false)
-  const [preguntaCategoria, setPreguntaCategoria] = useState('')
+  const [preguntaEstilo, setPreguntaEstilo] = useState('')
   const [preguntas, setPreguntas] = useState([])
   const [opciones, setOpciones] = useState([{ id: 1, titulo: '' }])
   const [expandedPreguntaId, setExpandedPreguntaId] = useState(null)
@@ -45,11 +45,11 @@ const CrearCuestionario = () => {
     navigate('/administrar-cuestionarios', { replace: true })
   }
 
-  const handleAddCategoria = () => {
-    if (categoriaNombre.trim() !== '') {
-      const newId = categorias.length + 1
-      setCategorias([...categorias, { id: newId, nombre: categoriaNombre }])
-      setCategoriaNombre('')
+  const handleAddEstilo = () => {
+    if (estiloNombre.trim() !== '') {
+      const newId = estilos.length + 1
+      setEstilos([...estilos, { id: newId, nombre: estiloNombre }])
+      setEstiloNombre('')
     }
   }
 
@@ -60,7 +60,7 @@ const CrearCuestionario = () => {
   const handleAddOpcion = () => {
     setOpciones([
       ...opciones,
-      { id: opciones.length + 1, titulo: '', valor: 1, categoriaId: null },
+      { id: opciones.length + 1, titulo: '', valor: 1, estiloId: null },
     ])
   }
 
@@ -114,12 +114,12 @@ const CrearCuestionario = () => {
               orden: i + 1,
               respuesta: opcion.titulo,
               valor: opcion.valor,
-              categoriaId: opcion.categoriaId,
+              estiloId: opcion.estiloId,
             })),
           })),
-          categorias: categorias.map((categoria) => ({
-            nombre: categoria.nombre,
-            id: categoria.id,
+          estilos: estilos.map((estilo) => ({
+            nombre: estilo.nombre,
+            id: estilo.id,
           })),
         }
 
@@ -138,11 +138,11 @@ const CrearCuestionario = () => {
               setAutor('')
               setVersion('')
               setPreguntaTitulo('')
-              setPreguntaCategoria('')
+              setPreguntaEstilo('')
               setPreguntaSelecMulti(false)
-              setOpciones([{ id: 1, titulo: '', valor: 1, categoriaId: null }])
+              setOpciones([{ id: 1, titulo: '', valor: 1, estiloId: null }])
               setPreguntas([])
-              setCategorias([])
+              setEstilos([])
 
               // Navegar y forzar actualización de la lista de cuestionarios
               navigate('/administrar-cuestionarios', { replace: true })
@@ -159,8 +159,8 @@ const CrearCuestionario = () => {
     })
   }
 
-  const handleDeleteCategoria = (id) => {
-    setCategorias(categorias.filter((categoria) => categoria.id !== id))
+  const handleDeleteEstilo = (id) => {
+    setEstilos(estilos.filter((estilo) => estilo.id !== id))
   }
 
   const handleDeleteOpcion = (index) => {
@@ -174,10 +174,10 @@ const CrearCuestionario = () => {
       opciones.every(
         (opcion) =>
           opcion.titulo.trim() !== '' &&
-          opcion.categoriaId &&
+          opcion.estiloId &&
           opcion.valor != null &&
           opcion.valor != undefined,
-      ) // Verificar que cada opción tenga título, categoría y valor
+      ) // Verificar que cada opción tenga título, estilo y valor
     ) {
       const newPregunta = {
         id: preguntas.length + 1,
@@ -189,7 +189,7 @@ const CrearCuestionario = () => {
       // Reiniciar campos
       setPreguntaTitulo('')
       setPreguntaSelecMulti(false)
-      setOpciones([{ id: 1, titulo: '', valor: 0, categoriaId: null }])
+      setOpciones([{ id: 1, titulo: '', valor: 0, estiloId: null }])
     } else {
       // Mostrar una alerta utilizando SweetAlert
       Swal.fire({
@@ -267,39 +267,37 @@ const CrearCuestionario = () => {
             </CCol>
           </CRow>
 
-          {/* Categorías */}
+          {/* Estilos */}
           <hr />
           <h5>Estilos de Aprendizaje</h5>
           <CRow className="mb-3">
             <CCol md="6">
-              <CFormLabel htmlFor="categoriaNombre">
-                Nombre del Estilo
-              </CFormLabel>
+              <CFormLabel htmlFor="estiloNombre">Nombre del Estilo</CFormLabel>
               <CFormInput
-                id="categoriaNombre"
-                value={categoriaNombre}
-                onChange={(e) => setCategoriaNombre(e.target.value)}
+                id="estiloNombre"
+                value={estiloNombre}
+                onChange={(e) => setEstiloNombre(e.target.value)}
                 placeholder="Ingrese el nombre del estilo"
               />
             </CCol>
             <CCol md="6" className="d-flex align-items-end">
-              <CButton color="primary" onClick={handleAddCategoria}>
+              <CButton color="primary" onClick={handleAddEstilo}>
                 Agregar Estilo
               </CButton>
             </CCol>
           </CRow>
 
           <CListGroup className="mb-3">
-            {categorias.map((categoria) => (
+            {estilos.map((estilo) => (
               <CListGroupItem
-                key={categoria.id}
+                key={estilo.id}
                 className="d-flex justify-content-between align-items-center"
               >
-                {categoria.nombre}
+                {estilo.nombre}
                 <CButton
                   color="danger"
                   size="sm"
-                  onClick={() => handleDeleteCategoria(categoria.id)}
+                  onClick={() => handleDeleteEstilo(estilo.id)}
                 >
                   X
                 </CButton>
@@ -399,20 +397,20 @@ const CrearCuestionario = () => {
                   />
                   <select
                     className="form-select me-2"
-                    value={opcion.categoriaId || ''}
+                    value={opcion.estiloId || ''}
                     onChange={(e) =>
                       handleOpcionChange(
                         index,
-                        'categoriaId',
+                        'estiloId',
                         parseInt(e.target.value),
                       )
                     }
                     style={{ height: '3.5rem' }}
                   >
                     <option value="">Seleccione Estilo</option>
-                    {categorias.map((categoria) => (
-                      <option key={categoria.id} value={categoria.id}>
-                        {categoria.nombre}
+                    {estilos.map((estilo) => (
+                      <option key={estilo.id} value={estilo.id}>
+                        {estilo.nombre}
                       </option>
                     ))}
                   </select>
@@ -511,8 +509,8 @@ const CrearCuestionario = () => {
                                     {opcion.titulo}
                                   </CTableDataCell>
                                   <CTableDataCell>
-                                    {categorias.find(
-                                      (cat) => cat.id === opcion.categoriaId,
+                                    {estilos.find(
+                                      (cat) => cat.id === opcion.estiloId,
                                     )?.nombre || 'Sin estilo'}
                                   </CTableDataCell>
                                   <CTableDataCell>
