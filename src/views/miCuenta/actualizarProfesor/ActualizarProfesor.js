@@ -21,6 +21,8 @@ const ActualizarCuentaProfesor = () => {
 
   // Estado y funciones de manejadores
   const [formData, setFormData] = useState({
+    // Por defecto, el nombre de la cuenta de Google; si no trae, la parte local del correo.
+    nombre: user.nombre || user.email.split('@')[0],
     codigo: user.codigo,
     carrera: user.carrera,
   })
@@ -34,8 +36,11 @@ const ActualizarCuentaProfesor = () => {
     e.preventDefault()
 
     // Validar campos vacíos
-    // El backend decide por el correo si la cuenta es UFPS y necesita código.
-    if ((user.requiereCodigo && !formData.codigo) || !formData.carrera) {
+    // El backend decide por el correo si la cuenta es UFPS y necesita código y carrera.
+    if (
+      !formData.nombre.trim() ||
+      (user.requiereCodigo && (!formData.codigo || !formData.carrera))
+    ) {
       Swal.fire({
         title: 'Campos incompletos',
         text: 'Por favor, completa todos los campos.',
@@ -90,6 +95,17 @@ const ActualizarCuentaProfesor = () => {
         <CCardBody>
           <CForm onSubmit={handleSubmit}>
             <CRow className="g-3">
+              <CCol md={6}>
+                <CFormInput
+                  type="text"
+                  maxLength={100}
+                  id="inputNombre"
+                  label="Nombre"
+                  name="nombre"
+                  value={formData.nombre}
+                  onChange={handleChange}
+                />
+              </CCol>
               {user.requiereCodigo && (
                 <CCol md={6}>
                   {/* type="number" ignora maxLength, asi que el campo es de texto con
@@ -106,29 +122,33 @@ const ActualizarCuentaProfesor = () => {
                   />
                 </CCol>
               )}
-              <CCol md={6}>
-                <CFormSelect
-                  id="inputCarrera"
-                  label="Carrera"
-                  name="carrera"
-                  value={formData.carrera}
-                  onChange={handleChange}
-                >
-                  <option value="">Choose...</option>
-                  <option value="109">109 - Ingeniería Electromecánica</option>
-                  <option value="111">111 - Ingeniería Civil</option>
-                  <option value="112">112 - Ingeniería Mecánica</option>
-                  <option value="115">115 - Ingeniería de Sistemas</option>
-                  <option value="116">116 - Ingeniería Electrónica</option>
-                  <option value="118">118 - Ingeniería de Minas</option>
-                  <option value="119">119 - Ingeniería Industrial</option>
-                  <option value="161">161 - Ingeniería Biotecnológica</option>
-                  <option value="162">162 - Ingeniería Agronómica</option>
-                  <option value="163">163 - Ingeniería Pecuaria</option>
-                  <option value="164">164 - Ingeniería Agroindustrial</option>
-                  <option value="165">165 - Ingeniería Ambiental</option>
-                </CFormSelect>
-              </CCol>
+              {user.requiereCodigo && (
+                <CCol md={6}>
+                  <CFormSelect
+                    id="inputCarrera"
+                    label="Carrera"
+                    name="carrera"
+                    value={formData.carrera}
+                    onChange={handleChange}
+                  >
+                    <option value="">Choose...</option>
+                    <option value="109">
+                      109 - Ingeniería Electromecánica
+                    </option>
+                    <option value="111">111 - Ingeniería Civil</option>
+                    <option value="112">112 - Ingeniería Mecánica</option>
+                    <option value="115">115 - Ingeniería de Sistemas</option>
+                    <option value="116">116 - Ingeniería Electrónica</option>
+                    <option value="118">118 - Ingeniería de Minas</option>
+                    <option value="119">119 - Ingeniería Industrial</option>
+                    <option value="161">161 - Ingeniería Biotecnológica</option>
+                    <option value="162">162 - Ingeniería Agronómica</option>
+                    <option value="163">163 - Ingeniería Pecuaria</option>
+                    <option value="164">164 - Ingeniería Agroindustrial</option>
+                    <option value="165">165 - Ingeniería Ambiental</option>
+                  </CFormSelect>
+                </CCol>
+              )}
               <CCol xs={12} className="text-center">
                 <CButton
                   color="primary"
@@ -143,6 +163,24 @@ const ActualizarCuentaProfesor = () => {
           </CForm>
         </CCardBody>
       </CCard>
+      {user.estadoProfesor === 'INACTIVA' && (
+        <CAlert color="warning" className="p-4">
+          <h4 className="alert-heading">
+            Tu solicitud como profesor fue enviada
+          </h4>
+          <p>
+            Al registrarte como profesor se envió una solicitud a los
+            administradores de ADELA. Ellos deciden si la aprueban; hasta
+            entonces no tendrás acceso a las funciones de profesor, pero puedes
+            completar y actualizar tus datos aquí.
+          </p>
+          <hr />
+          <p className="mb-0">
+            Te recomendamos contactar a un administrador para agilizar la
+            revisión de tu solicitud.
+          </p>
+        </CAlert>
+      )}
     </>
   )
 }
