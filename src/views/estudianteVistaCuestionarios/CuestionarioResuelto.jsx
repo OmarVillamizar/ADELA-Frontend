@@ -7,23 +7,18 @@ import {
   CCard,
   CCardBody,
   CCardHeader,
-  CTable,
-  CTableHead,
-  CTableRow,
-  CTableHeaderCell,
-  CTableBody,
-  CTableDataCell,
   CCol,
   CRow,
   CContainer,
   CButton,
   CAlert,
 } from '@coreui/react'
-import { CChartBar, CChartRadar } from '@coreui/react-chartjs'
 import CIcon from '@coreui/icons-react'
 import { cilCloudDownload } from '@coreui/icons'
 import Swal from 'sweetalert2'
 import { useInsignias } from '../../util/insignias/InsigniasProvider'
+import GraficasResultado from '../../components/resultados/GraficasResultado'
+import TablaRespuestas from '../../components/resultados/TablaRespuestas'
 
 const ResultadoCuestionario = () => {
   const user = useOutletContext()
@@ -220,101 +215,13 @@ const ResultadoCuestionario = () => {
                     </CCol>
                   </CRow>
 
-                  <CRow>
-                    <CCol>
-                      <CChartBar
-                        data={{
-                          labels: resultado.categorias.map((e) => e.nombre),
-                          datasets: [
-                            {
-                              label: resultado.estudiante.nombre,
-                              backgroundColor: '#36A2EB',
-                              data: resultado.categorias.map((e) => e.valor),
-                            },
-                          ],
-                        }}
-                        options={{
-                          responsive: true,
-                          scales: {
-                            y: {
-                              max: Math.max(
-                                ...resultado.categorias.map(
-                                  (c) => c.valorMaximo,
-                                ),
-                              ),
-                              min: Math.min(
-                                ...resultado.categorias.map(
-                                  (c) => c.valorMinimo,
-                                ),
-                              ),
-                            },
-                          },
-                        }}
-                      />
-                    </CCol>
-                    <CCol>
-                      <CChartRadar
-                        data={{
-                          labels: resultado.categorias.map((e) => e.nombre),
-                          datasets: [
-                            {
-                              label: resultado.estudiante.nombre,
-                              data: resultado.categorias.map((e) => e.valor),
-                              backgroundColor: 'rgba(75,192,192,0.2)',
-                              borderColor: 'rgba(75,192,192,1)',
-                              pointBackgroundColor: 'rgba(75,192,192,1)',
-                              pointBorderColor: '#fff',
-                              pointHighlightFill: '#fff',
-                              pointHighlightStroke: 'rgba(75,192,192,1)',
-                            },
-                          ],
-                        }}
-                        options={{
-                          scales: {
-                            r: {
-                              suggestedMin: Math.min(
-                                ...resultado.categorias.map(
-                                  (e) => e.valorMinimo,
-                                ),
-                              ),
-                              suggestedMax: Math.max(
-                                ...resultado.categorias.map(
-                                  (e) => e.valorMaximo,
-                                ),
-                              ),
-                            },
-                          },
-                        }}
-                      />
-                    </CCol>
-                  </CRow>
+                  <GraficasResultado
+                    categorias={resultado.categorias}
+                    etiqueta={resultado.estudiante.nombre}
+                  />
 
                   <h6 className="mt-4">Preguntas</h6>
-                  <CTable hover>
-                    <CTableHead>
-                      <CTableRow>
-                        <CTableHeaderCell>#</CTableHeaderCell>
-                        <CTableHeaderCell>Pregunta</CTableHeaderCell>
-                        <CTableHeaderCell>Respuesta</CTableHeaderCell>
-                      </CTableRow>
-                    </CTableHead>
-                    <CTableBody>
-                      {resultado.preguntas
-                        .sort((a, b) => a.orden - b.orden)
-                        .map((pregunta) => (
-                          <CTableRow key={pregunta.orden}>
-                            <CTableDataCell>{pregunta.orden}</CTableDataCell>
-                            <CTableDataCell>{pregunta.pregunta}</CTableDataCell>
-                            <CTableDataCell>
-                              Respondiste:{' '}
-                              {pregunta.respuestas.length === 0
-                                ? 'Ninguna'
-                                : pregunta.respuestas.join(', ')}
-                            </CTableDataCell>
-                          </CTableRow>
-                        ))}
-                    </CTableBody>
-                  </CTable>
+                  <TablaRespuestas preguntas={resultado.preguntas} />
                 </CCardBody>
               </CCard>
             </CCol>

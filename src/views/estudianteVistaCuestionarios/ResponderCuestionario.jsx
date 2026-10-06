@@ -8,9 +8,6 @@ import {
   CSpinner,
   CRow,
   CCol,
-  CFormCheck,
-  CProgress,
-  CProgressBar,
   CAlert,
 } from '@coreui/react'
 import Swal from 'sweetalert2'
@@ -19,6 +16,7 @@ import {
   responderCuestionario,
 } from '../../util/services/cuestionarioService'
 import { useInsignias } from '../../util/insignias/InsigniasProvider'
+import PreguntasCuestionario from '../../components/cuestionario/PreguntasCuestionario'
 
 const ResponderCuestionario = () => {
   const { id } = useParams()
@@ -28,33 +26,13 @@ const ResponderCuestionario = () => {
   const navigate = useNavigate()
   const { verificar } = useInsignias()
   const [cuestionario, setCuestionario] = useState(null)
-  const [respuestasSeleccionadas, setRespuestasSeleccionadas] = useState([
-    { opts: [] },
-  ])
-  const [selMul, setSelMul] = useState([false])
   const [loading, setLoading] = useState(true)
-
-  const sortByOrder = (a, b) => a.orden - b.orden
+  const [enviando, setEnviando] = useState(false)
 
   useEffect(() => {
     const fetchCuestionario = async () => {
       try {
-        const data = await obtenerCuestionario(id)
-        // Ordenar preguntas y sus opciones
-        data.preguntas.sort(sortByOrder)
-        data.preguntas.forEach((pregunta) => {
-          pregunta.opciones.sort(sortByOrder)
-        })
-
-        setCuestionario(data)
-        const ressel = data.preguntas.map(() => {
-          return {
-            opts: [],
-          }
-        })
-        setRespuestasSeleccionadas(ressel) // Inicializar con null
-        const sm = data.preguntas.map((el) => el.opcionMultiple)
-        setSelMul(sm)
+        setCuestionario(await obtenerCuestionario(id))
         setLoading(false)
       } catch (error) {
         console.error('Error fetching cuestionario:', error)
@@ -65,48 +43,14 @@ const ResponderCuestionario = () => {
     fetchCuestionario()
   }, [id])
 
-  const handleChange = (preguntaIndex, opcionId) => {
-    setRespuestasSeleccionadas((previas) =>
-      previas.map((respuesta, idx) => {
-        if (idx !== preguntaIndex) return respuesta
-        if (!selMul[preguntaIndex]) return { opts: [opcionId] }
-        const yaEstaba = respuesta.opts.includes(opcionId)
-        return {
-          opts: yaEstaba
-            ? respuesta.opts.filter((e) => e !== opcionId)
-            : [...respuesta.opts, opcionId],
-        }
-      }),
-    )
-  }
-
-  const handleSubmit = async () => {
-    // La flecha usaba llaves sin return, asi que .some() siempre daba false y
-    // esta validacion no se ejecutaba nunca: el envio incompleto llegaba al
-    // servidor y volvia como un error generico sin decir que preguntas faltaban.
-    const sinResponder = respuestasSeleccionadas
-      .map((respuesta, idx) =>
-        !selMul[idx] && respuesta.opts.length !== 1
-          ? cuestionario.preguntas[idx].orden
-          : null,
-      )
-      .filter((orden) => orden !== null)
-
-    if (sinResponder.length > 0) {
-      Swal.fire(
-        'Faltan respuestas',
-        `Responde las preguntas ${sinResponder.join(', ')} antes de enviar.`,
-        'warning',
-      )
-      return
-    }
-
+  const handleSubmit = async (opcionesSeleccionadasId) => {
     const respuestasDTO = {
       cuestionarioId: parseInt(id),
       resultadoCuestionarioId: asignacionId ? parseInt(asignacionId) : null,
-      opcionesSeleccionadasId: respuestasSeleccionadas.flatMap((el) => el.opts),
+      opcionesSeleccionadasId,
     }
 
+    setEnviando(true)
     try {
       await responderCuestionario(respuestasDTO)
       Swal.fire(
@@ -119,17 +63,9 @@ const ResponderCuestionario = () => {
       })
     } catch (error) {
       Swal.fire('Error', 'Hubo un problema al enviar el cuestionario.', 'error')
+    } finally {
+      setEnviando(false)
     }
-  }
-
-  const getProgress = () => {
-    if (!cuestionario) return 0
-    return (
-      (respuestasSeleccionadas.filter((r) => r.opts && r.opts.length > 0)
-        .length /
-        respuestasSeleccionadas.length) *
-      100
-    )
   }
 
   return (
@@ -161,91 +97,11 @@ const ResponderCuestionario = () => {
                 <p className="mt-3">Cargando cuestionario...</p>
               </div>
             ) : cuestionario ? (
-              <>
-                {/* Barra de progreso */}
-                <div className="mb-4">
-                  <div className="d-flex justify-content-between mb-2">
-                    <small className="text-medium-emphasis">
-                      Progreso del cuestionario
-                    </small>
-                    <small className="text-medium-emphasis">
-                      {Math.round(getProgress())}%
-                    </small>
-                  </div>
-                  <CProgress className="mb-3">
-                    <CProgressBar value={getProgress()} />
-                  </CProgress>
-                </div>
-
-                <div className="mb-4 text-center">
-                  <p className="text-medium-emphasis">
-                    {cuestionario.descripcion}
-                  </p>
-                </div>
-
-                {cuestionario.preguntas.map((pregunta, preguntaIndex) => (
-                  <CCard key={pregunta.id} className="mb-4 border">
-                    <CCardBody className="p-4">
-                      <h5 className="mb-4 text-dark">
-                        {pregunta.pregunta}{' '}
-                        {pregunta.opcionMultiple
-                          ? '(Puedes seleccionar varias opciones)'
-                          : ''}
-                      </h5>
-                      <div className="ps-2">
-                        {pregunta.opciones.map((opcion) => (
-                          <div
-                            key={opcion.id}
-                            className="mb-3"
-                            onClick={() =>
-                              handleChange(preguntaIndex, opcion.id)
-                            }
-                            style={{ cursor: 'pointer' }}
-                          >
-                            <CCard
-                              className={`p-3 border ${
-                                respuestasSeleccionadas[
-                                  preguntaIndex
-                                ].opts.includes(opcion.id)
-                                  ? 'border-primary bg-light'
-                                  : ''
-                              }`}
-                            >
-                              <CFormCheck
-                                type={
-                                  pregunta.opcionMultiple ? 'checkbox' : 'radio'
-                                }
-                                name={`pregunta-${preguntaIndex}`}
-                                id={`pregunta-${preguntaIndex}-opcion-${opcion.id}`}
-                                label={opcion.respuesta}
-                                checked={respuestasSeleccionadas[
-                                  preguntaIndex
-                                ].opts.includes(opcion.id)}
-                                onChange={(e) => {
-                                  e.preventDefault()
-                                }}
-                                className="m-0"
-                              />
-                            </CCard>
-                          </div>
-                        ))}
-                      </div>
-                    </CCardBody>
-                  </CCard>
-                ))}
-
-                <div className="text-center mt-4">
-                  <CButton
-                    color="success"
-                    size="lg"
-                    onClick={handleSubmit}
-                    className="px-5"
-                    style={{ color: 'white' }}
-                  >
-                    Enviar Respuestas
-                  </CButton>
-                </div>
-              </>
+              <PreguntasCuestionario
+                cuestionario={cuestionario}
+                onEnviar={handleSubmit}
+                enviando={enviando}
+              />
             ) : (
               <CAlert color="danger" className="m-4">
                 Error al cargar el cuestionario. Por favor, intenta nuevamente.
