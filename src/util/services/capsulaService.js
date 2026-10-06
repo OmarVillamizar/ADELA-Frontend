@@ -24,6 +24,11 @@ export const actualizarCapsula = async (id, cambios) => {
   return response.data
 }
 
+export const obtenerReporteCapsula = async (id) => {
+  const response = await api.get(`/api/capsulas/${id}/reporte`)
+  return response.data
+}
+
 export const eliminarCapsula = async (id) => {
   await api.delete(`/api/capsulas/${id}`)
 }

@@ -35,6 +35,10 @@ const CapsulaDetalle = React.lazy(
   () => import('./views/capsulas/CapsulaDetalle'),
 )
 
+const ReporteCapsula = React.lazy(
+  () => import('./views/capsulas/ReporteCapsula'),
+)
+
 const GestionarCuestionariosParaGrupo = React.lazy(
   () => import('./views/profesorGrupos/GestionarCuestionariosParaGrupo.jsx'),
 )
@@ -181,6 +185,12 @@ const protectedRoutes = [
     path: '/capsulas/:id',
     name: 'Ver cápsula',
     element: CapsulaDetalle,
+    roles: [Roles.ADMINISTRADOR, Roles.PROFESOR_ACTIVO],
+  },
+  {
+    path: '/capsulas/:id/reporte',
+    name: 'Reporte de cápsula',
+    element: ReporteCapsula,
     roles: [Roles.ADMINISTRADOR, Roles.PROFESOR_ACTIVO],
   },
   {

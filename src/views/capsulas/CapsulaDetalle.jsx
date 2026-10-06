@@ -171,6 +171,13 @@ const CapsulaDetalle = () => {
                 checked={capsula.abierta}
                 onChange={() => actualizar({ abierta: !capsula.abierta })}
               />
+              <CButton
+                color="warning"
+                className="mt-3"
+                onClick={() => navigate(`/capsulas/${capsula.id}/reporte`)}
+              >
+                Ver reporte
+              </CButton>
             </CCardBody>
           </CCard>
         </CCol>
