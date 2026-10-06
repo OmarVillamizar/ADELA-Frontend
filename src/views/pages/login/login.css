@@ -36,6 +36,23 @@ img {
   min-height: 300px;
 }
 
+/* Acceso a cápsulas: discreto frente a los dos logins, pero visible. */
+.capsula-acceso {
+  display: inline-block;
+  padding: 0.5rem 1.25rem;
+  border: 1px dashed #9aa0a6;
+  border-radius: 2rem;
+  color: #495057;
+  font-size: 0.95rem;
+  text-decoration: none;
+  background: white;
+}
+
+.capsula-acceso:hover {
+  color: #0056b3;
+  border-color: #0056b3;
+}
+
 .login-card-title {
   font-size: 1.8rem;
   font-weight: bold;

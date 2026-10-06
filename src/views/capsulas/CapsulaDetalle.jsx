@@ -24,6 +24,7 @@ import {
   enlaceCapsula,
   obtenerCapsula,
 } from '../../util/services/capsulaService'
+import { formatearCodigo } from '../../util/capsulas/capsulaUtils'
 
 /** Panel para compartir una cápsula: enlace, QR y modo proyección. */
 const CapsulaDetalle = () => {
@@ -187,7 +188,12 @@ const CapsulaDetalle = () => {
               <div ref={qrRef}>
                 <QRCodeCanvas value={enlace} size={240} marginSize={2} />
               </div>
-              <p className="mt-2 mb-0 fs-5 fw-semibold">{capsula.codigo}</p>
+              <p className="mt-2 mb-0 fs-4 fw-bold">
+                {formatearCodigo(capsula.codigo, 3)}
+              </p>
+              <small className="text-medium-emphasis">
+                o en {window.location.host}/c
+              </small>
             </CCardBody>
           </CCard>
         </CCol>
@@ -203,13 +209,24 @@ const CapsulaDetalle = () => {
           onClick={() => setProyectando(false)}
           style={{ cursor: 'pointer' }}
         >
-          <h1 className="mb-4">{capsula.nombre}</h1>
+          <h1 className="mb-3">{capsula.nombre}</h1>
           <QRCodeSVG
             value={enlace}
             marginSize={2}
-            style={{ width: 'min(70vh, 90vw)', height: 'min(70vh, 90vw)' }}
+            style={{ width: 'min(55vh, 85vw)', height: 'min(55vh, 85vw)' }}
           />
-          <p className="mt-4 fs-3 text-break">{enlace}</p>
+          <p className="mt-3 mb-1 fs-4">
+            o entra a <strong>{window.location.host}/c</strong> con el código
+          </p>
+          <p
+            className="mb-2 fw-bold"
+            style={{
+              fontSize: 'clamp(2.5rem, 9vw, 5rem)',
+              letterSpacing: '0.15em',
+            }}
+          >
+            {formatearCodigo(capsula.codigo, 3)}
+          </p>
           <small className="text-medium-emphasis">
             Toca en cualquier lugar para salir
           </small>

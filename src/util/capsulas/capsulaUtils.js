@@ -8,10 +8,13 @@ const CLAVE = 'adela.capsulas'
 export const normalizarCodigo = (codigo) =>
   (codigo ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '')
 
-/** "K7QM2XPA9DTR" → "K7QM-2XPA-9DTR", para leerlo o dictarlo. */
-export const formatearCodigo = (codigo) =>
+/**
+ * "K7QM2XPA9DTR" → "K7QM-2XPA-9DTR" (resultado) o "K7QM2X" → "K7Q-M2X"
+ * (cápsula, grupo 3), para leerlo o dictarlo.
+ */
+export const formatearCodigo = (codigo, grupo = 4) =>
   normalizarCodigo(codigo)
-    .match(/.{1,4}/g)
+    .match(new RegExp(`.{1,${grupo}}`, 'g'))
     ?.join('-') ?? ''
 
 /**

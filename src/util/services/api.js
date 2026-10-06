@@ -27,7 +27,10 @@ api.interceptors.request.use((config) => {
  * sin esta excepcion, el participante acababa expulsado al login.
  */
 const esRutaPublica = (ruta) =>
-  ruta.startsWith('/c/') || ruta === '/r' || ruta.startsWith('/r/')
+  ruta === '/c' ||
+  ruta.startsWith('/c/') ||
+  ruta === '/r' ||
+  ruta.startsWith('/r/')
 
 api.interceptors.response.use(
   (response) => response,

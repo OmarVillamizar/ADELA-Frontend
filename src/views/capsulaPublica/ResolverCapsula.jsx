@@ -98,9 +98,12 @@ const ResolverCapsula = () => {
         <CCol md={8} lg={6}>
           <CAlert color="warning" className="text-center">
             <p className="mb-3">{error}</p>
-            <Link to="/r">
-              ¿Ya respondiste? Consulta tu resultado con tu código
-            </Link>
+            <div className="d-flex flex-column gap-2">
+              <Link to="/c">Probar con otro código de cápsula</Link>
+              <Link to="/r">
+                ¿Ya respondiste? Consulta tu resultado con tu código
+              </Link>
+            </div>
           </CAlert>
         </CCol>
       </CRow>

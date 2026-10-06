@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import {
   CCard,
   CCardBody,
@@ -170,6 +170,12 @@ const Login = () => {
                 description="Entra y crea grupos, asígnales cuestionarios y analiza sus resultados"
               />
             </CCardGroup>
+            {/* Cápsulas: se responden sin cuenta, con el código del expositor. */}
+            <div className="text-center mt-4">
+              <Link to="/c" className="capsula-acceso">
+                ¿Tienes el código de una cápsula? Haz clic aquí para ingresar
+              </Link>
+            </div>
           </CCol>
         </CRow>
       </CContainer>

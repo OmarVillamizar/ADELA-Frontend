@@ -19,8 +19,15 @@ const ResolverCapsula = React.lazy(
 const ResultadoCapsula = React.lazy(
   () => import('./views/capsulaPublica/ResultadoCapsula'),
 )
-const ConsultarResultado = React.lazy(
-  () => import('./views/capsulaPublica/ConsultarResultado'),
+const EntrarCapsula = React.lazy(() =>
+  import('./views/capsulaPublica/IngresarCodigo').then((m) => ({
+    default: m.EntrarCapsula,
+  })),
+)
+const ConsultarResultado = React.lazy(() =>
+  import('./views/capsulaPublica/IngresarCodigo').then((m) => ({
+    default: m.ConsultarResultado,
+  })),
 )
 
 const App = () => {
@@ -43,6 +50,7 @@ const App = () => {
           <Routes>
             <Route exact path="/login" name="Login Page" element={<Login />} />
             <Route element={<PublicLayout />}>
+              <Route path="/c" element={<EntrarCapsula />} />
               <Route path="/c/:codigo" element={<ResolverCapsula />} />
               <Route path="/r" element={<ConsultarResultado />} />
               <Route path="/r/:codigo" element={<ResultadoCapsula />} />
