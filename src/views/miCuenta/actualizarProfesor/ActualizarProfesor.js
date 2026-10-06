@@ -32,6 +32,11 @@ const ActualizarCuentaProfesor = () => {
     setFormData((prevData) => ({ ...prevData, [name]: value }))
   }
 
+  // Solo visual: la solicitud existe desde el registro, pero el aspirante la ve
+  // como enviada cuando completa su perfil por primera vez (estado INCOMPLETA).
+  const pendiente = user.estadoProfesor === 'INACTIVA'
+  const primeraVez = pendiente && user.estado === 'INCOMPLETA'
+
   const handleSubmit = (e) => {
     e.preventDefault()
 
@@ -55,11 +60,19 @@ const ActualizarCuentaProfesor = () => {
     updateUserInfo(userUpd)
       .then((response) => {
         if (response.ok) {
-          Swal.fire({
-            title: '¡Cuenta actualizada!',
-            text: 'Los datos de la cuenta han sido actualizados correctamente.',
-            icon: 'success',
-          }).then(() => {
+          Swal.fire(
+            primeraVez
+              ? {
+                  title: '¡Solicitud enviada!',
+                  text: 'Tus datos se guardaron y tu solicitud como profesor fue enviada a los administradores, que decidirán si la aprueban.',
+                  icon: 'success',
+                }
+              : {
+                  title: '¡Cuenta actualizada!',
+                  text: 'Los datos de la cuenta han sido actualizados correctamente.',
+                  icon: 'success',
+                },
+          ).then(() => {
             // Agregar un retraso de 5 segundos antes de recargar la página
             setTimeout(() => {
               navigate(0)
@@ -163,16 +176,24 @@ const ActualizarCuentaProfesor = () => {
           </CForm>
         </CCardBody>
       </CCard>
-      {user.estadoProfesor === 'INACTIVA' && (
+      {primeraVez && (
+        <CAlert color="info" className="p-4">
+          <h4 className="alert-heading">Completa tus datos</h4>
+          <p className="mb-0">
+            Completa y guarda tu perfil para enviar tu solicitud como profesor a
+            los administradores de ADELA.
+          </p>
+        </CAlert>
+      )}
+      {pendiente && !primeraVez && (
         <CAlert color="warning" className="p-4">
           <h4 className="alert-heading">
             Tu solicitud como profesor fue enviada
           </h4>
           <p>
-            Al registrarte como profesor se envió una solicitud a los
-            administradores de ADELA. Ellos deciden si la aprueban; hasta
-            entonces no tendrás acceso a las funciones de profesor, pero puedes
-            completar y actualizar tus datos aquí.
+            Tu solicitud se envió a los administradores de ADELA. Ellos deciden
+            si la aprueban; hasta entonces no tendrás acceso a las funciones de
+            profesor, pero puedes actualizar tus datos aquí.
           </p>
           <hr />
           <p className="mb-0">
