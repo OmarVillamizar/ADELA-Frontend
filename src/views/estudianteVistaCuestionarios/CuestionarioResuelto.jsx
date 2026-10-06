@@ -172,6 +172,12 @@ const ResultadoCuestionario = () => {
                       <p>
                         <strong>Nombre:</strong> {resultado.estudiante.nombre}
                       </p>
+                      {/* Solo las cuentas UFPS tienen código. */}
+                      {resultado.estudiante.requiereCodigo && (
+                        <p>
+                          <strong>Código:</strong> {resultado.estudiante.codigo}
+                        </p>
+                      )}
                       <p>
                         <strong>Edad:</strong>{' '}
                         {calculateAge(resultado.estudiante.fechaNacimiento)}
