@@ -52,7 +52,7 @@ const PreguntasCuestionario = ({ cuestionario, onEnviar, enviando }) => {
 
   const enviar = () => {
     const sinResponder = preguntas
-      .filter((p, idx) => !p.opcionMultiple && seleccion[idx].length !== 1)
+      .filter((p, idx) => p.obligatoria && seleccion[idx].length === 0)
       .map((p) => p.orden)
 
     if (sinResponder.length > 0) {

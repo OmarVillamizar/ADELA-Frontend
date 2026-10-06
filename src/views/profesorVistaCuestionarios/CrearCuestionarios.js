@@ -36,6 +36,7 @@ const CrearCuestionario = () => {
   const [estilos, setEstilos] = useState([])
   const [preguntaTitulo, setPreguntaTitulo] = useState('')
   const [preguntaSelecMulti, setPreguntaSelecMulti] = useState(false)
+  const [preguntaObligatoria, setPreguntaObligatoria] = useState(true)
   const [preguntaEstilo, setPreguntaEstilo] = useState('')
   const [preguntas, setPreguntas] = useState([])
   const [opciones, setOpciones] = useState([{ id: 1, titulo: '' }])
@@ -110,6 +111,7 @@ const CrearCuestionario = () => {
             pregunta: pregunta.titulo,
             orden: index + 1,
             opcionMultiple: pregunta.seleccionMultiple,
+            obligatoria: pregunta.obligatoria,
             opciones: pregunta.opciones.map((opcion, i) => ({
               orden: i + 1,
               respuesta: opcion.titulo,
@@ -183,12 +185,14 @@ const CrearCuestionario = () => {
         id: preguntas.length + 1,
         titulo: preguntaTitulo,
         seleccionMultiple: preguntaSelecMulti,
+        obligatoria: preguntaObligatoria,
         opciones: opciones.filter((opcion) => opcion.titulo.trim() !== ''), // Filtrar solo las opciones con título
       }
       setPreguntas([...preguntas, newPregunta])
       // Reiniciar campos
       setPreguntaTitulo('')
       setPreguntaSelecMulti(false)
+      setPreguntaObligatoria(true)
       setOpciones([{ id: 1, titulo: '', valor: 0, estiloId: null }])
     } else {
       // Mostrar una alerta utilizando SweetAlert
@@ -435,8 +439,19 @@ const CrearCuestionario = () => {
               id="preguntaSM"
               onChange={(e) => {
                 setPreguntaSelecMulti(e.target.checked)
+                // Por defecto la múltiple es opcional y la única obligatoria;
+                // la casilla de abajo permite cambiarlo.
+                setPreguntaObligatoria(!e.target.checked)
               }}
               label="La pregunta será de selección Múltiple:"
+              className="multiple-selection-checkbox"
+              labelPosition="right"
+            />
+            <CFormCheck
+              checked={preguntaObligatoria}
+              id="preguntaObligatoria"
+              onChange={(e) => setPreguntaObligatoria(e.target.checked)}
+              label="Obligatoria"
               className="multiple-selection-checkbox"
               labelPosition="right"
             />
@@ -456,6 +471,7 @@ const CrearCuestionario = () => {
                 <CTableHeaderCell>Orden</CTableHeaderCell>
                 <CTableHeaderCell>Título de la Pregunta</CTableHeaderCell>
                 <CTableHeaderCell>Selección Múltiple</CTableHeaderCell>
+                <CTableHeaderCell>Obligatoria</CTableHeaderCell>
                 <CTableHeaderCell>Opciones</CTableHeaderCell>
                 <CTableHeaderCell className="text-end">
                   Acciones
@@ -473,6 +489,9 @@ const CrearCuestionario = () => {
                     <CTableDataCell>{pregunta.titulo}</CTableDataCell>
                     <CTableDataCell>
                       {pregunta.seleccionMultiple ? 'Sí' : 'No'}
+                    </CTableDataCell>
+                    <CTableDataCell>
+                      {pregunta.obligatoria ? 'Sí' : 'No'}
                     </CTableDataCell>
                     <CTableDataCell>{pregunta.opciones.length}</CTableDataCell>
                     <CTableDataCell className="text-end">
