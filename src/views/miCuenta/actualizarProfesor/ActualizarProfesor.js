@@ -34,7 +34,8 @@ const ActualizarCuentaProfesor = () => {
     e.preventDefault()
 
     // Validar campos vacíos
-    if (!formData.codigo || !formData.carrera) {
+    // El backend decide por el correo si la cuenta es UFPS y necesita código.
+    if ((user.requiereCodigo && !formData.codigo) || !formData.carrera) {
       Swal.fire({
         title: 'Campos incompletos',
         text: 'Por favor, completa todos los campos.',
@@ -89,20 +90,22 @@ const ActualizarCuentaProfesor = () => {
         <CCardBody>
           <CForm onSubmit={handleSubmit}>
             <CRow className="g-3">
-              <CCol md={6}>
-                {/* type="number" ignora maxLength, asi que el campo es de texto con
-                    teclado numerico. El limite son los 8 caracteres de la columna. */}
-                <CFormInput
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={8}
-                  id="inputCodigoNumber"
-                  label="Código de Profesor"
-                  name="codigo"
-                  value={formData.codigo}
-                  onChange={handleChange}
-                />
-              </CCol>
+              {user.requiereCodigo && (
+                <CCol md={6}>
+                  {/* type="number" ignora maxLength, asi que el campo es de texto con
+                      teclado numerico. El limite son los 12 caracteres de la columna. */}
+                  <CFormInput
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={12}
+                    id="inputCodigoNumber"
+                    label="Código de Profesor"
+                    name="codigo"
+                    value={formData.codigo}
+                    onChange={handleChange}
+                  />
+                </CCol>
+              )}
               <CCol md={6}>
                 <CFormSelect
                   id="inputCarrera"

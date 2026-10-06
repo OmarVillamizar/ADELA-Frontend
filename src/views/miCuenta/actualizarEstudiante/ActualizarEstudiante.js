@@ -37,7 +37,12 @@ const ActualizarEstudiante = () => {
     e.preventDefault()
 
     // Validar campos vacíos
-    if (!formData.codigo || !formData.fechaNacimiento || !formData.genero) {
+    // El backend decide por el correo si la cuenta es UFPS y necesita código.
+    if (
+      (user.requiereCodigo && !formData.codigo) ||
+      !formData.fechaNacimiento ||
+      !formData.genero
+    ) {
       Swal.fire({
         title: 'Campos incompletos',
         text: 'Por favor, completa todos los campos.',
@@ -86,23 +91,25 @@ const ActualizarEstudiante = () => {
       </CCardHeader>
       <CCardBody>
         <CForm className="row g-4" onSubmit={handleSubmit}>
-          <CCol md={6}>
-            <CFormFloating>
-              {/* type="number" ignora maxLength, asi que el campo es de texto con
-                  teclado numerico. El limite son los 8 caracteres de la columna. */}
-              <CFormInput
-                type="text"
-                inputMode="numeric"
-                maxLength={8}
-                id="inputCodigoNumber"
-                placeholder="Ingrese código"
-                name="codigo"
-                value={formData.codigo}
-                onChange={handleChange}
-              />
-              <label htmlFor="inputCodigoNumber">Código de Estudiante</label>
-            </CFormFloating>
-          </CCol>
+          {user.requiereCodigo && (
+            <CCol md={6}>
+              <CFormFloating>
+                {/* type="number" ignora maxLength, asi que el campo es de texto con
+                    teclado numerico. El limite son los 12 caracteres de la columna. */}
+                <CFormInput
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={12}
+                  id="inputCodigoNumber"
+                  placeholder="Ingrese código"
+                  name="codigo"
+                  value={formData.codigo}
+                  onChange={handleChange}
+                />
+                <label htmlFor="inputCodigoNumber">Código de Estudiante</label>
+              </CFormFloating>
+            </CCol>
+          )}
 
           <CCol md={6}>
             <CFormFloating>
