@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 
 import {
@@ -16,6 +16,8 @@ import navigation from '../_nav'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../util/auth/AuthProvider'
 import { getRole } from '../util/userUtils'
+import { useInsignias } from '../util/insignias/InsigniasProvider'
+import { CATALOGO_INSIGNIAS } from '../views/insignias/catalogo'
 import CHAEA_BAR from 'src/assets/images/chaea_bar.png'
 const AppSidebar = () => {
   const dispatch = useDispatch()
@@ -36,6 +38,24 @@ const AppSidebar = () => {
   } catch (error) {
     console.error('No se pudo determinar el rol del usuario:', error)
   }
+  // La que se está celebrando suma al aterrizar, no antes.
+  const { insignias, pendiente } = useInsignias()
+  const ganadas = insignias.filter((i) => i.codigo !== pendiente?.codigo).length
+  const items = useMemo(
+    () =>
+      navigation.map((item) =>
+        'data-insignias-destino' in item
+          ? {
+              ...item,
+              badge: {
+                color: 'warning',
+                text: `${ganadas}/${CATALOGO_INSIGNIAS.length}`,
+              },
+            }
+          : item,
+      ),
+    [ganadas],
+  )
   const unfoldable = useSelector((state) => state.sidebarUnfoldable)
   const sidebarShow = useSelector((state) => state.sidebarShow)
 
@@ -65,7 +85,7 @@ const AppSidebar = () => {
           onClick={() => dispatch({ type: 'set', sidebarShow: false })}
         />
       </CSidebarHeader>
-      <AppSidebarNav items={navigation} rol={rol} />
+      <AppSidebarNav items={items} rol={rol} />
       <CSidebarFooter className="border-top d-none d-lg-flex">
         <CSidebarToggler
           onClick={() =>

@@ -13,6 +13,7 @@ import {
   cilSpeedometer,
   cilStar,
   cilMoodGood,
+  cilBadge,
   cilGroup,
   cilUser,
 } from '@coreui/icons'
@@ -70,6 +71,15 @@ const _nav = [
       Roles.PROFESOR_NO_APROBADO,
       Roles.ADMINISTRADOR,
     ],
+  },
+  {
+    component: CNavItem,
+    name: 'Mis insignias',
+    to: '/insignias/',
+    roles: [Roles.ESTUDIANTE_ACTIVO, Roles.ESTUDIANTE_INCOMPLETO],
+    icon: <CIcon icon={cilBadge} customClassName="nav-icon" />,
+    // Destino de la animación de insignia ganada; AppSidebar le pone el contador.
+    'data-insignias-destino': '',
   },
   /////CUENTAS ADMINISTRADOR
   {

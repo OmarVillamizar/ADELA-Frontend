@@ -23,6 +23,7 @@ import { CChartBar, CChartRadar } from '@coreui/react-chartjs'
 import CIcon from '@coreui/icons-react'
 import { cilCloudDownload } from '@coreui/icons'
 import Swal from 'sweetalert2'
+import { useInsignias } from '../../util/insignias/InsigniasProvider'
 
 const ResultadoCuestionario = () => {
   const user = useOutletContext()
@@ -102,6 +103,13 @@ const ResultadoCuestionario = () => {
         navigate('/cuestionarios')
       })
   }, [id, navigate])
+
+  // El backend otorga la insignia al servir el reporte; aquí solo se recoge.
+  const { verificar } = useInsignias()
+  const reporteCargado = resultado.cuestionario.id !== 0
+  useEffect(() => {
+    if (reporteCargado) verificar('PRIMER_REPORTE')
+  }, [reporteCargado, verificar])
 
   return (
     <>

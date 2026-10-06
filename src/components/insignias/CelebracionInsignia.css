@@ -1,0 +1,202 @@
+.celebracion {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.celebracion-fondo {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 40%,
+    rgba(30, 27, 75, 0.82),
+    rgba(8, 8, 20, 0.92)
+  );
+  backdrop-filter: blur(6px);
+  pointer-events: auto;
+}
+
+.celebracion-escena {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1rem;
+  text-align: center;
+  pointer-events: none;
+}
+
+.celebracion-medalla {
+  position: relative;
+  width: min(62vw, 300px);
+  aspect-ratio: 1;
+  will-change: transform;
+}
+
+.celebracion-img {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  filter: grayscale(1) brightness(0.65);
+  transition: filter 0.9s ease-out;
+}
+
+.celebracion-medalla.encendida .celebracion-img {
+  filter: grayscale(0) brightness(1)
+    drop-shadow(0 0 28px rgba(255, 214, 102, 0.75));
+}
+
+/* Rayos giratorios detrás de la medalla, solo una vez encendida. */
+.celebracion-rayos {
+  position: absolute;
+  inset: -35%;
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    rgba(255, 220, 120, 0.28) 0 10deg,
+    transparent 10deg 30deg
+  );
+  mask-image: radial-gradient(circle, #000 25%, transparent 68%);
+  -webkit-mask-image: radial-gradient(circle, #000 25%, transparent 68%);
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity 0.8s,
+    transform 0.8s;
+}
+
+.celebracion-medalla.encendida .celebracion-rayos {
+  opacity: 1;
+  transform: scale(1);
+  animation: celebracion-girar 14s linear infinite;
+}
+
+/* Barrido de luz que cruza la medalla al encenderse. */
+.celebracion-brillo {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.celebracion-brillo::after {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: -60%;
+  width: 40%;
+  height: 140%;
+  background: linear-gradient(
+    100deg,
+    transparent,
+    rgba(255, 255, 255, 0.85),
+    transparent
+  );
+  transform: skewX(-18deg) translateX(0);
+  opacity: 0;
+}
+
+.celebracion-medalla.encendida .celebracion-brillo::after {
+  animation: celebracion-barrido 1.1s 0.25s ease-out forwards;
+}
+
+.celebracion-texto {
+  color: #fff;
+  max-width: 26rem;
+  pointer-events: auto;
+}
+
+.celebracion-etiqueta {
+  display: inline-block;
+  padding: 0.3rem 0.85rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #fbbf24, #f97316);
+  color: #1f1300;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.celebracion-texto h2 {
+  margin: 0.75rem 0 0.25rem;
+  font-size: clamp(1.8rem, 5vw, 2.6rem);
+  font-weight: 800;
+}
+
+.celebracion-texto p {
+  margin: 0 0 1.25rem;
+  font-size: 1.1rem;
+  opacity: 0.85;
+}
+
+.celebracion-boton {
+  padding: 0.7rem 2.2rem;
+  border: 0;
+  border-radius: 999px;
+  background: #fff;
+  color: #312e81;
+  font-size: 1.05rem;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  transition: transform 0.15s;
+}
+
+.celebracion-boton:hover {
+  transform: translateY(-2px) scale(1.03);
+}
+
+.celebracion-boton:focus-visible {
+  outline: 3px solid #fbbf24;
+  outline-offset: 3px;
+}
+
+/* El destino del vuelo (ítem del sidebar o botón de menú) late al recibirla. */
+.insignia-aterriza {
+  animation: insignia-aterriza 1.1s ease-out;
+}
+
+@keyframes insignia-aterriza {
+  0% {
+    box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.9);
+    background-color: rgba(251, 191, 36, 0.35);
+  }
+  60% {
+    box-shadow: 0 0 0 14px rgba(251, 191, 36, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(251, 191, 36, 0);
+    background-color: transparent;
+  }
+}
+
+@keyframes celebracion-girar {
+  to {
+    rotate: 360deg;
+  }
+}
+
+@keyframes celebracion-barrido {
+  0% {
+    opacity: 1;
+    transform: skewX(-18deg) translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: skewX(-18deg) translateX(420%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .celebracion-medalla.encendida .celebracion-rayos,
+  .celebracion-medalla.encendida .celebracion-brillo::after,
+  .insignia-aterriza {
+    animation: none;
+  }
+}

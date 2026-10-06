@@ -68,6 +68,8 @@ const ResultadoCuestionario = React.lazy(
 
 const Donaciones = React.lazy(() => import('./views/donaciones/Donaciones.js'))
 
+const MisInsignias = React.lazy(() => import('./views/insignias/MisInsignias.jsx'))
+
 const protectedRoutes = [
   {
     path: '/dashboard',
@@ -87,6 +89,12 @@ const protectedRoutes = [
     name: 'Cuestionarios',
     element: EstudianteVistaCuestionarios,
     roles: [Roles.ESTUDIANTE_ACTIVO],
+  },
+  {
+    path: '/insignias/',
+    name: 'Mis insignias',
+    element: MisInsignias,
+    roles: [Roles.ESTUDIANTE_ACTIVO, Roles.ESTUDIANTE_INCOMPLETO],
   },
   //GESTION DE CUESTIONARIOS PARA PROFESOR
   {

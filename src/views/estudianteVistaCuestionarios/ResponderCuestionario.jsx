@@ -18,6 +18,7 @@ import {
   obtenerCuestionario,
   responderCuestionario,
 } from '../../util/services/cuestionarioService'
+import { useInsignias } from '../../util/insignias/InsigniasProvider'
 
 const ResponderCuestionario = () => {
   const { id } = useParams()
@@ -25,6 +26,7 @@ const ResponderCuestionario = () => {
   // Id de la asignación concreta: el mismo cuestionario puede estar asignado en varios grupos
   const asignacionId = searchParams.get('asignacion')
   const navigate = useNavigate()
+  const { verificar } = useInsignias()
   const [cuestionario, setCuestionario] = useState(null)
   const [respuestasSeleccionadas, setRespuestasSeleccionadas] = useState([
     { opts: [] },
@@ -113,6 +115,7 @@ const ResponderCuestionario = () => {
         'success',
       ).then(() => {
         navigate('/cuestionarios')
+        verificar('PRIMER_CUESTIONARIO')
       })
     } catch (error) {
       Swal.fire('Error', 'Hubo un problema al enviar el cuestionario.', 'error')
