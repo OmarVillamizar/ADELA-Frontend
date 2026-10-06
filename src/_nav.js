@@ -15,6 +15,7 @@ import {
   cilMoodGood,
   cilBadge,
   cilGroup,
+  cilQrCode,
   cilUser,
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
@@ -45,6 +46,13 @@ const _nav = [
     name: 'Grupos',
     to: '/grupos/',
     icon: <CIcon icon={cilGroup} customClassName="nav-icon" />,
+    roles: [Roles.ADMINISTRADOR, Roles.PROFESOR_ACTIVO],
+  },
+  {
+    component: CNavItem,
+    name: 'Cápsulas',
+    to: '/capsulas/',
+    icon: <CIcon icon={cilQrCode} customClassName="nav-icon" />,
     roles: [Roles.ADMINISTRADOR, Roles.PROFESOR_ACTIVO],
   },
   //MI CUENTA

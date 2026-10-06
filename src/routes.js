@@ -29,6 +29,12 @@ const ProfesorGruposV2 = React.lazy(
   () => import('./views/profesorGrupos/ProfesorGruposV2'),
 )
 
+const Capsulas = React.lazy(() => import('./views/capsulas/Capsulas'))
+
+const CapsulaDetalle = React.lazy(
+  () => import('./views/capsulas/CapsulaDetalle'),
+)
+
 const GestionarCuestionariosParaGrupo = React.lazy(
   () => import('./views/profesorGrupos/GestionarCuestionariosParaGrupo.jsx'),
 )
@@ -163,6 +169,18 @@ const protectedRoutes = [
     path: '/grupos/:id',
     name: 'Ver grupo',
     element: ProfesorGrupo,
+    roles: [Roles.ADMINISTRADOR, Roles.PROFESOR_ACTIVO],
+  },
+  {
+    path: '/capsulas/',
+    name: 'Mis Cápsulas',
+    element: Capsulas,
+    roles: [Roles.ADMINISTRADOR, Roles.PROFESOR_ACTIVO],
+  },
+  {
+    path: '/capsulas/:id',
+    name: 'Ver cápsula',
+    element: CapsulaDetalle,
     roles: [Roles.ADMINISTRADOR, Roles.PROFESOR_ACTIVO],
   },
   {
