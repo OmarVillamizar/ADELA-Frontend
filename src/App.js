@@ -11,6 +11,18 @@ const DefaultLayout = React.lazy(() => import('./layout/DefaultLayout'))
 // Pages
 const Login = React.lazy(() => import('./views/pages/login/Login'))
 
+// Cápsulas: públicas, fuera de DefaultLayout (que exige sesión)
+const PublicLayout = React.lazy(() => import('./layout/PublicLayout'))
+const ResolverCapsula = React.lazy(
+  () => import('./views/capsulaPublica/ResolverCapsula'),
+)
+const ResultadoCapsula = React.lazy(
+  () => import('./views/capsulaPublica/ResultadoCapsula'),
+)
+const ConsultarResultado = React.lazy(
+  () => import('./views/capsulaPublica/ConsultarResultado'),
+)
+
 const App = () => {
   const { setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
 
@@ -30,6 +42,11 @@ const App = () => {
         >
           <Routes>
             <Route exact path="/login" name="Login Page" element={<Login />} />
+            <Route element={<PublicLayout />}>
+              <Route path="/c/:codigo" element={<ResolverCapsula />} />
+              <Route path="/r" element={<ConsultarResultado />} />
+              <Route path="/r/:codigo" element={<ResultadoCapsula />} />
+            </Route>
             <Route path="*" name="Home" element={<DefaultLayout />} />
           </Routes>
         </Suspense>

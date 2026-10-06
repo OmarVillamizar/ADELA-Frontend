@@ -21,6 +21,14 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+/**
+ * Paginas de capsulas, abiertas sin cuenta. Alguien con un token vencido en
+ * localStorage las abre igual: AuthProvider pide /api/user/info, recibe 401 y,
+ * sin esta excepcion, el participante acababa expulsado al login.
+ */
+const esRutaPublica = (ruta) =>
+  ruta.startsWith('/c/') || ruta === '/r' || ruta.startsWith('/r/')
+
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -28,7 +36,8 @@ api.interceptors.response.use(
     // bucle cuando la propia pantalla de login recibe un 401.
     if (
       error.response?.status === 401 &&
-      window.location.pathname !== '/login'
+      window.location.pathname !== '/login' &&
+      !esRutaPublica(window.location.pathname)
     ) {
       removeToken()
       window.location.assign('/login')
