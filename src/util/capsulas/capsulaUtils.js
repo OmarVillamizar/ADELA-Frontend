@@ -56,19 +56,3 @@ export const recordarResultado = (codigoCapsula, codigoResultado) => {
     // Sin almacenamiento: el código sigue visible en pantalla y en el PDF.
   }
 }
-
-/**
- * Nombres de los estilos con mayor puntaje normalizado a su rango, con el
- * mismo criterio que el reporte del profesor. Empates devuelven varias.
- */
-export const estilosPredominantes = (estilos) => {
-  const normalizado = estilos.map((c) => {
-    const rango = c.valorMaximo - c.valorMinimo
-    return rango > 0 ? (c.valor - c.valorMinimo) / rango : c.valor
-  })
-  const max = Math.max(...normalizado)
-  if (!Number.isFinite(max) || estilos.every((c) => !c.valor)) return []
-  return estilos
-    .filter((_, i) => max - normalizado[i] < 1e-9)
-    .map((c) => c.nombre)
-}

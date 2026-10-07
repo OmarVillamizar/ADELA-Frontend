@@ -1,0 +1,551 @@
+/*
+ * Lenguaje visual de los reportes de ADELA.
+ *
+ * Tinta casi negra (el wordmark) y el rojo UFPS como único acento de interfaz.
+ * Los datos usan su propio azul: el rojo marca acciones y lo destacado, no
+ * puntajes. Radios: tarjetas 14px, controles 10px, chips en píldora.
+ */
+.adela-r {
+  --ink: #16181d;
+  --ink-2: #474c55;
+  --ink-3: #636874;
+  --line: #e4e6ea;
+  --line-soft: #eff0f3;
+  --surface: #ffffff;
+  --surface-2: #f6f7f9;
+  --accent: #c8102e;
+  --accent-press: #9f0c24;
+  --accent-soft: #fbe8eb;
+  --data: #2a78d6;
+  --data-soft: rgba(42, 120, 214, 0.12);
+  --ok: #1d7a46;
+  --ok-soft: #e5f4ec;
+  --warn: #8a5a00;
+  --warn-soft: #fdf3dc;
+  --radius-card: 14px;
+  --radius-ctl: 10px;
+  --shadow-card: 0 1px 2px rgba(22, 24, 29, 0.06), 0 8px 24px -12px rgba(22, 24, 29, 0.12);
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Encabezado de la página ---------- */
+
+.adela-r__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.adela-r__titulo {
+  margin: 0;
+  font-size: clamp(1.25rem, 2.4vw, 1.6rem);
+  font-weight: 800;
+  font-style: italic;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.adela-r__subtitulo {
+  margin: 0.25rem 0 0;
+  color: var(--ink-2);
+  font-size: 0.95rem;
+}
+
+.adela-r__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* ---------- Botones táctiles ---------- */
+
+.adela-btn {
+  --btn-bg: var(--surface);
+  --btn-fg: var(--ink);
+  --btn-border: var(--line);
+  --btn-lip: #d3d6dc;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.5rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--btn-border);
+  border-radius: var(--radius-ctl);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  font-weight: 600;
+  font-size: 0.925rem;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 2px 0 var(--btn-lip);
+  transform: translateY(0);
+  transition:
+    transform 140ms var(--ease),
+    box-shadow 140ms var(--ease),
+    background-color 140ms var(--ease);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.adela-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 0 var(--btn-lip);
+  color: var(--btn-fg);
+}
+
+.adela-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 var(--btn-lip);
+}
+
+.adela-btn:focus-visible {
+  outline: 3px solid rgba(200, 16, 46, 0.35);
+  outline-offset: 2px;
+}
+
+.adela-btn:disabled,
+.adela-btn[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 2px 0 var(--btn-lip);
+}
+
+.adela-btn--primario {
+  --btn-bg: var(--accent);
+  --btn-fg: #ffffff;
+  --btn-border: var(--accent);
+  --btn-lip: var(--accent-press);
+}
+
+.adela-btn--primario:hover {
+  background: #b50e29;
+}
+
+.adela-btn--sm {
+  min-height: 2rem;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.85rem;
+}
+
+/* ---------- Control segmentado (escala, baremo) ---------- */
+
+.adela-seg {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: var(--radius-ctl);
+  background: var(--surface-2);
+  box-shadow: inset 0 1px 2px rgba(22, 24, 29, 0.08);
+}
+
+.adela-seg__op {
+  min-height: 2.1rem;
+  padding: 0.35rem 0.85rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-2);
+  font-weight: 600;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 160ms var(--ease),
+    color 160ms var(--ease),
+    box-shadow 160ms var(--ease),
+    transform 120ms var(--ease);
+}
+
+.adela-seg__op:hover {
+  color: var(--ink);
+}
+
+.adela-seg__op:active {
+  transform: scale(0.97);
+}
+
+.adela-seg__op[aria-pressed='true'] {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow:
+    0 1px 2px rgba(22, 24, 29, 0.12),
+    0 0 0 1px var(--line);
+}
+
+.adela-seg__op:focus-visible {
+  outline: 3px solid rgba(200, 16, 46, 0.35);
+  outline-offset: 1px;
+}
+
+/* ---------- Superficies ---------- */
+
+.adela-panel {
+  margin-bottom: 1.25rem;
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
+.adela-panel__cabeza {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.adela-panel__titulo {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.adela-panel__nota {
+  margin: 0.2rem 0 0;
+  color: var(--ink-3);
+  font-size: 0.85rem;
+  max-width: 65ch;
+}
+
+/* ---------- Cifras (stat tiles) ---------- */
+
+.adela-cifras {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.adela-cifra {
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+.adela-cifra__etiqueta {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.adela-cifra__valor {
+  margin: 0.25rem 0 0;
+  font-size: 1.75rem;
+  font-weight: 800;
+  font-style: italic;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.adela-cifra__extra {
+  margin-left: 0.35rem;
+  color: var(--ink-3);
+  font-size: 0.85rem;
+  font-style: normal;
+  font-weight: 600;
+}
+
+/* ---------- Perfil destacado ---------- */
+
+.adela-perfil {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+  padding: clamp(1.1rem, 3vw, 1.75rem);
+  border-radius: var(--radius-card);
+  background: var(--ink);
+  color: #f4f5f7;
+}
+
+.adela-perfil::after {
+  content: '';
+  position: absolute;
+  inset: auto -10% -60% auto;
+  width: 55%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(200, 16, 46, 0.45), transparent 65%);
+  pointer-events: none;
+}
+
+.adela-perfil__etiqueta {
+  margin: 0;
+  color: #b9bdc6;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.adela-perfil__valor {
+  position: relative;
+  z-index: 1;
+  margin: 0.3rem 0 0.6rem;
+  font-size: clamp(1.6rem, 4.5vw, 2.5rem);
+  font-weight: 800;
+  font-style: italic;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+
+.adela-perfil__texto {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  color: #d4d7de;
+  max-width: 60ch;
+}
+
+/* ---------- Ficha de datos ---------- */
+
+.adela-ficha {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.9rem 1.5rem;
+  margin: 0;
+}
+
+.adela-ficha dt {
+  color: var(--ink-3);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.adela-ficha dd {
+  margin: 0.15rem 0 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.adela-descripcion {
+  margin: 1rem 0 0;
+  color: var(--ink-2);
+  font-size: 0.925rem;
+  max-width: 75ch;
+}
+
+/* ---------- Chips ---------- */
+
+.adela-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.adela-chip--acento {
+  background: var(--accent-soft);
+  color: var(--accent-press);
+}
+
+.adela-chip--claro {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.adela-chip--ok {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+
+.adela-chip--aviso {
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+
+/* ---------- Tabla de estilos con medidor ---------- */
+
+.adela-tabla {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.925rem;
+}
+
+.adela-tabla th {
+  padding: 0 0.75rem 0.6rem;
+  color: var(--ink-3);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.adela-tabla td {
+  padding: 0.7rem 0.75rem;
+  border-top: 1px solid var(--line-soft);
+  vertical-align: middle;
+}
+
+.adela-tabla .num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.adela-tabla tbody tr {
+  transition: background-color 140ms var(--ease);
+}
+
+.adela-tabla tbody tr:hover {
+  background: var(--surface-2);
+}
+
+.adela-tabla__nombre {
+  font-weight: 650;
+}
+
+.adela-tabla__scroll {
+  overflow-x: auto;
+  margin: 0 -0.25rem;
+  padding: 0 0.25rem;
+}
+
+.adela-medidor {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 150px;
+}
+
+.adela-medidor__barra {
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--line-soft);
+  overflow: hidden;
+}
+
+.adela-medidor__relleno {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--data);
+  transform-origin: left center;
+  animation: adela-llenar 700ms var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 60ms);
+}
+
+.adela-medidor__valor {
+  min-width: 3.6rem;
+  text-align: right;
+  font-weight: 700;
+}
+
+@keyframes adela-llenar {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* ---------- Avisos ---------- */
+
+.adela-aviso {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+  padding: 0.9rem 1rem;
+  border-radius: var(--radius-card);
+  background: var(--warn-soft);
+  color: #5c3c00;
+  font-size: 0.925rem;
+}
+
+.adela-ayuda {
+  margin: 0.5rem 0 0;
+  color: var(--ink-3);
+  font-size: 0.82rem;
+}
+
+/* ---------- Gráficos ---------- */
+
+.adela-graficos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+  gap: 1.25rem;
+}
+
+.adela-grafico {
+  position: relative;
+  min-height: 280px;
+}
+
+/* ---------- Estado vacío y carga ---------- */
+
+.adela-vacio {
+  padding: 2.5rem 1rem;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-card);
+  color: var(--ink-2);
+  text-align: center;
+}
+
+.adela-vacio__titulo {
+  margin: 0 0 0.35rem;
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.adela-esqueleto {
+  border-radius: var(--radius-card);
+  background: linear-gradient(90deg, var(--line-soft) 25%, #f8f9fa 50%, var(--line-soft) 75%);
+  background-size: 200% 100%;
+  animation: adela-brillo 1.3s linear infinite;
+}
+
+@keyframes adela-brillo {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* ---------- Entrada de la página ---------- */
+
+.adela-aparece {
+  animation: adela-subir 480ms var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+
+@keyframes adela-subir {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adela-r *,
+  .adela-r *::before,
+  .adela-r *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .adela-r__acciones {
+    width: 100%;
+  }
+
+  .adela-r__acciones .adela-btn {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+}

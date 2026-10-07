@@ -1,57 +1,62 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { CCol, CRow } from '@coreui/react'
 import { CChartBar, CChartRadar } from '@coreui/react-chartjs'
+import { valorEn } from '../../util/calificacion/escala'
+import {
+  COLOR_DATO,
+  COLOR_DATO_SUAVE,
+  barraEstilos,
+  estiloBarra,
+  radarEstilos,
+} from '../../util/calificacion/opcionesGrafico'
+import './resultados.css'
 
 /**
- * Barras y radar del puntaje por estilo, en la escala del cuestionario.
- * Lo usan el resultado del estudiante, el de una cápsula y su reporte.
+ * Barras y radar del puntaje por estilo en la escala elegida. Lo usan el
+ * resultado del estudiante, el de una cápsula y los reportes.
  */
-const GraficasResultado = ({ estilos, etiqueta, valor = (c) => c.valor }) => {
-  const minimo = Math.min(...estilos.map((c) => c.valorMinimo))
-  const maximo = Math.max(...estilos.map((c) => c.valorMaximo))
-  const labels = estilos.map((c) => c.nombre)
-  const datos = estilos.map(valor)
+const GraficasResultado = ({ estilos, escala, etiqueta }) => {
+  const labels = estilos.map((e) => e.nombre)
+  const datos = estilos.map((e) => valorEn(e, escala))
 
   return (
-    <CRow>
-      <CCol md={6}>
+    <div className="adela-graficos">
+      <div className="adela-grafico">
         <CChartBar
+          customTooltips={false}
           data={{
             labels,
             datasets: [
-              { label: etiqueta, backgroundColor: '#36A2EB', data: datos },
+              { label: etiqueta, data: datos, ...estiloBarra(COLOR_DATO) },
             ],
           }}
-          options={{
-            responsive: true,
-            scales: { y: { max: maximo, min: minimo } },
-          }}
+          options={barraEstilos(estilos, escala)}
         />
-      </CCol>
-      <CCol md={6}>
+      </div>
+      <div className="adela-grafico">
         <CChartRadar
+          customTooltips={false}
           data={{
             labels,
             datasets: [
               {
                 label: etiqueta,
                 data: datos,
-                backgroundColor: 'rgba(75,192,192,0.2)',
-                borderColor: 'rgba(75,192,192,1)',
-                pointBackgroundColor: 'rgba(75,192,192,1)',
-                pointBorderColor: '#fff',
-                pointHighlightFill: '#fff',
-                pointHighlightStroke: 'rgba(75,192,192,1)',
+                borderColor: COLOR_DATO,
+                backgroundColor: COLOR_DATO_SUAVE,
+                borderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                pointBackgroundColor: COLOR_DATO,
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
               },
             ],
           }}
-          options={{
-            scales: { r: { suggestedMin: minimo, suggestedMax: maximo } },
-          }}
+          options={radarEstilos(estilos, escala)}
         />
-      </CCol>
-    </CRow>
+      </div>
+    </div>
   )
 }
 
@@ -59,12 +64,13 @@ GraficasResultado.propTypes = {
   estilos: PropTypes.arrayOf(
     PropTypes.shape({
       nombre: PropTypes.string,
-      valorMinimo: PropTypes.number,
-      valorMaximo: PropTypes.number,
+      valor: PropTypes.number,
+      rangoMin: PropTypes.number,
+      rangoMax: PropTypes.number,
     }),
   ).isRequired,
+  escala: PropTypes.string.isRequired,
   etiqueta: PropTypes.string,
-  valor: PropTypes.func,
 }
 
 export default GraficasResultado

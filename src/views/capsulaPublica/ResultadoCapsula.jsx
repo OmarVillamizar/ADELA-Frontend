@@ -2,26 +2,20 @@ import React, { useEffect, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
 import { usePDF } from 'react-to-pdf'
 import Swal from 'sweetalert2'
-import {
-  CAlert,
-  CButton,
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CCol,
-  CRow,
-  CSpinner,
-} from '@coreui/react'
+import { CCol, CRow } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { cilCloudDownload, cilCopy } from '@coreui/icons'
-import GraficasResultado from '../../components/resultados/GraficasResultado'
+import EncabezadoReporte from '../../components/resultados/EncabezadoReporte'
+import EsqueletoReporte from '../../components/resultados/EsqueletoReporte'
+import PanelEstilos from '../../components/resultados/PanelEstilos'
+import PerfilDestacado from '../../components/resultados/PerfilDestacado'
 import TablaRespuestas from '../../components/resultados/TablaRespuestas'
 import { obtenerResultadoCapsula } from '../../util/services/capsulaPublicaService'
 import {
-  estilosPredominantes,
   formatearCodigo,
   normalizarCodigo,
 } from '../../util/capsulas/capsulaUtils'
+import '../../components/resultados/resultados.css'
 
 /**
  * Resultado de una cápsula. Llega recién enviado (state de la navegación) o por
@@ -55,12 +49,15 @@ const ResultadoCapsula = () => {
 
   if (error) {
     return (
-      <CRow className="justify-content-center">
+      <CRow className="justify-content-center adela-r">
         <CCol md={8} lg={6}>
-          <CAlert color="warning" className="text-center">
+          <div className="adela-vacio">
+            <p className="adela-vacio__titulo">Resultado no encontrado</p>
             <p className="mb-3">{error}</p>
-            <Link to="/r">Probar con otro código</Link>
-          </CAlert>
+            <Link to="/r" className="adela-btn">
+              Probar con otro código
+            </Link>
+          </div>
         </CCol>
       </CRow>
     )
@@ -68,15 +65,16 @@ const ResultadoCapsula = () => {
 
   if (!resultado) {
     return (
-      <div className="text-center py-5">
-        <CSpinner color="primary" />
-      </div>
+      <CRow className="justify-content-center">
+        <CCol lg={10}>
+          <EsqueletoReporte />
+        </CCol>
+      </CRow>
     )
   }
 
   const codigoVisible = formatearCodigo(resultado.codigo)
   const enlace = `${window.location.origin}/r/${resultado.codigo}`
-  const predominantes = estilosPredominantes(resultado.estilos)
 
   const copiar = async () => {
     try {
@@ -107,75 +105,55 @@ const ResultadoCapsula = () => {
 
   return (
     <CRow className="justify-content-center">
-      <CCol lg={10}>
-        <div className="d-flex flex-wrap gap-2 justify-content-end mb-3">
-          <CButton color="primary" variant="outline" onClick={copiar}>
-            <CIcon icon={cilCopy} className="me-1" />
+      <CCol lg={10} className="adela-r">
+        <EncabezadoReporte
+          titulo={`¡Listo${resultado.nombre ? `, ${resultado.nombre}` : ''}!`}
+          subtitulo={`${resultado.capsulaNombre}, ${new Date(resultado.respondidaEn).toLocaleString('es-CO')}`}
+        >
+          <button type="button" className="adela-btn" onClick={copiar}>
+            <CIcon icon={cilCopy} />
             Copiar enlace
-          </CButton>
-          <CButton
-            color="primary"
+          </button>
+          <button
+            type="button"
+            className="adela-btn adela-btn--primario"
             onClick={descargar}
-            style={{ background: 'red', borderColor: 'black' }}
           >
-            <CIcon icon={cilCloudDownload} className="me-1" />
+            <CIcon icon={cilCloudDownload} />
             Descargar PDF
-          </CButton>
-        </div>
+          </button>
+        </EncabezadoReporte>
 
         <div ref={targetRef}>
-          <CCard className="mb-3 text-center">
-            <CCardBody>
-              <h4 className="mb-1">
-                ¡Listo{resultado.nombre ? `, ${resultado.nombre}` : ''}!
-              </h4>
-              <p className="text-medium-emphasis mb-3">
-                {resultado.capsulaNombre} ·{' '}
-                {new Date(resultado.respondidaEn).toLocaleString('es-CO')}
-              </p>
-              {predominantes.length > 0 && (
-                <p className="fs-5 mb-3">
-                  {predominantes.length === 1
-                    ? 'Tu estilo predominante es '
-                    : 'Tus estilos predominantes son '}
-                  <strong>{predominantes.join(' y ')}</strong>
-                </p>
-              )}
-              <small className="text-medium-emphasis d-block">
-                Tu código de resultado
-              </small>
-              <div className="codigo-resultado">{codigoVisible}</div>
-              <small className="text-medium-emphasis">
-                Guárdalo para volver a ver tu resultado en{' '}
-                {window.location.host}/r
-              </small>
-            </CCardBody>
-          </CCard>
+          <PerfilDestacado
+            calificacion={resultado.calificacion}
+            titulo="Tu perfil de aprendizaje"
+          />
 
-          <CCard className="mb-3">
-            <CCardHeader>
-              <strong>{resultado.cuestionario.nombre}</strong> (
-              {resultado.cuestionario.siglas})
-            </CCardHeader>
-            <CCardBody>
-              <CRow className="mb-3">
-                {resultado.estilos.map((estilo) => (
-                  <CCol xs={6} md={3} key={estilo.nombre}>
-                    <p className="mb-1">
-                      <strong>{estilo.nombre}:</strong>{' '}
-                      {Number(estilo.valor).toFixed(2)}
-                    </p>
-                  </CCol>
-                ))}
-              </CRow>
-              <GraficasResultado
-                estilos={resultado.estilos}
-                etiqueta={resultado.nombre || 'Tu resultado'}
-              />
-              <h6 className="mt-4">Preguntas</h6>
-              <TablaRespuestas preguntas={resultado.preguntas} />
-            </CCardBody>
-          </CCard>
+          <section className="adela-panel adela-aparece text-center">
+            <p className="adela-cifra__etiqueta">Tu código de resultado</p>
+            <div className="codigo-resultado">{codigoVisible}</div>
+            <p className="adela-ayuda">
+              Guárdalo para volver a ver tu resultado en {window.location.host}
+              /r
+            </p>
+          </section>
+
+          <PanelEstilos
+            estilos={resultado.estilos}
+            calificacion={resultado.calificacion}
+            etiqueta={resultado.nombre || 'Tu resultado'}
+          />
+
+          <section className="adela-panel adela-aparece" style={{ '--i': 2 }}>
+            <div className="adela-panel__cabeza">
+              <h2 className="adela-panel__titulo">
+                {resultado.cuestionario.nombre} ({resultado.cuestionario.siglas}
+                )
+              </h2>
+            </div>
+            <TablaRespuestas preguntas={resultado.preguntas} />
+          </section>
         </div>
       </CCol>
     </CRow>

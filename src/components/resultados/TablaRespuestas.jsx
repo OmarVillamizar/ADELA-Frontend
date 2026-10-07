@@ -1,41 +1,41 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import {
-  CTable,
-  CTableBody,
-  CTableDataCell,
-  CTableHead,
-  CTableHeaderCell,
-  CTableRow,
-} from '@coreui/react'
+import './resultados.css'
 
 /** Lo que la persona eligió en cada pregunta. */
 const TablaRespuestas = ({ preguntas }) => (
-  <CTable hover responsive>
-    <CTableHead>
-      <CTableRow>
-        <CTableHeaderCell>#</CTableHeaderCell>
-        <CTableHeaderCell>Pregunta</CTableHeaderCell>
-        <CTableHeaderCell>Respuesta</CTableHeaderCell>
-      </CTableRow>
-    </CTableHead>
-    <CTableBody>
-      {[...preguntas]
-        .sort((a, b) => a.orden - b.orden)
-        .map((pregunta) => (
-          <CTableRow key={pregunta.orden}>
-            <CTableDataCell>{pregunta.orden}</CTableDataCell>
-            <CTableDataCell>{pregunta.pregunta}</CTableDataCell>
-            <CTableDataCell>
-              Respondiste:{' '}
-              {pregunta.respuestas.length === 0
-                ? 'Ninguna'
-                : pregunta.respuestas.join(', ')}
-            </CTableDataCell>
-          </CTableRow>
-        ))}
-    </CTableBody>
-  </CTable>
+  <div className="adela-tabla__scroll">
+    <table className="adela-tabla">
+      <thead>
+        <tr>
+          <th scope="col" className="num">
+            #
+          </th>
+          <th scope="col">Pregunta</th>
+          <th scope="col">Respuesta</th>
+        </tr>
+      </thead>
+      <tbody>
+        {[...preguntas]
+          .sort((a, b) => a.orden - b.orden)
+          .map((pregunta) => (
+            <tr key={pregunta.orden}>
+              <td className="num text-body-secondary">{pregunta.orden}</td>
+              <td>{pregunta.pregunta}</td>
+              <td>
+                {pregunta.respuestas.length === 0 ? (
+                  <span className="text-body-secondary">Sin responder</span>
+                ) : (
+                  <span className="fw-semibold">
+                    {pregunta.respuestas.join(', ')}
+                  </span>
+                )}
+              </td>
+            </tr>
+          ))}
+      </tbody>
+    </table>
+  </div>
 )
 
 TablaRespuestas.propTypes = {
