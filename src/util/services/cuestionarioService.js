@@ -78,6 +78,31 @@ export const obtenerReporteGrupo = async (idCuestionario, idGrupo) => {
   return response.data
 }
 
+/**
+ * Descarga el CSV del grupo. Va por axios y no por un enlace porque la ruta
+ * exige el token; el archivo se entrega al navegador desde un blob.
+ * formato: 'excel' (punto y coma, coma decimal) o 'rfc4180' (coma, punto).
+ */
+export const descargarCsvGrupo = async (
+  idCuestionario,
+  idGrupo,
+  formato,
+  nombreArchivo,
+) => {
+  const response = await api.get(
+    `/api/cuestionarios/reporte/${idCuestionario}/grupo/${idGrupo}/csv`,
+    { params: { formato }, responseType: 'blob' },
+  )
+  const url = URL.createObjectURL(response.data)
+  const enlace = document.createElement('a')
+  enlace.href = url
+  enlace.download = nombreArchivo
+  document.body.appendChild(enlace)
+  enlace.click()
+  enlace.remove()
+  URL.revokeObjectURL(url)
+}
+
 export const getCuestionarioResultado = async (id) => {
   const response = await api.get(
     `/api/cuestionarios/mis-cuestionarios/resuelto/${id}`,

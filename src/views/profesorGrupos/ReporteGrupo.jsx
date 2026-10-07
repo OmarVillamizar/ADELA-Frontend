@@ -1,27 +1,34 @@
 import React, { useEffect, useState } from 'react'
 import { usePDF } from 'react-to-pdf'
-import {
-  CCard,
-  CCardBody,
-  CCardHeader,
-  CTable,
-  CTableHead,
-  CTableRow,
-  CTableHeaderCell,
-  CTableBody,
-  CTableDataCell,
-  CCol,
-  CRow,
-  CContainer,
-  CAlert,
-  CButton,
-} from '@coreui/react'
+import { CContainer } from '@coreui/react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { obtenerReporteGrupo } from '../../util/services/cuestionarioService'
-import { CChartBar, CChartPolarArea, CChartRadar } from '@coreui/react-chartjs'
 import Swal from 'sweetalert2'
 import CIcon from '@coreui/icons-react'
-import { cilChart, cilCloudDownload } from '@coreui/icons'
+import {
+  cilArrowLeft,
+  cilCloudDownload,
+  cilSpreadsheet,
+  cilWarning,
+} from '@coreui/icons'
+import {
+  descargarCsvGrupo,
+  obtenerReporteGrupo,
+} from '../../util/services/cuestionarioService'
+import { useEscala } from '../../util/calificacion/useEscala'
+import {
+  AVISO_IPSATIVO,
+  AYUDA_POMP,
+  ESCALA,
+} from '../../util/calificacion/escala'
+import Cifra from '../../components/resultados/Cifra'
+import DistribucionNiveles from '../../components/resultados/DistribucionNiveles'
+import DistribucionPerfiles from '../../components/resultados/DistribucionPerfiles'
+import EncabezadoReporte from '../../components/resultados/EncabezadoReporte'
+import EsqueletoReporte from '../../components/resultados/EsqueletoReporte'
+import GraficasResultado from '../../components/resultados/GraficasResultado'
+import SelectorEscala from '../../components/resultados/SelectorEscala'
+import TablaEstadisticos from '../../components/resultados/TablaEstadisticos'
+import '../../components/resultados/resultados.css'
 
 const ReporteGrupo = () => {
   const { id1, id2 } = useParams()
@@ -29,300 +36,262 @@ const ReporteGrupo = () => {
 
   const [reporte, setReporte] = useState(null)
   const [error, setError] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const { escala, setEscala, disponibles } = useEscala(reporte?.calificacion)
 
   // usePDF congela las opciones del primer render, cuando reporte todavia es
-  // null: el nombre quedaba fijado como "reporte-grupo-undefined.pdf". El nombre
-  // se pasa en la llamada, que ya ocurre con el reporte cargado.
-  const { toPDF, targetRef } = usePDF({
-    page: {
-      margin: 20,
-      format: 'a4',
-    },
-  })
+  // null: el nombre se pasa en la llamada, que ya ocurre con el reporte cargado.
+  const { toPDF, targetRef } = usePDF({ page: { margin: 20, format: 'a4' } })
 
   useEffect(() => {
     if (!id1 || !id2) {
-      console.error('Parámetros faltantes.')
       Swal.fire({
         icon: 'error',
         title: 'Error',
         text: 'No se encontraron los parámetros requeridos para generar el reporte.',
       })
       navigate('/')
-    } else {
-      obtenerReporteGrupo(id1, id2)
-        .then((data) => {
-          setReporte(data)
-          setLoading(false)
-        })
-        .catch((error) => {
-          setError('Hubo un error al obtener el reporte.')
-          setLoading(false)
-          console.error('Error al obtener reporte:', error)
-        })
+      return
     }
+    obtenerReporteGrupo(id1, id2)
+      .then(setReporte)
+      .catch((e) => {
+        console.error('Error al obtener reporte:', e)
+        setError('Hubo un error al obtener el reporte.')
+      })
   }, [id1, id2, navigate])
 
-  const handleDownloadPDF = async () => {
-    try {
-      await toPDF({ filename: `reporte-grupo-${reporte?.grupo?.nombre}.pdf` })
-      Swal.fire({
-        icon: 'success',
-        title: 'Éxito',
-        text: 'El PDF se ha generado correctamente.',
-      })
-    } catch (error) {
-      console.error('Error al generar PDF:', error)
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Hubo un problema al generar el PDF.',
-      })
-    }
-  }
+  const volver = () => navigate(`/resultado/${id2}/`)
 
   if (error) {
     return (
-      <CAlert color="danger">
-        <p>{error}</p>
-        <CButton color="secondary" onClick={() => navigate('/grupos')}>
-          Volver
-        </CButton>
-      </CAlert>
+      <CContainer className="adela-r">
+        <div className="adela-vacio">
+          <p className="adela-vacio__titulo">No se pudo cargar el reporte</p>
+          <p className="mb-3">{error}</p>
+          <button type="button" className="adela-btn" onClick={volver}>
+            <CIcon icon={cilArrowLeft} />
+            Volver
+          </button>
+        </div>
+      </CContainer>
     )
-  }
-
-  if (loading) {
-    return <CAlert color="info">Cargando reporte...</CAlert>
   }
 
   if (!reporte) {
     return (
-      <CAlert color="warning">
-        <p>No se encontraron datos para mostrar.</p>
-        <CButton color="secondary" onClick={() => navigate('/grupos')}>
-          Volver
-        </CButton>
-      </CAlert>
+      <CContainer>
+        <EsqueletoReporte />
+      </CContainer>
     )
   }
 
+  const { calificacion, estilos, estudiantesResuelto, estudiantesNoResuelto } =
+    reporte
+  const resueltos = estudiantesResuelto.length
+  const total = resueltos + estudiantesNoResuelto.length
+  const ipsativo = calificacion?.esIpsativo
+
+  const descargarPDF = async () => {
+    try {
+      await toPDF({ filename: `reporte-grupo-${reporte.grupo?.nombre}.pdf` })
+    } catch (e) {
+      console.error('Error al generar PDF:', e)
+      Swal.fire('Error', 'Hubo un problema al generar el PDF.', 'error')
+    }
+  }
+
+  const descargarCsv = async (formato) => {
+    try {
+      await descargarCsvGrupo(
+        id1,
+        id2,
+        formato,
+        `resultados-${reporte.cuestionario?.siglas}-${reporte.grupo?.nombre}${formato === 'rfc4180' ? '-analisis' : ''}.csv`,
+      )
+    } catch (e) {
+      console.error('Error al descargar CSV:', e)
+      Swal.fire('Error', 'No se pudo descargar el archivo.', 'error')
+    }
+  }
+
   return (
-    <CContainer>
-      <CAlert
-        color="info"
-        className="mb-2 d-flex justify-content-between align-items-center"
-        style={{
-          backgroundColor: '#d3d3d3',
-          border: '#d3d3d3',
-          color: 'black',
-          padding: '0.5rem',
-          margin: '0 0.6rem 0 0.6rem',
-        }}
+    <CContainer className="adela-r">
+      <EncabezadoReporte
+        titulo={`Reporte del grupo ${reporte.grupo?.nombre ?? ''}`}
+        subtitulo={`${reporte.cuestionario?.nombre} (${reporte.cuestionario?.siglas})`}
       >
-        <span className="fw-semibold text-black">
-          REPORTE DE RESULTADOS GRUPO
-        </span>
-        <div className="d-flex gap-2">
-          <CButton
-            color="primary"
-            onClick={handleDownloadPDF}
-            style={{ background: 'red', borderColor: 'black ' }}
-          >
-            <CIcon icon={cilCloudDownload} className="me-2" />
-            Descargar PDF
-          </CButton>
-          <CButton
-            color="secondary"
-            onClick={() => navigate(`/resultado/${id2}/`)}
-          >
-            Volver
-          </CButton>
-        </div>
-      </CAlert>
+        <button
+          type="button"
+          className="adela-btn"
+          onClick={() => descargarCsv('excel')}
+          disabled={resueltos === 0}
+          title="Separado por punto y coma, listo para abrir en Excel"
+        >
+          <CIcon icon={cilSpreadsheet} />
+          CSV para Excel
+        </button>
+        <button
+          type="button"
+          className="adela-btn"
+          onClick={() => descargarCsv('rfc4180')}
+          disabled={resueltos === 0}
+          title="Separado por comas con punto decimal, para R, Python o SPSS"
+        >
+          <CIcon icon={cilSpreadsheet} />
+          CSV para análisis
+        </button>
+        <button
+          type="button"
+          className="adela-btn adela-btn--primario"
+          onClick={descargarPDF}
+        >
+          <CIcon icon={cilCloudDownload} />
+          Descargar PDF
+        </button>
+        <button type="button" className="adela-btn" onClick={volver}>
+          <CIcon icon={cilArrowLeft} />
+          Volver
+        </button>
+      </EncabezadoReporte>
 
       <div ref={targetRef}>
-        <CRow className="mt-4">
-          <CCol md={12}>
-            <CCard>
-              <CCardHeader>
-                <h4>Reporte de Grupo: {reporte?.grupo?.nombre}</h4>
-                <p>
-                  <strong>Cuestionario:</strong> {reporte?.cuestionario?.nombre}
-                </p>
-              </CCardHeader>
-              <CCardBody>
-                <CRow>
-                  <CCol md={6}>
-                    <h5>Estadísticas Generales</h5>
-                    <p>
-                      <strong>Fecha de Aplicación:</strong>{' '}
-                      {new Date(reporte.fechaAplicacion).toLocaleDateString()}
-                    </p>
-                    <p>
-                      <strong>Total Estudiantes:</strong>{' '}
-                      {reporte.estudiantesResuelto.length +
-                        reporte.estudiantesNoResuelto.length}
-                    </p>
-                    <p>
-                      <strong>Estudiantes que resolvieron:</strong>{' '}
-                      {reporte.estudiantesResuelto.length}
-                    </p>
-                    <p>
-                      <strong>Estudiantes que no resolvieron:</strong>{' '}
-                      {reporte.estudiantesNoResuelto.length}
-                    </p>
-                    <p>
-                      <strong>Promedios por Estilo:</strong>
-                    </p>
-                    <div className="mt-3">
-                      <CRow>
-                        {reporte.estilos.map((estilo, index) => (
-                          <CCol md={6} key={index}>
-                            <p>
-                              <strong>{estilo.nombre}:</strong>{' '}
-                              {Number.isNaN(Number(estilo.valor))
-                                ? 0
-                                : Number(estilo.valor).toFixed(2)}
-                            </p>
-                          </CCol>
-                        ))}
-                      </CRow>
-                    </div>
-                  </CCol>
-                  <CCol md={6}>
-                    <CChartBar
-                      data={{
-                        labels: reporte.estilos.map((c) => c.nombre),
-                        datasets: [
-                          {
-                            label: 'Promedio por Estilo',
-                            backgroundColor: '#36A2EB',
-                            data: reporte.estilos.map((c) => c.valor),
-                          },
-                        ],
-                      }}
-                      options={{
-                        responsive: true,
-                        scales: {
-                          y: {
-                            max: Math.max(
-                              ...reporte.estilos.map((c) => c.valorMaximo),
-                            ),
-                            min: Math.min(
-                              ...reporte.estilos.map((c) => c.valorMinimo),
-                            ),
-                          },
-                        },
-                      }}
-                    />
-                  </CCol>
-                </CRow>
+        <div className="adela-cifras">
+          <Cifra indice={0} etiqueta="Estudiantes" valor={total} />
+          <Cifra
+            indice={1}
+            etiqueta="Respondieron"
+            valor={resueltos}
+            extra={
+              total > 0 ? `${Math.round((resueltos / total) * 100)} %` : null
+            }
+          />
+          <Cifra indice={2} etiqueta="Pendientes" valor={total - resueltos} />
+          <Cifra
+            indice={3}
+            etiqueta="Fecha de aplicación"
+            valor={new Date(reporte.fechaAplicacion).toLocaleDateString(
+              'es-CO',
+            )}
+          />
+        </div>
 
-                <CRow className="mt-4">
-                  <CCol md={6}>
-                    <CChartRadar
-                      data={{
-                        labels: reporte.estilos.map((c) => c.nombre),
-                        datasets: [
-                          {
-                            label: 'Promedio por Estilo',
-                            data: reporte.estilos.map((c) => c.valor),
-                            backgroundColor: 'rgba(75,192,192,0.2)',
-                            borderColor: 'rgba(75,192,192,1)',
-                            pointBackgroundColor: 'rgba(75,192,192,1)',
-                          },
-                        ],
-                      }}
-                      options={{
-                        scales: {
-                          r: {
-                            suggestedMin: Math.max(
-                              ...reporte.estilos.map((c) => c.valorMinimo),
-                            ),
-                            suggestedMax: Math.min(
-                              ...reporte.estilos.map((c) => c.valorMaximo),
-                            ),
-                          },
-                        },
-                      }}
-                    />
-                  </CCol>
-                  <CCol md={6}>
-                    <CChartPolarArea
-                      data={{
-                        labels: reporte.estilos.map((c) => c.nombre),
-                        datasets: [
-                          {
-                            label: 'Promedio por Estilo',
-                            data: reporte.estilos.map((c) => c.valor),
-                          },
-                        ],
-                      }}
-                      options={{
-                        scales: {
-                          r: {
-                            suggestedMin: Math.max(
-                              ...reporte.estilos.map((c) => c.valorMinimo),
-                            ),
-                            suggestedMax: Math.min(
-                              ...reporte.estilos.map((c) => c.valorMaximo),
-                            ),
-                          },
-                        },
-                      }}
-                    />
-                  </CCol>
-                </CRow>
+        {resueltos === 0 ? (
+          <div className="adela-vacio mb-4">
+            <p className="adela-vacio__titulo">Todavía nadie ha respondido</p>
+            <p className="mb-0">
+              Cuando los estudiantes respondan, aquí verás los promedios, los
+              niveles y los perfiles del grupo.
+            </p>
+          </div>
+        ) : (
+          <>
+            {ipsativo && (
+              <div className="adela-aviso" role="note">
+                <CIcon icon={cilWarning} className="flex-shrink-0 mt-1" />
+                <span>{AVISO_IPSATIVO}</span>
+              </div>
+            )}
+            {ipsativo && (
+              <DistribucionPerfiles
+                distribucion={calificacion?.distribucionPerfiles}
+                destacado
+              />
+            )}
 
-                <h5 className="mt-4">Estudiantes</h5>
-                <CTable hover>
-                  <CTableHead>
-                    <CTableRow>
-                      <CTableHeaderCell>#</CTableHeaderCell>
-                      <CTableHeaderCell>Nombre</CTableHeaderCell>
-                      <CTableHeaderCell>Estado</CTableHeaderCell>
-                      <CTableHeaderCell>Ver Resultado</CTableHeaderCell>
-                    </CTableRow>
-                  </CTableHead>
-                  <CTableBody>
-                    {reporte.estudiantesResuelto.map((estudiante, index) => (
-                      <CTableRow key={index}>
-                        <CTableDataCell>{index + 1}</CTableDataCell>
-                        <CTableDataCell>
-                          {estudiante.estudiante.nombre}
-                        </CTableDataCell>
-                        <CTableDataCell>Resuelto</CTableDataCell>
-                        <CTableDataCell>
-                          <Link to={`/reporte-estudiante/${estudiante.id}`}>
-                            <CButton color="success" size="sm">
-                              <CIcon icon={cilChart} />
-                            </CButton>
-                          </Link>
-                        </CTableDataCell>
-                      </CTableRow>
-                    ))}
-                    {reporte.estudiantesNoResuelto.map((estudiante, index) => (
-                      <CTableRow
-                        key={reporte.estudiantesResuelto.length + index}
+            <section className="adela-panel adela-aparece">
+              <div className="adela-panel__cabeza">
+                <div>
+                  <h2 className="adela-panel__titulo">
+                    Promedio por estilo de aprendizaje
+                  </h2>
+                  {escala === ESCALA.POMP && (
+                    <p className="adela-panel__nota">{AYUDA_POMP}</p>
+                  )}
+                </div>
+                <SelectorEscala
+                  disponibles={disponibles}
+                  valor={escala}
+                  onChange={setEscala}
+                />
+              </div>
+              <GraficasResultado
+                estilos={estilos}
+                escala={escala}
+                etiqueta="Promedio"
+              />
+              <h3 className="adela-panel__titulo mt-4 mb-3">Estadísticos</h3>
+              <TablaEstadisticos estilos={estilos} escala={escala} />
+            </section>
+
+            <DistribucionNiveles estilos={estilos} />
+            {!ipsativo && (
+              <DistribucionPerfiles
+                distribucion={calificacion?.distribucionPerfiles}
+              />
+            )}
+          </>
+        )}
+
+        <section className="adela-panel adela-aparece">
+          <div className="adela-panel__cabeza">
+            <h2 className="adela-panel__titulo">Estudiantes</h2>
+          </div>
+          <div className="adela-tabla__scroll">
+            <table className="adela-tabla">
+              <thead>
+                <tr>
+                  <th scope="col" className="num">
+                    #
+                  </th>
+                  <th scope="col">Nombre</th>
+                  <th scope="col">Estado</th>
+                  <th scope="col">
+                    <span className="visually-hidden">Acciones</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {estudiantesResuelto.map((r, i) => (
+                  <tr key={r.id}>
+                    <td className="num text-body-secondary">{i + 1}</td>
+                    <td className="adela-tabla__nombre">
+                      {r.estudiante.nombre}
+                    </td>
+                    <td>
+                      <span className="adela-chip adela-chip--ok">
+                        Respondió
+                      </span>
+                    </td>
+                    <td className="num">
+                      <Link
+                        to={`/reporte-estudiante/${r.id}`}
+                        className="adela-btn adela-btn--sm"
                       >
-                        <CTableDataCell>
-                          {reporte.estudiantesResuelto.length + index + 1}
-                        </CTableDataCell>
-                        <CTableDataCell>
-                          {estudiante.estudiante.nombre}
-                        </CTableDataCell>
-                        <CTableDataCell>No Resuelto</CTableDataCell>
-                        <CTableDataCell>-</CTableDataCell>
-                      </CTableRow>
-                    ))}
-                  </CTableBody>
-                </CTable>
-              </CCardBody>
-            </CCard>
-          </CCol>
-        </CRow>
+                        Ver resultado
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+                {estudiantesNoResuelto.map((r, i) => (
+                  <tr key={r.id}>
+                    <td className="num text-body-secondary">
+                      {resueltos + i + 1}
+                    </td>
+                    <td className="adela-tabla__nombre">
+                      {r.estudiante.nombre}
+                    </td>
+                    <td>
+                      <span className="adela-chip adela-chip--aviso">
+                        Pendiente
+                      </span>
+                    </td>
+                    <td />
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
       </div>
     </CContainer>
   )
