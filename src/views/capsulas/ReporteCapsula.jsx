@@ -11,6 +11,7 @@ import DistribucionPerfiles from '../../components/resultados/DistribucionPerfil
 import EncabezadoReporte from '../../components/resultados/EncabezadoReporte'
 import EsqueletoReporte from '../../components/resultados/EsqueletoReporte'
 import GraficasResultado from '../../components/resultados/GraficasResultado'
+import EscalasCompuestas from '../../components/resultados/EscalasCompuestas'
 import SelectorEscala from '../../components/resultados/SelectorEscala'
 import TablaEstadisticos from '../../components/resultados/TablaEstadisticos'
 import { obtenerReporteCapsula } from '../../util/services/capsulaService'
@@ -19,6 +20,7 @@ import {
   AVISO_IPSATIVO,
   AYUDA_POMP,
   ESCALA,
+  separarPorTipo,
 } from '../../util/calificacion/escala'
 import '../../components/resultados/resultados.css'
 
@@ -147,7 +149,7 @@ const ReporteCapsula = () => {
                 />
               </div>
               <GraficasResultado
-                estilos={estilos}
+                estilos={separarPorTipo(estilos).primarios}
                 escala={escala}
                 etiqueta="Promedio"
               />
@@ -155,6 +157,10 @@ const ReporteCapsula = () => {
               <TablaEstadisticos estilos={estilos} escala={escala} />
             </section>
 
+            <EscalasCompuestas
+              estilos={separarPorTipo(estilos).compuestos}
+              grupal
+            />
             <DistribucionNiveles estilos={estilos} />
             {!ipsativo && (
               <DistribucionPerfiles

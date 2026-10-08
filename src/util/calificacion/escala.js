@@ -63,3 +63,13 @@ export const formatearPuntaje = (e) => {
 
 export const formatearRango = (e) =>
   `${num.format(e.rangoMin)} a ${num.format(e.rangoMax)}`
+
+/**
+ * Primarios (reciben puntos de las opciones) y compuestos (combinación de
+ * primarios, p. ej. un polo A − B). Los compuestos tienen rango con negativos y
+ * distinto: se muestran aparte para no estirar los ejes de los primarios.
+ */
+export const separarPorTipo = (estilos = []) => ({
+  primarios: estilos.filter((e) => e.tipo !== 'COMPUESTO'),
+  compuestos: estilos.filter((e) => e.tipo === 'COMPUESTO'),
+})

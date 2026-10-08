@@ -530,6 +530,72 @@
   }
 }
 
+/* ---------- Escalas de polos (estilos compuestos) ---------- */
+
+.adela-polo + .adela-polo {
+  margin-top: 1.25rem;
+}
+
+.adela-polo__cabeza {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.adela-polo__cifra {
+  color: var(--ink-3);
+  font-size: 0.85rem;
+}
+
+.adela-polo__pista {
+  position: relative;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--line-soft);
+}
+
+.adela-polo__relleno {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 999px;
+  background: var(--data);
+  animation: adela-llenar 700ms var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 60ms);
+}
+
+.adela-polo__cero {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--ink-3);
+}
+
+.adela-polo__marca {
+  position: absolute;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border: 3px solid var(--surface);
+  border-radius: 50%;
+  background: var(--data);
+  box-shadow: 0 1px 3px rgba(22, 24, 29, 0.3);
+}
+
+.adela-polo__extremos {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.4rem;
+  color: var(--ink-2);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .adela-r *,
   .adela-r *::before,
