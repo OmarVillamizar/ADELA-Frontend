@@ -2,6 +2,14 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import './resultados.css'
 
+/** Texto de una opción elegida: el rango en jerarquía, los puntos en reparto. */
+const textoRespuesta = (formato, { texto, cantidad }) => {
+  if (formato === 'JERARQUIA') return `${cantidad} · ${texto}`
+  if (formato === 'REPARTO')
+    return `${texto} — ${cantidad} ${cantidad === 1 ? 'pt' : 'pts'}`
+  return texto
+}
+
 /** Lo que la persona eligió en cada pregunta. */
 const TablaRespuestas = ({ preguntas }) => (
   <div className="adela-tabla__scroll">
@@ -27,7 +35,9 @@ const TablaRespuestas = ({ preguntas }) => (
                   <span className="text-body-secondary">Sin responder</span>
                 ) : (
                   <span className="fw-semibold">
-                    {pregunta.respuestas.join(', ')}
+                    {pregunta.respuestas
+                      .map((r) => textoRespuesta(pregunta.formato, r))
+                      .join(', ')}
                   </span>
                 )}
               </td>
@@ -43,7 +53,13 @@ TablaRespuestas.propTypes = {
     PropTypes.shape({
       pregunta: PropTypes.string,
       orden: PropTypes.number,
-      respuestas: PropTypes.arrayOf(PropTypes.string),
+      formato: PropTypes.string,
+      respuestas: PropTypes.arrayOf(
+        PropTypes.shape({
+          texto: PropTypes.string,
+          cantidad: PropTypes.number,
+        }),
+      ),
     }),
   ).isRequired,
 }

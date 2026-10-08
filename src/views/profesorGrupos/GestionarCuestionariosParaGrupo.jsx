@@ -36,6 +36,7 @@ import {
 import './ModalVistaPreguntas.css'
 import { cilInfo, cilList, cilArrowRight } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
+import { ETIQUETA_FORMATO } from '../../util/cuestionario/validarRespuesta'
 
 // Función para formatear la fecha
 const dateFromMsToString = (timestamp) => {
@@ -476,9 +477,7 @@ const ResultadosGrupo = () => {
                                     {index + 1}
                                   </span>
                                   {pregunta.pregunta}{' '}
-                                  {pregunta.opcionMultiple
-                                    ? '(Selección Múltiple)'
-                                    : ''}
+                                  {ETIQUETA_FORMATO[pregunta.formato] ?? ''}
                                 </p>
                                 <ul className="list-unstyled ms-4">
                                   {pregunta.opciones.map(

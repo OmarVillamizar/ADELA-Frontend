@@ -14,6 +14,7 @@ import {
   CSpinner,
 } from '@coreui/react'
 import PreguntasCuestionario from '../../components/cuestionario/PreguntasCuestionario'
+import { detalleError } from '../../util/cuestionario/validarRespuesta'
 import {
   obtenerCapsulaPublica,
   responderCapsula,
@@ -68,13 +69,13 @@ const ResolverCapsula = () => {
     window.scrollTo(0, 0)
   }
 
-  const enviar = async (opcionesSeleccionadasId) => {
+  const enviar = async (seleccion) => {
     setEnviando(true)
     try {
       const resultado = await responderCapsula(codigo, {
         intento: intento.current,
         nombre: pideNombre ? nombre.trim() : null,
-        opcionesSeleccionadasId,
+        ...seleccion,
       })
       recordarResultado(codigo, resultado.codigo)
       navigate(`/r/${resultado.codigo}`, { state: { resultado } })
@@ -85,7 +86,7 @@ const ResolverCapsula = () => {
       } else if (e.code === 'CAPSULA_CERRADA') {
         setError(mensajeDeError(e))
       } else {
-        Swal.fire('No se pudo enviar', e.message, 'error')
+        Swal.fire('No se pudo enviar', detalleError(e), 'error')
       }
     } finally {
       setEnviando(false)

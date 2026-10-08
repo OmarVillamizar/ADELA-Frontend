@@ -10,15 +10,36 @@ import {
   CSpinner,
 } from '@coreui/react'
 import Swal from 'sweetalert2'
+import ControlJerarquia from './ControlJerarquia'
+import ControlReparto from './ControlReparto'
+import {
+  FORMATO,
+  armarEnvio,
+  errorPregunta,
+  limitesSeleccion,
+} from '../../util/cuestionario/validarRespuesta'
 
 const porOrden = (a, b) => a.orden - b.orden
+
+/** Indicación junto al enunciado según el formato. */
+const ayudaDe = (p) => {
+  if (p.formato === FORMATO.JERARQUIA) return '(Ordena las opciones)'
+  if (p.formato === FORMATO.REPARTO)
+    return `(Reparte ${p.puntosRepartir} puntos)`
+  if (p.formato !== FORMATO.MULTIPLE) return ''
+  const { min, max } = limitesSeleccion(p)
+  if (min <= 1 && max === p.opciones.length)
+    return '(Puedes seleccionar varias opciones)'
+  return min === max ? `(Elige ${max})` : `(Elige entre ${min} y ${max})`
+}
 
 /**
  * Preguntas de un cuestionario con su selección, progreso y validación.
  *
  * Lo comparten el estudiante (asignación de grupo) y quien responde una cápsula
- * sin cuenta. Cada uno decide qué hacer con las opciones elegidas en onEnviar;
- * aquí solo se garantiza que las preguntas de única respuesta estén contestadas.
+ * sin cuenta. Cada uno decide qué hacer con lo elegido en onEnviar, que recibe
+ * { opcionesSeleccionadasId, cantidades }; aquí se garantiza que cada pregunta
+ * cumpla las reglas de su formato, las mismas que valida el servidor.
  */
 const PreguntasCuestionario = ({ cuestionario, onEnviar, enviando }) => {
   // Copias ordenadas: no se muta el objeto que llega por props.
@@ -29,41 +50,109 @@ const PreguntasCuestionario = ({ cuestionario, onEnviar, enviando }) => {
         .map((p) => ({ ...p, opciones: [...p.opciones].sort(porOrden) })),
     [cuestionario],
   )
-  const [seleccion, setSeleccion] = useState(() => preguntas.map(() => []))
+  // Por pregunta, { opcionId: cantidad }.
+  const [respuestas, setRespuestas] = useState(() => preguntas.map(() => ({})))
+
+  const cambiar = (indice, respuesta) =>
+    setRespuestas((previas) =>
+      previas.map((r, idx) => (idx === indice ? respuesta : r)),
+    )
 
   const alternar = (indice, opcionId) => {
-    setSeleccion((previas) =>
-      previas.map((opts, idx) => {
-        if (idx !== indice) return opts
-        if (!preguntas[indice].opcionMultiple) return [opcionId]
-        return opts.includes(opcionId)
-          ? opts.filter((e) => e !== opcionId)
-          : [...opts, opcionId]
-      }),
-    )
-  }
-
-  const progreso =
-    preguntas.length === 0
-      ? 0
-      : (seleccion.filter((opts) => opts.length > 0).length /
-          preguntas.length) *
-        100
-
-  const enviar = () => {
-    const sinResponder = preguntas
-      .filter((p, idx) => p.obligatoria && seleccion[idx].length === 0)
-      .map((p) => p.orden)
-
-    if (sinResponder.length > 0) {
-      Swal.fire(
-        'Faltan respuestas',
-        `Responde las preguntas ${sinResponder.join(', ')} antes de enviar.`,
-        'warning',
-      )
+    const pregunta = preguntas[indice]
+    const actual = respuestas[indice]
+    if (pregunta.formato !== FORMATO.MULTIPLE) {
+      cambiar(indice, { [opcionId]: 1 })
       return
     }
-    onEnviar(seleccion.flat())
+    const siguiente = { ...actual }
+    if (siguiente[opcionId]) delete siguiente[opcionId]
+    else if (Object.keys(actual).length < limitesSeleccion(pregunta).max)
+      siguiente[opcionId] = 1
+    cambiar(indice, siguiente)
+  }
+
+  const completas = preguntas.filter(
+    (p, idx) =>
+      Object.keys(respuestas[idx]).length > 0 &&
+      errorPregunta(p, respuestas[idx]) === null,
+  ).length
+  const progreso =
+    preguntas.length === 0 ? 0 : (completas / preguntas.length) * 100
+
+  const enviar = () => {
+    const problemas = preguntas
+      .map((p, idx) => ({ p, error: errorPregunta(p, respuestas[idx]) }))
+      .filter(({ error }) => error !== null)
+
+    if (problemas.length > 0) {
+      Swal.fire({
+        title: 'Revisa tus respuestas',
+        html: problemas
+          .map(({ p, error }) => `Pregunta ${p.orden}: ${error}`)
+          .join('<br>'),
+        icon: 'warning',
+      })
+      return
+    }
+    onEnviar(armarEnvio(preguntas, respuestas))
+  }
+
+  const control = (pregunta, preguntaIndex) => {
+    const respuesta = respuestas[preguntaIndex]
+    if (pregunta.formato === FORMATO.JERARQUIA) {
+      return (
+        <ControlJerarquia
+          opciones={pregunta.opciones}
+          respuesta={respuesta}
+          onChange={(r) => cambiar(preguntaIndex, r)}
+          idPregunta={pregunta.id}
+        />
+      )
+    }
+    if (pregunta.formato === FORMATO.REPARTO) {
+      return (
+        <ControlReparto
+          opciones={pregunta.opciones}
+          respuesta={respuesta}
+          onChange={(r) => cambiar(preguntaIndex, r)}
+          puntos={pregunta.puntosRepartir}
+        />
+      )
+    }
+    const multiple = pregunta.formato === FORMATO.MULTIPLE
+    const lleno =
+      multiple &&
+      Object.keys(respuesta).length >= limitesSeleccion(pregunta).max
+    return pregunta.opciones.map((opcion) => {
+      const elegida = Boolean(respuesta[opcion.id])
+      const bloqueada = lleno && !elegida
+      return (
+        <div
+          key={opcion.id}
+          className="mb-3"
+          onClick={() => alternar(preguntaIndex, opcion.id)}
+          style={{ cursor: bloqueada ? 'not-allowed' : 'pointer' }}
+        >
+          <CCard
+            className={`p-3 border ${elegida ? 'border-primary bg-light' : ''} ${bloqueada ? 'opacity-50' : ''}`}
+          >
+            <CFormCheck
+              type={multiple ? 'checkbox' : 'radio'}
+              name={`pregunta-${preguntaIndex}`}
+              id={`pregunta-${preguntaIndex}-opcion-${opcion.id}`}
+              label={opcion.respuesta}
+              checked={elegida}
+              disabled={bloqueada}
+              onChange={(e) => {
+                e.preventDefault()
+              }}
+              className="m-0"
+            />
+          </CCard>
+        </div>
+      )
+    })
   }
 
   return (
@@ -90,40 +179,9 @@ const PreguntasCuestionario = ({ cuestionario, onEnviar, enviando }) => {
         <CCard key={pregunta.id} className="mb-4 border">
           <CCardBody className="p-4">
             <h5 className="mb-4 text-dark">
-              {pregunta.pregunta}{' '}
-              {pregunta.opcionMultiple
-                ? '(Puedes seleccionar varias opciones)'
-                : ''}
+              {pregunta.pregunta} {ayudaDe(pregunta)}
             </h5>
-            <div className="ps-2">
-              {pregunta.opciones.map((opcion) => {
-                const elegida = seleccion[preguntaIndex].includes(opcion.id)
-                return (
-                  <div
-                    key={opcion.id}
-                    className="mb-3"
-                    onClick={() => alternar(preguntaIndex, opcion.id)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <CCard
-                      className={`p-3 border ${elegida ? 'border-primary bg-light' : ''}`}
-                    >
-                      <CFormCheck
-                        type={pregunta.opcionMultiple ? 'checkbox' : 'radio'}
-                        name={`pregunta-${preguntaIndex}`}
-                        id={`pregunta-${preguntaIndex}-opcion-${opcion.id}`}
-                        label={opcion.respuesta}
-                        checked={elegida}
-                        onChange={(e) => {
-                          e.preventDefault()
-                        }}
-                        className="m-0"
-                      />
-                    </CCard>
-                  </div>
-                )
-              })}
-            </div>
+            <div className="ps-2">{control(pregunta, preguntaIndex)}</div>
           </CCardBody>
         </CCard>
       ))}

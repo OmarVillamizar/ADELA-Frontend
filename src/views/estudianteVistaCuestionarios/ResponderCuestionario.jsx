@@ -17,6 +17,7 @@ import {
 } from '../../util/services/cuestionarioService'
 import { useInsignias } from '../../util/insignias/InsigniasProvider'
 import PreguntasCuestionario from '../../components/cuestionario/PreguntasCuestionario'
+import { detalleError } from '../../util/cuestionario/validarRespuesta'
 
 const ResponderCuestionario = () => {
   const { id } = useParams()
@@ -43,11 +44,11 @@ const ResponderCuestionario = () => {
     fetchCuestionario()
   }, [id])
 
-  const handleSubmit = async (opcionesSeleccionadasId) => {
+  const handleSubmit = async (seleccion) => {
     const respuestasDTO = {
       cuestionarioId: parseInt(id),
       resultadoCuestionarioId: asignacionId ? parseInt(asignacionId) : null,
-      opcionesSeleccionadasId,
+      ...seleccion,
     }
 
     setEnviando(true)
@@ -62,7 +63,13 @@ const ResponderCuestionario = () => {
         verificar('PRIMER_CUESTIONARIO')
       })
     } catch (error) {
-      Swal.fire('Error', 'Hubo un problema al enviar el cuestionario.', 'error')
+      Swal.fire(
+        'Error',
+        error?.fields
+          ? detalleError(error)
+          : 'Hubo un problema al enviar el cuestionario.',
+        'error',
+      )
     } finally {
       setEnviando(false)
     }

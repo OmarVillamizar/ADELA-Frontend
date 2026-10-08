@@ -27,6 +27,7 @@ import {
   eliminarCuestionario,
 } from '../../util/services/cuestionarioService'
 import Swal from 'sweetalert2'
+import { ETIQUETA_FORMATO } from '../../util/cuestionario/validarRespuesta'
 import './ModalVistaPreguntas.css'
 
 const ProfesorVistaCuestionarios = () => {
@@ -263,7 +264,7 @@ const ProfesorVistaCuestionarios = () => {
                   <p className="question-text">
                     <span className="question-number">{index + 1}.</span>
                     {pregunta.pregunta}{' '}
-                    {pregunta.opcionMultiple ? '(Selección Múltiple)' : ''}
+                    {ETIQUETA_FORMATO[pregunta.formato] ?? ''}
                   </p>
                   <ul className="options-list">
                     {pregunta.opciones.map((opcion, opcionIndex) => (

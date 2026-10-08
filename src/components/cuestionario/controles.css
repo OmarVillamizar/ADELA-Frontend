@@ -1,0 +1,80 @@
+/*
+ * Controles de respuesta de jerarquía y reparto. Usan los tokens de
+ * resultados.css (.adela-r): mismo lenguaje que los reportes.
+ */
+
+.adela-orden__fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-ctl);
+  background: var(--surface);
+}
+
+.adela-orden__fila + .adela-orden__fila {
+  margin-top: 0.6rem;
+}
+
+.adela-orden__texto {
+  flex: 1 1 14rem;
+  min-width: 0;
+  color: var(--ink);
+}
+
+.adela-orden__op {
+  min-width: 2.4rem;
+}
+
+.adela-orden__op[aria-pressed='true'] {
+  background: var(--accent);
+  color: #ffffff;
+  box-shadow: 0 1px 0 var(--accent-press);
+}
+
+.adela-reparto__restante {
+  margin: 0 0 0.75rem;
+  color: var(--ink-2);
+  font-weight: 600;
+}
+
+.adela-reparto__restante--listo {
+  color: var(--ok);
+}
+
+.adela-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.adela-stepper .adela-btn {
+  justify-content: center;
+  min-width: 2.25rem;
+}
+
+.adela-stepper__valor {
+  width: 3.5rem;
+  min-height: 2rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--ink);
+  font-weight: 700;
+  text-align: center;
+  -moz-appearance: textfield;
+}
+
+.adela-stepper__valor::-webkit-inner-spin-button,
+.adela-stepper__valor::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.adela-stepper__valor:focus-visible {
+  outline: 3px solid rgba(200, 16, 46, 0.35);
+  outline-offset: 1px;
+}
