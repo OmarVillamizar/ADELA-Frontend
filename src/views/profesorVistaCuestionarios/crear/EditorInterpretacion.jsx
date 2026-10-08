@@ -7,7 +7,7 @@ import {
   ESQUINAS,
   TIPO,
   planoVacio,
-  polosDe,
+  polosNombres,
   sugerirEsquinas,
 } from './borrador'
 import './crear.css'
@@ -36,12 +36,7 @@ const AYUDA = {
 /** Polos (nombres) del eje elegido: los de un compuesto o "alto"/"bajo". */
 const polosEje = (estilos, id) => {
   const e = estilos.find((x) => x.id === id)
-  if (!e) return null
-  const p = e.tipo === TIPO.COMPUESTO ? polosDe(e) : null
-  const nombreDeId = (k) => estilos.find((x) => x.id === k)?.nombre ?? k
-  return p
-    ? { a: nombreDeId(p.a), b: nombreDeId(p.b) }
-    : { a: `${e.nombre} alto`, b: `${e.nombre} bajo` }
+  return e ? polosNombres({ estilos }, e) : null
 }
 
 /**

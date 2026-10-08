@@ -5,8 +5,10 @@ import Segmentado from '../../../../components/resultados/Segmentado'
 import CamposDatos from '../CamposDatos'
 import ListaErrores from '../ListaErrores'
 import VistaPrevia from '../VistaPrevia'
+import PlanoAsistente from './PlanoAsistente'
 import PreguntasAsistidas from './PreguntasAsistidas'
 import {
+  CORTE,
   FORMATO,
   LECTURA,
   MIDE_ESCALA,
@@ -15,15 +17,20 @@ import {
   agregarEstilo,
   agregarPar,
   agregarPregunta,
+  aplicarModeloCiclo,
   compuestos,
+  erroresInterpretacion,
   estiloDeAfirmacion,
   etiquetasFrase,
+  interpretacionDeLectura,
   nombreDe,
   pasarAAvanzado,
+  planoAsistenteDe,
   polosDe,
   preguntaDePlantilla,
   primarios,
   quitarEstilo,
+  reproducePuntuacionOriginal,
   sincronizarFrases,
   sincronizarOrdenar,
 } from '../borrador'
@@ -89,6 +96,15 @@ const faltaEn = (b, paso) => {
   }
   if (paso === 1 && prim.length < 2) return 'Agrega al menos dos estilos.'
   if (paso === 2 && !b.lectura) return 'Elige cómo leer los resultados.'
+  if (paso === 2 && b.lectura === LECTURA.CUADRANTES) {
+    if (compuestos(b).length !== 2)
+      return 'El mapa de cuatro estilos necesita exactamente dos pares opuestos.'
+    return (
+      erroresInterpretacion(interpretacionDeLectura(b), (id) =>
+        nombreDe(b, id),
+      )[0]?.mensaje ?? null
+    )
+  }
   if (paso === 3) {
     if (b.preguntas.length === 0) return 'Agrega al menos una pregunta.'
     const i = b.preguntas.findIndex(
@@ -137,6 +153,7 @@ const resumen = (b) => {
     [LECTURA.SOLO_PUNTAJES]: 'se mostrarán solo los puntajes',
     [LECTURA.PREDOMINANTE]: 'se destacará el estilo predominante',
     [LECTURA.NIVELES]: 'cada estilo tendrá nivel bajo, medio o alto',
+    [LECTURA.CUADRANTES]: 'se asignará uno de cuatro estilos según dos ejes',
   }[b.lectura]
   const pares = compuestos(b).length
   return [
@@ -419,6 +436,9 @@ const Asistente = ({
   const prim = primarios(borrador)
   const e1 = prim[0]?.nombre || 'Activo'
   const e2 = prim[1]?.nombre || 'Reflexivo'
+  const referencia =
+    borrador.lectura === LECTURA.CUADRANTES &&
+    planoAsistenteDe(borrador).corte === CORTE.REFERENCIA
 
   const irA = (n) => {
     actualizar((b) => {
@@ -489,7 +509,35 @@ const Asistente = ({
           : 'Cada estilo recibe un nivel según su porcentaje del máximo.',
       ejemplo: `${e1}: Alto · ${e2}: Medio`,
     },
+    // Solo con exactamente dos pares: uno va en horizontal y el otro en vertical.
+    ...(compuestos(borrador).length === 2
+      ? [
+          {
+            valor: LECTURA.CUADRANTES,
+            titulo: 'Mapa de cuatro estilos',
+            texto:
+              'Se cruzan los dos pares opuestos y cada estudiante recibe el estilo de la esquina donde cae.',
+            ejemplo: 'Convergente · Asimilador · Divergente · Acomodador',
+          },
+        ]
+      : []),
   ]
+
+  const usarModelo = async () => {
+    if (borrador.estilos.length > 0 || borrador.preguntas.length > 0) {
+      const { isConfirmed } = await Swal.fire({
+        title: '¿Partir del modelo?',
+        text: 'Se reemplazarán los estilos y las preguntas que llevas.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Usar el modelo',
+        cancelButtonText: 'Cancelar',
+      })
+      if (!isConfirmed) return
+    }
+    actualizar(aplicarModeloCiclo)
+    irA(3)
+  }
 
   let cuerpo
   if (paso === 0) {
@@ -515,6 +563,24 @@ const Asistente = ({
               <p className="adela-tarjeta__ejemplo">{t.ejemplo}</p>
             </button>
           ))}
+        </div>
+        <div className="adela-item mt-3">
+          <strong className="d-block">
+            ¿Prefieres partir de un modelo listo?
+          </strong>
+          <p className="adela-ayuda mt-1 mb-2">
+            «Ciclo de aprendizaje: cuatro modos y dos ejes» arma los cuatro
+            estilos, sus dos pares opuestos y el mapa de cuatro estilos con sus
+            cortes de referencia. Tú escribes las preguntas; todo se puede
+            editar.
+          </p>
+          <button
+            type="button"
+            className="adela-btn adela-btn--sm"
+            onClick={usarModelo}
+          >
+            Usar el modelo
+          </button>
         </div>
         {borrador.plantilla === PLANTILLA.AFIRMACIONES && (
           <OpcionesFrase borrador={borrador} actualizar={actualizar} />
@@ -580,12 +646,22 @@ const Asistente = ({
             </button>
           ))}
         </div>
+        {borrador.lectura === LECTURA.CUADRANTES &&
+          compuestos(borrador).length === 2 && (
+            <PlanoAsistente borrador={borrador} actualizar={actualizar} />
+          )}
       </>
     )
   } else if (paso === 3) {
     cuerpo = (
       <>
         <h3 className="adela-panel__titulo mb-2">Escribe las preguntas</h3>
+        {referencia && (
+          <p className="adela-ayuda mt-0 mb-3">
+            Los cortes de referencia piden 12 preguntas de ordenar con 4
+            opciones, una por cada estilo. Escribe tus 12 preguntas.
+          </p>
+        )}
         <PreguntasAsistidas borrador={borrador} actualizar={actualizar} />
       </>
     )
@@ -594,6 +670,13 @@ const Asistente = ({
       <>
         <h3 className="adela-panel__titulo">Datos y revisión</h3>
         <p className="adela-panel__nota mb-3">{resumen(borrador)}</p>
+        {referencia && !reproducePuntuacionOriginal(borrador) && (
+          <div className="adela-aviso" role="alert">
+            Elegiste los cortes de referencia, que solo valen con 12 preguntas
+            de ordenar de 4 opciones cada una. Con otra estructura el mapa
+            clasificaría mal: ajusta las preguntas o elige otro corte.
+          </div>
+        )}
         <CamposDatos
           meta={borrador.meta}
           onChange={(meta) => actualizar((b) => ({ ...b, meta }))}

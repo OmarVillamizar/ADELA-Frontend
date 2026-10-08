@@ -32,6 +32,14 @@ export const LECTURA = {
   SOLO_PUNTAJES: 'SOLO_PUNTAJES',
   PREDOMINANTE: 'PREDOMINANTE',
   NIVELES: 'NIVELES',
+  CUADRANTES: 'CUADRANTES',
+}
+
+/** Dónde corta el mapa de cuatro estilos en el asistente. */
+export const CORTE = {
+  EQUILIBRIO: 'EQUILIBRIO',
+  REFERENCIA: 'REFERENCIA',
+  PERSONALIZADO: 'PERSONALIZADO',
 }
 
 const nuevoId = () =>
@@ -58,6 +66,8 @@ export const borradorVacio = () => ({
   estilos: [],
   preguntas: [],
   lectura: null,
+  // Lo que el usuario fija en el asistente para la lectura CUADRANTES.
+  planoAsistente: null,
   interpretacion: interpretacionVacia(),
 })
 
@@ -405,10 +415,144 @@ const TERCIOS = [
   [66.7, 100],
 ]
 
+/** Polos (nombres) de un estilo: los de un compuesto, o "alto"/"bajo". */
+export const polosNombres = (b, e) => {
+  const p = polosDe(e)
+  return p
+    ? { a: nombreDe(b, p.a), b: nombreDe(b, p.b) }
+    : { a: `${e.nombre} alto`, b: `${e.nombre} bajo` }
+}
+
+/**
+ * Mapa de cuatro estilos del asistente: { corte, plano }. Si el usuario aún
+ * no lo ha tocado (o sus pares cambiaron), el de siempre: primer par en X,
+ * segundo en Y, corte 0 y nombres sugeridos.
+ */
+export const planoAsistenteDe = (b) => {
+  const [x, y] = compuestos(b)
+  const g = b.planoAsistente
+  const ejes = g ? [g.plano.ejeX, g.plano.ejeY] : []
+  if (g && x && y && ejes.includes(x.id) && ejes.includes(y.id)) return g
+  return {
+    corte: CORTE.EQUILIBRIO,
+    plano:
+      x && y
+        ? {
+            ...planoVacio(x.id, y.id),
+            ...sugerirEsquinas(polosNombres(b, x), polosNombres(b, y)),
+          }
+        : planoVacio(),
+  }
+}
+
+/** Cambia nombres (o cortes personalizados) del mapa del asistente. */
+export const editarPlano = (b, cambios) => {
+  const g = planoAsistenteDe(b)
+  return { ...b, planoAsistente: { ...g, plano: { ...g.plano, ...cambios } } }
+}
+
+/** Elige dónde corta el mapa: en 0, en los cortes de referencia o a medida. */
+export const elegirCorte = (b, corte) => {
+  const fijos = {
+    [CORTE.EQUILIBRIO]: { corteX: 0, corteY: 0 },
+    [CORTE.REFERENCIA]: {
+      corteX: CORTES_REFERENCIA.x,
+      corteY: CORTES_REFERENCIA.y,
+    },
+  }[corte]
+  const g = editarPlano(b, fijos ?? {}).planoAsistente
+  return { ...b, planoAsistente: { ...g, corte } }
+}
+
+/**
+ * Intercambia horizontal y vertical. Cada nombre se queda con su esquina
+ * (el estilo "alto en el antiguo Y, bajo en el antiguo X" pasa de arriba a
+ * la izquierda a abajo a la derecha), y los cortes se cambian de lado.
+ */
+export const intercambiarEjes = (b) => {
+  const g = planoAsistenteDe(b)
+  const p = g.plano
+  const plano = {
+    ...p,
+    ejeX: p.ejeY,
+    ejeY: p.ejeX,
+    corteX: p.corteY,
+    corteY: p.corteX,
+    xBajoYAlto: p.xAltoYBajo,
+    xAltoYBajo: p.xBajoYAlto,
+  }
+  return { ...b, planoAsistente: { ...g, plano } }
+}
+
+/**
+ * Los cortes de referencia solo valen con la puntuación original: preguntas
+ * de ordenar, 12 de ellas, con 4 opciones cada una.
+ */
+export const reproducePuntuacionOriginal = (b) =>
+  b.plantilla === PLANTILLA.ORDENAR &&
+  b.formatoOrden === FORMATO.JERARQUIA &&
+  b.preguntas.length === 12 &&
+  b.preguntas.every((p) => p.opciones.length === 4)
+
+/**
+ * Modelo listo "Ciclo de aprendizaje: cuatro modos y dos ejes". Deja la
+ * estructura (estilos, pares, mapa y cortes de referencia) sin ningún
+ * enunciado: las preguntas las escribe el usuario.
+ */
+export const aplicarModeloCiclo = (b) => {
+  let n = {
+    ...b,
+    modo: 'ASISTIDO',
+    plantilla: PLANTILLA.ORDENAR,
+    formatoOrden: FORMATO.JERARQUIA,
+    estilos: [],
+    preguntas: [],
+    lectura: LECTURA.CUADRANTES,
+    planoAsistente: null,
+    interpretacion: interpretacionVacia(),
+  }
+  const ids = {}
+  ;[
+    'Experiencia concreta',
+    'Observación reflexiva',
+    'Conceptualización abstracta',
+    'Experimentación activa',
+  ].forEach((nombre) => {
+    n = agregarEstilo(n, nombre)
+    ids[nombre] = n.estilos.at(-1).id
+  })
+  // Lo alto de cada eje es hacia el primer polo: hacer − observar, pensar − sentir.
+  n = agregarPar(n, ids['Experimentación activa'], ids['Observación reflexiva'])
+  n = agregarPar(
+    n,
+    ids['Conceptualización abstracta'],
+    ids['Experiencia concreta'],
+  )
+  const [x, y] = compuestos(n)
+  return elegirCorte(
+    editarPlano(n, {
+      ...planoVacio(x.id, y.id),
+      xAltoYAlto: 'Convergente',
+      xBajoYAlto: 'Asimilador',
+      xBajoYBajo: 'Divergente',
+      xAltoYBajo: 'Acomodador',
+    }),
+    CORTE.REFERENCIA,
+  )
+}
+
 /** Interpretación que produce cada lectura lista con los estilos actuales. */
 export const interpretacionDeLectura = (b, lectura = b.lectura) => {
   if (lectura === LECTURA.PREDOMINANTE) {
     return { ...interpretacionVacia(), esquema: ESQUEMA.RELATIVO }
+  }
+  if (lectura === LECTURA.CUADRANTES) {
+    if (compuestos(b).length !== 2) return interpretacionVacia()
+    return {
+      ...interpretacionVacia(),
+      esquema: ESQUEMA.CUADRANTES,
+      plano: { ...planoAsistenteDe(b).plano },
+    }
   }
   if (lectura !== LECTURA.NIVELES) return interpretacionVacia()
   const bandas = b.estilos.flatMap((e) => {
