@@ -14,7 +14,8 @@ import './crear/crear.css'
 const seccionDeCampo = (campo) => {
   if (campo.startsWith('estilos')) return 'estilos'
   if (campo.startsWith('preguntas')) return 'preguntas'
-  if (/^(bandas|escalones|esquema|delta)/.test(campo)) return 'interpretacion'
+  if (/^(bandas|escalones|esquema|delta|plano)/.test(campo))
+    return 'interpretacion'
   return 'datos'
 }
 

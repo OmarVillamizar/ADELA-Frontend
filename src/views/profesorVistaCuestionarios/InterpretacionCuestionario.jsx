@@ -15,6 +15,7 @@ import {
   erroresInterpretacion,
   interpretacionADTO,
   interpretacionDeLectura,
+  polosDeNombre,
 } from './crear/borrador'
 import '../../components/resultados/resultados.css'
 import './crear/crear.css'
@@ -37,7 +38,29 @@ const aEditor = (dto) => ({
     etiqueta: b.etiqueta,
   })),
   escalones: (dto.escalones ?? []).map((s) => ({ ...s })),
+  // Los ejes llegan por nombre, que aquí es también el id del estilo.
+  ...(dto.plano ? { plano: { ...dto.plano } } : {}),
 })
+
+/**
+ * Estilos para el editor, con ids = nombres. Del compuesto "A − B" se deducen
+ * los polos (A suma, B resta) para que el atajo de niveles y el mapa los usen.
+ */
+const aEstilosEditor = (lista) =>
+  lista.map((e) => {
+    const polos = e.tipo === TIPO.COMPUESTO ? polosDeNombre(e.nombre) : null
+    return {
+      id: e.nombre,
+      nombre: e.nombre,
+      tipo: e.tipo ?? TIPO.PRIMARIO,
+      coeficientes: polos
+        ? [
+            { estiloId: polos.a, coeficiente: 1 },
+            { estiloId: polos.b, coeficiente: -1 },
+          ]
+        : [],
+    }
+  })
 
 const ATAJOS = [
   [LECTURA.SOLO_PUNTAJES, 'Solo puntajes'],
@@ -54,6 +77,7 @@ const InterpretacionCuestionario = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const [cuestionario, setCuestionario] = useState(null)
+  const [estilos, setEstilos] = useState([])
   const [valor, setValor] = useState(null)
   const [esIpsativo, setEsIpsativo] = useState(false)
   const [errorCarga, setErrorCarga] = useState(null)
@@ -66,6 +90,7 @@ const InterpretacionCuestionario = () => {
       .then(([c, inter]) => {
         if (!vigente) return
         setCuestionario(c)
+        setEstilos(aEstilosEditor(inter.estilos ?? c.estilos ?? []))
         setValor(aEditor(inter))
         setEsIpsativo(Boolean(inter.esIpsativo))
       })
@@ -74,11 +99,6 @@ const InterpretacionCuestionario = () => {
       vigente = false
     }
   }, [id])
-
-  const estilos = (cuestionario?.estilos ?? []).map((e) => ({
-    id: e.nombre,
-    nombre: e.nombre,
-  }))
 
   const aplicarAtajo = async (lectura) => {
     if (valor.bandas.length > 0) {
@@ -92,14 +112,7 @@ const InterpretacionCuestionario = () => {
       })
       if (!isConfirmed) return
     }
-    const comoBorrador = {
-      estilos: estilos.map((e) => ({
-        ...e,
-        tipo: TIPO.PRIMARIO,
-        coeficientes: [],
-      })),
-    }
-    setValor(interpretacionDeLectura(comoBorrador, lectura))
+    setValor(interpretacionDeLectura({ estilos }, lectura))
     setErrores([])
   }
 
@@ -119,12 +132,16 @@ const InterpretacionCuestionario = () => {
         'success',
       )
     } catch (e) {
-      const campos = Object.values(e.fields ?? {})
+      const campos = Object.entries(e.fields ?? {})
       setErrores(
-        (campos.length > 0 ? campos : [e.message]).map((mensaje) => ({
-          seccion: 'interpretacion',
-          mensaje,
-        })),
+        (campos.length > 0 ? campos : [[null, e.message]]).map(
+          ([campo, mensaje]) => ({
+            seccion: 'interpretacion',
+            mensaje,
+            // Los errores del mapa señalan el campo del editor.
+            ref: campo?.startsWith('plano') ? campo : null,
+          }),
+        ),
       )
     } finally {
       setGuardando(false)

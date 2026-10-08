@@ -17,6 +17,7 @@ export const ESQUEMA = {
   BAREMO: 'BAREMO',
   RELATIVO: 'RELATIVO',
   RELATIVO_ESCALONADO: 'RELATIVO_ESCALONADO',
+  CUADRANTES: 'CUADRANTES',
 }
 export const ESCALA = { BRUTO: 'BRUTO', POMP: 'POMP' }
 
@@ -108,6 +109,9 @@ export const quitarEstilo = (b, id) => {
     )
     .map((e) => e.id)
   const fuera = new Set([id, ...huerfanos])
+  const plano = b.interpretacion.plano
+  const sinPlano =
+    Boolean(plano) && (fuera.has(plano.ejeX) || fuera.has(plano.ejeY))
   return {
     ...b,
     estilos: estilos.filter((e) => !fuera.has(e.id)),
@@ -121,6 +125,9 @@ export const quitarEstilo = (b, id) => {
     interpretacion: {
       ...b.interpretacion,
       bandas: b.interpretacion.bandas.filter((x) => !fuera.has(x.estiloId)),
+      // Sin uno de sus ejes el mapa no tiene sentido: se borra y, si el
+      // esquema sigue en CUADRANTES, la validación pide reconfigurarlo.
+      ...(sinPlano ? { plano: undefined } : {}),
     },
   }
 }
@@ -143,6 +150,55 @@ export const polosDe = (e) => {
   const a = e.coeficientes.find((c) => Number(c.coeficiente) > 0)
   const z = e.coeficientes.find((c) => Number(c.coeficiente) < 0)
   return a && z ? { a: a.estiloId, b: z.estiloId } : null
+}
+
+/** Polos (nombres) de un compuesto "A − B" a partir de su nombre, o null. */
+export const polosDeNombre = (nombre) => {
+  const partes = (nombre ?? '').split(/\s+[−-]\s+/)
+  return partes.length === 2 && partes[0] && partes[1]
+    ? { a: partes[0], b: partes[1] }
+    : null
+}
+
+/* ------------------------------------------------------------------ */
+/* Mapa de cuatro estilos (cuadrantes)                                  */
+/* ------------------------------------------------------------------ */
+
+/** Cortes de referencia (inventario de ciclo de aprendizaje 3.1): X ≤ 6, Y ≤ 7 es lado bajo. */
+/** Esquinas del plano con su rótulo para mensajes. */
+export const ESQUINAS = [
+  ['xBajoYAlto', 'izquierda arriba'],
+  ['xAltoYAlto', 'derecha arriba'],
+  ['xBajoYBajo', 'izquierda abajo'],
+  ['xAltoYBajo', 'derecha abajo'],
+]
+
+export const CORTES_REFERENCIA = { x: 6, y: 7 }
+
+export const planoVacio = (ejeX = '', ejeY = '') => ({
+  ejeX,
+  ejeY,
+  corteX: 0,
+  corteY: 0,
+  xAltoYAlto: '',
+  xBajoYAlto: '',
+  xBajoYBajo: '',
+  xAltoYBajo: '',
+})
+
+/**
+ * Nombres sugeridos de las cuatro esquinas, "polo + polo". polosX y polosY
+ * son { a, b } con los nombres de los polos: a es el lado alto (coeficiente
+ * +1) y b el bajo.
+ */
+export const sugerirEsquinas = (polosX, polosY) => {
+  const unir = (x, y) => `${x} + ${y}`.slice(0, 60)
+  return {
+    xAltoYAlto: unir(polosX.a, polosY.a),
+    xBajoYAlto: unir(polosX.b, polosY.a),
+    xBajoYBajo: unir(polosX.b, polosY.b),
+    xAltoYBajo: unir(polosX.a, polosY.b),
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -428,6 +484,19 @@ export const interpretacionADTO = (inter, nombre, esIpsativo = null) => {
             distancia: numero(s.distancia),
           }))
         : [],
+    ...(inter.esquema === ESQUEMA.CUADRANTES && inter.plano
+      ? {
+          plano: {
+            ejeX: nombre(inter.plano.ejeX).trim(),
+            ejeY: nombre(inter.plano.ejeY).trim(),
+            corteX: numero(inter.plano.corteX) ?? 0,
+            corteY: numero(inter.plano.corteY) ?? 0,
+            ...Object.fromEntries(
+              ESQUINAS.map(([k]) => [k, (inter.plano[k] ?? '').trim()]),
+            ),
+          },
+        }
+      : {}),
   }
 }
 
@@ -580,6 +649,55 @@ export const erroresInterpretacion = (inter, nombre) => {
         break
       }
     }
+  }
+  if (inter.esquema === ESQUEMA.CUADRANTES) {
+    const p = inter.plano
+    if (!p) {
+      error(
+        'interpretacion',
+        'Falta configurar los dos ejes del mapa.',
+        'plano',
+      )
+      return errores
+    }
+    const x = nombre(p.ejeX)
+    const y = nombre(p.ejeY)
+    if (!x) error('interpretacion', 'Elige el eje horizontal.', 'plano.ejeX')
+    if (!y) error('interpretacion', 'Elige el eje vertical.', 'plano.ejeY')
+    if (x && p.ejeX === p.ejeY)
+      error(
+        'interpretacion',
+        'Los dos ejes del mapa deben ser distintos.',
+        'plano.ejeY',
+      )
+    ;[
+      ['corteX', 'horizontal'],
+      ['corteY', 'vertical'],
+    ].forEach(([k, lado]) => {
+      if (!esNumero(p[k]))
+        error(
+          'interpretacion',
+          `El corte ${lado} debe ser un número.`,
+          `plano.${k}`,
+        )
+    })
+    const vistos = new Set()
+    ESQUINAS.forEach(([k, lugar]) => {
+      const nombreEsquina = (p[k] ?? '').trim()
+      if (!nombreEsquina || nombreEsquina.length > 60)
+        error(
+          'interpretacion',
+          `La esquina ${lugar} necesita un nombre (máx. 60).`,
+          `plano.${k}`,
+        )
+      else if (vistos.has(normal(nombreEsquina)))
+        error(
+          'interpretacion',
+          `El nombre "${nombreEsquina}" está repetido en el mapa.`,
+          `plano.${k}`,
+        )
+      vistos.add(normal(nombreEsquina))
+    })
   }
   return errores
 }

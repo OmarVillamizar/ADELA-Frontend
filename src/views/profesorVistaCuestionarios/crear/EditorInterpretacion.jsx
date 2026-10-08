@@ -1,7 +1,15 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import Segmentado from '../../../components/resultados/Segmentado'
-import { ESCALA, ESQUEMA } from './borrador'
+import {
+  ESCALA,
+  ESQUEMA,
+  ESQUINAS,
+  TIPO,
+  planoVacio,
+  polosDe,
+  sugerirEsquinas,
+} from './borrador'
 import './crear.css'
 
 const ESQUEMAS = [
@@ -9,6 +17,7 @@ const ESQUEMAS = [
   { valor: ESQUEMA.BAREMO, etiqueta: 'Niveles por tabla' },
   { valor: ESQUEMA.RELATIVO, etiqueta: 'Predominante' },
   { valor: ESQUEMA.RELATIVO_ESCALONADO, etiqueta: 'Perfil escalonado' },
+  { valor: ESQUEMA.CUADRANTES, etiqueta: 'Cuadrantes' },
 ]
 
 const AYUDA = {
@@ -20,6 +29,139 @@ const AYUDA = {
     'Predominan los estilos cuyo % del máximo queda a menos del margen del más alto.',
   RELATIVO_ESCALONADO:
     'Se ordenan los estilos por puntaje y se suman al perfil mientras la distancia con el anterior no supere la del escalón que corresponde al total.',
+  CUADRANTES:
+    'Se cruzan dos ejes y cada estudiante recibe el estilo de la esquina donde cae. Un puntaje igual al corte cuenta como lado bajo.',
+}
+
+/** Polos (nombres) del eje elegido: los de un compuesto o "alto"/"bajo". */
+const polosEje = (estilos, id) => {
+  const e = estilos.find((x) => x.id === id)
+  if (!e) return null
+  const p = e.tipo === TIPO.COMPUESTO ? polosDe(e) : null
+  const nombreDeId = (k) => estilos.find((x) => x.id === k)?.nombre ?? k
+  return p
+    ? { a: nombreDeId(p.a), b: nombreDeId(p.b) }
+    : { a: `${e.nombre} alto`, b: `${e.nombre} bajo` }
+}
+
+/**
+ * Mapa de cuatro estilos: eje horizontal y vertical, un corte para cada uno y
+ * el nombre de las cuatro esquinas. Los compuestos van primero y se muestran
+ * como "A − B": el signo importa, porque lo alto del eje es hacia A.
+ */
+const EditorPlano = ({ estilos, plano, onChange, marcados }) => {
+  const ordenados = [
+    ...estilos.filter((e) => e.tipo === TIPO.COMPUESTO),
+    ...estilos.filter((e) => e.tipo !== TIPO.COMPUESTO),
+  ]
+  const sugerencias = (p) => {
+    const x = polosEje(estilos, p.ejeX)
+    const y = polosEje(estilos, p.ejeY)
+    return x && y ? sugerirEsquinas(x, y) : null
+  }
+  const marca = (k) => (marcados?.has(`plano.${k}`) ? 'adela-item--error' : '')
+
+  const cambiarEje = (campo, id) => {
+    const nuevo = { ...plano, [campo]: id }
+    const antes = sugerencias(plano)
+    const despues = sugerencias(nuevo)
+    // Solo se reemplazan los nombres que el usuario no ha tocado.
+    if (despues)
+      ESQUINAS.forEach(([k]) => {
+        if (!plano[k] || plano[k] === antes?.[k]) nuevo[k] = despues[k]
+      })
+    onChange(nuevo)
+  }
+  const cambiar = (cambios) => onChange({ ...plano, ...cambios })
+
+  const polosX = polosEje(estilos, plano.ejeX)
+  const polosY = polosEje(estilos, plano.ejeY)
+  const selectorEje = (campo, texto) => (
+    <label className="adela-campo adela-crece">
+      <span>{texto}</span>
+      <select
+        className={`adela-input ${marca(campo)}`}
+        value={plano[campo]}
+        onChange={(e) => cambiarEje(campo, e.target.value)}
+      >
+        <option value="">Elegir…</option>
+        {ordenados.map((e) => (
+          <option key={e.id} value={e.id}>
+            {e.nombre || 'Sin nombre'}
+          </option>
+        ))}
+      </select>
+    </label>
+  )
+  const esquina = ([k, lugar]) => (
+    <input
+      key={k}
+      className={`adela-input ${marca(k)}`}
+      aria-label={`Nombre de la esquina ${lugar}`}
+      placeholder="Nombre del estilo"
+      maxLength={60}
+      value={plano[k]}
+      onChange={(e) => cambiar({ [k]: e.target.value })}
+    />
+  )
+  const [bajoAlto, altoAlto, bajoBajo, altoBajo] = ESQUINAS
+
+  return (
+    <div className="adela-item mb-3">
+      <div className="adela-item__cabeza">
+        <strong className="adela-crece">Mapa de cuatro estilos</strong>
+      </div>
+      <div className="adela-fila mb-2">
+        {selectorEje('ejeX', 'Eje horizontal')}
+        {selectorEje('ejeY', 'Eje vertical')}
+      </div>
+      <p className="adela-ayuda mt-0 mb-3">
+        El lado alto de cada eje es hacia el primer polo de &quot;A − B&quot;.
+        Invertir el orden invierte el eje.
+      </p>
+      <div className="adela-fila mb-3">
+        {[
+          ['corteX', 'Corte horizontal'],
+          ['corteY', 'Corte vertical'],
+        ].map(([k, texto]) => (
+          <label key={k} className="adela-campo">
+            <span>{texto}</span>
+            <input
+              className={`adela-input adela-input--num ${marca(k)}`}
+              type="number"
+              value={plano[k]}
+              onChange={(e) => cambiar({ [k]: e.target.value })}
+            />
+          </label>
+        ))}
+      </div>
+      <div className="adela-cruz">
+        <span className="adela-cruz__polo adela-cruz__polo--arriba">
+          ↑ {polosY?.a ?? 'Vertical alto'}
+        </span>
+        <span className="adela-cruz__polo adela-cruz__polo--izq">
+          ← {polosX?.b ?? 'Horizontal bajo'}
+        </span>
+        {esquina(bajoAlto)}
+        {esquina(altoAlto)}
+        <span className="adela-cruz__polo adela-cruz__polo--der">
+          {polosX?.a ?? 'Horizontal alto'} →
+        </span>
+        {esquina(bajoBajo)}
+        {esquina(altoBajo)}
+        <span className="adela-cruz__polo adela-cruz__polo--abajo">
+          ↓ {polosY?.b ?? 'Vertical bajo'}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+EditorPlano.propTypes = {
+  estilos: PropTypes.array.isRequired,
+  plano: PropTypes.object.isRequired,
+  onChange: PropTypes.func.isRequired,
+  marcados: PropTypes.instanceOf(Set),
 }
 
 const nuevoId = () => Math.random().toString(36).slice(2, 10)
@@ -38,6 +180,16 @@ const TERCIOS = [
 const EditorInterpretacion = ({ estilos, valor, onChange, marcados }) => {
   const cambiar = (cambios) => onChange({ ...valor, ...cambios })
   const bandas = valor.bandas
+
+  // Al elegir "Cuadrantes": los dos primeros compuestos, con nombres sugeridos.
+  const planoInicial = () => {
+    const [x, y] = estilos.filter((e) => e.tipo === TIPO.COMPUESTO)
+    if (!x || !y) return planoVacio()
+    return {
+      ...planoVacio(x.id, y.id),
+      ...sugerirEsquinas(polosEje(estilos, x.id), polosEje(estilos, y.id)),
+    }
+  }
 
   const cambiarBanda = (id, cambios) =>
     cambiar({
@@ -100,10 +252,25 @@ const EditorInterpretacion = ({ estilos, valor, onChange, marcados }) => {
           etiqueta="Esquema de interpretación"
           opciones={ESQUEMAS}
           valor={valor.esquema}
-          onChange={(esquema) => cambiar({ esquema })}
+          onChange={(esquema) =>
+            cambiar(
+              esquema === ESQUEMA.CUADRANTES && !valor.plano
+                ? { esquema, plano: planoInicial() }
+                : { esquema },
+            )
+          }
         />
       </div>
       <p className="adela-ayuda mt-0 mb-3">{AYUDA[valor.esquema]}</p>
+
+      {valor.esquema === ESQUEMA.CUADRANTES && (
+        <EditorPlano
+          estilos={estilos}
+          plano={valor.plano ?? planoVacio()}
+          marcados={marcados}
+          onChange={(plano) => cambiar({ plano })}
+        />
+      )}
 
       {valor.esquema === ESQUEMA.RELATIVO && (
         <label className="adela-campo mb-3" style={{ maxWidth: '16rem' }}>
@@ -294,6 +461,7 @@ EditorInterpretacion.propTypes = {
     delta: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
     bandas: PropTypes.array,
     escalones: PropTypes.array,
+    plano: PropTypes.object,
   }).isRequired,
   onChange: PropTypes.func.isRequired,
   marcados: PropTypes.instanceOf(Set),
