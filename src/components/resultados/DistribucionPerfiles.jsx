@@ -24,7 +24,7 @@ const DistribucionPerfiles = ({ distribucion, destacado = false }) => {
           <p className="adela-panel__nota">
             {destacado
               ? 'En este cuestionario, la distribución de perfiles describe mejor al grupo que el promedio.'
-              : 'Cuántas personas tienen cada combinación de estilos dominantes.'}
+              : 'Cuántas personas tienen cada perfil: una combinación de estilos dominantes o, en el mapa de cuatro estilos, cada esquina.'}
           </p>
         </div>
       </div>

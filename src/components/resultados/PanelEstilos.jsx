@@ -4,6 +4,7 @@ import SelectorEscala from './SelectorEscala'
 import GraficasResultado from './GraficasResultado'
 import TablaEstilos from './TablaEstilos'
 import EscalasCompuestas from './EscalasCompuestas'
+import MapaCuadrantes from './MapaCuadrantes'
 import { useEscala } from '../../util/calificacion/useEscala'
 import {
   AYUDA_POMP,
@@ -47,6 +48,9 @@ const PanelEstilos = ({ estilos, calificacion, etiqueta }) => {
         </div>
       </section>
       <EscalasCompuestas estilos={compuestos} />
+      {calificacion?.plano && (
+        <MapaCuadrantes plano={calificacion.plano} estilos={estilos} />
+      )}
     </>
   )
 }

@@ -1,0 +1,125 @@
+import React from 'react'
+import PropTypes from 'prop-types'
+import { CChartScatter } from '@coreui/react-chartjs'
+import { polosDe } from './EscalasCompuestas'
+import { formatoNumero } from '../../util/calificacion/escala'
+import {
+  COLOR_DATO,
+  dispersionPlano,
+  esquinasPlano,
+} from '../../util/calificacion/opcionesGrafico'
+import './resultados.css'
+
+const titulo = (nombre) => {
+  const polos = polosDe(nombre)
+  return polos ? `← ${polos.b} · ${polos.a} →` : nombre
+}
+
+const linea = (puntos) => ({
+  data: puntos,
+  showLine: true,
+  pointRadius: 0,
+  pointHitRadius: 0,
+  borderColor: '#636874',
+  borderWidth: 1.5,
+  borderDash: [6, 4],
+})
+
+/**
+ * Mapa de cuatro estilos: los dos ejes del cuestionario como plano, con una
+ * línea en cada corte y el nombre de cada esquina. Individual: un punto con el
+ * resultado. Grupal: la nube anónima de `puntos`, uno por resultado.
+ */
+const MapaCuadrantes = ({ plano, estilos, puntos, grupal }) => {
+  const ejeX = estilos.find((e) => e.nombre === plano.ejeX)
+  const ejeY = estilos.find((e) => e.nombre === plano.ejeY)
+  if (!ejeX || !ejeY) return null
+
+  const calculable = (e) => e.valor != null && e.estado !== 'NO_CALCULABLE'
+  const punto =
+    !grupal && calculable(ejeX) && calculable(ejeY)
+      ? { x: ejeX.valor, y: ejeY.valor }
+      : null
+  const nube = grupal ? (puntos ?? []) : punto ? [punto] : []
+  const x = { min: ejeX.rangoMin, max: ejeX.rangoMax }
+  const y = { min: ejeY.rangoMin, max: ejeY.rangoMax }
+
+  const data = {
+    datasets: [
+      {
+        label: 'Resultados',
+        data: nube,
+        showLine: false,
+        pointRadius: grupal ? 5 : 8,
+        pointHoverRadius: grupal ? 6 : 9,
+        backgroundColor: grupal ? 'rgba(42, 120, 214, 0.35)' : COLOR_DATO,
+        borderColor: grupal ? 'rgba(42, 120, 214, 0.6)' : '#ffffff',
+        borderWidth: grupal ? 1 : 2,
+      },
+      linea([
+        { x: plano.corteX, y: y.min },
+        { x: plano.corteX, y: y.max },
+      ]),
+      linea([
+        { x: x.min, y: plano.corteY },
+        { x: x.max, y: plano.corteY },
+      ]),
+    ],
+  }
+
+  return (
+    <section className="adela-panel adela-aparece">
+      <div className="adela-panel__cabeza">
+        <div>
+          <h2 className="adela-panel__titulo">
+            {grupal
+              ? 'Mapa de cuatro estilos del grupo'
+              : 'Mapa de cuatro estilos'}
+          </h2>
+          <p className="adela-panel__nota">
+            Las líneas punteadas son los cortes (horizontal en{' '}
+            {formatoNumero(plano.corteX)}, vertical en{' '}
+            {formatoNumero(plano.corteY)}); un puntaje igual al corte cuenta
+            como lado bajo.
+            {grupal
+              ? ' Cada punto es un resultado, sin nombre.'
+              : !punto && ' No se pudo ubicar este resultado en el mapa.'}
+          </p>
+        </div>
+      </div>
+      <div className="adela-grafico adela-grafico--mapa">
+        <CChartScatter
+          customTooltips={false}
+          data={data}
+          options={dispersionPlano({
+            x,
+            y,
+            tituloX: titulo(plano.ejeX),
+            tituloY: titulo(plano.ejeY),
+          })}
+          plugins={[esquinasPlano(plano)]}
+        />
+      </div>
+    </section>
+  )
+}
+
+MapaCuadrantes.propTypes = {
+  plano: PropTypes.shape({
+    ejeX: PropTypes.string,
+    ejeY: PropTypes.string,
+    corteX: PropTypes.number,
+    corteY: PropTypes.number,
+    xAltoYAlto: PropTypes.string,
+    xBajoYAlto: PropTypes.string,
+    xBajoYBajo: PropTypes.string,
+    xAltoYBajo: PropTypes.string,
+  }).isRequired,
+  estilos: PropTypes.arrayOf(PropTypes.object).isRequired,
+  puntos: PropTypes.arrayOf(
+    PropTypes.shape({ x: PropTypes.number, y: PropTypes.number }),
+  ),
+  grupal: PropTypes.bool,
+}
+
+export default MapaCuadrantes

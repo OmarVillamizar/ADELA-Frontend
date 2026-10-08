@@ -487,6 +487,10 @@
   min-height: 280px;
 }
 
+.adela-grafico--mapa {
+  min-height: 380px;
+}
+
 /* ---------- Estado vacío y carga ---------- */
 
 .adela-vacio {

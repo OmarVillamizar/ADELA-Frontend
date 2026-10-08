@@ -9,7 +9,7 @@ import {
 import './resultados.css'
 
 /** "Activo − Reflexivo" -> polos { a: 'Activo', b: 'Reflexivo' }; si no, null. */
-const polosDe = (nombre) => {
+export const polosDe = (nombre) => {
   const partes = nombre.split(/\s+[−-]\s+/)
   return partes.length === 2 ? { a: partes[0], b: partes[1] } : null
 }

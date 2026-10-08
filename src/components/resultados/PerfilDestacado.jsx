@@ -12,17 +12,24 @@ const PerfilDestacado = ({
 }) => {
   if (!calificacion?.perfilEtiqueta) return null
   const multimodal = calificacion.perfilTipo === 'MULTIMODAL'
+  const cuadrante = calificacion.perfilTipo === 'CUADRANTE'
   return (
     <section className="adela-perfil adela-aparece" aria-label={titulo}>
       <p className="adela-perfil__etiqueta">{titulo}</p>
       <p className="adela-perfil__valor">{calificacion.perfilEtiqueta}</p>
       <p className="adela-perfil__texto">
-        <span className="adela-chip adela-chip--claro me-2">
-          {multimodal ? 'Multimodal' : 'Unimodal'}
-        </span>
-        {multimodal
-          ? 'Varios estilos se destacan casi por igual.'
-          : 'Un estilo se destaca sobre los demás.'}
+        {cuadrante ? (
+          'Tu estilo según los dos ejes.'
+        ) : (
+          <>
+            <span className="adela-chip adela-chip--claro me-2">
+              {multimodal ? 'Multimodal' : 'Unimodal'}
+            </span>
+            {multimodal
+              ? 'Varios estilos se destacan casi por igual.'
+              : 'Un estilo se destaca sobre los demás.'}
+          </>
+        )}
       </p>
     </section>
   )

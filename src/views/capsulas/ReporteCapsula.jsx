@@ -12,6 +12,7 @@ import EncabezadoReporte from '../../components/resultados/EncabezadoReporte'
 import EsqueletoReporte from '../../components/resultados/EsqueletoReporte'
 import GraficasResultado from '../../components/resultados/GraficasResultado'
 import EscalasCompuestas from '../../components/resultados/EscalasCompuestas'
+import MapaCuadrantes from '../../components/resultados/MapaCuadrantes'
 import SelectorEscala from '../../components/resultados/SelectorEscala'
 import TablaEstadisticos from '../../components/resultados/TablaEstadisticos'
 import { obtenerReporteCapsula } from '../../util/services/capsulaService'
@@ -161,6 +162,14 @@ const ReporteCapsula = () => {
               estilos={separarPorTipo(estilos).compuestos}
               grupal
             />
+            {calificacion?.plano && (
+              <MapaCuadrantes
+                plano={calificacion.plano}
+                estilos={estilos}
+                puntos={calificacion.puntosPlano}
+                grupal
+              />
+            )}
             <DistribucionNiveles estilos={estilos} />
             {!ipsativo && (
               <DistribucionPerfiles
