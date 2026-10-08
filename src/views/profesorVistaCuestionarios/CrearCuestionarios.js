@@ -4,6 +4,7 @@ import Swal from 'sweetalert2'
 import { crearCuestionario } from '../../util/services/cuestionarioService'
 import useBorrador from './crear/useBorrador'
 import EditorAvanzado from './crear/avanzado/EditorAvanzado'
+import Asistente from './crear/asistente/Asistente'
 import ListaErrores from './crear/ListaErrores'
 import { aDTO, tieneContenido, validarBorrador } from './crear/borrador'
 import '../../components/resultados/resultados.css'
@@ -143,6 +144,18 @@ const CrearCuestionarios = () => {
           <button
             type="button"
             className="adela-tarjeta"
+            onClick={() => empezar('ASISTIDO')}
+          >
+            <span className="adela-tarjeta__marca">Recomendado</span>
+            <p className="adela-tarjeta__titulo">Asistido</p>
+            <p className="adela-tarjeta__texto">
+              Responde tres preguntas sobre tu instrumento y escribe solo el
+              contenido: el asistente arma el resto.
+            </p>
+          </button>
+          <button
+            type="button"
+            className="adela-tarjeta"
             onClick={() => empezar('AVANZADO')}
           >
             <p className="adela-tarjeta__titulo">Avanzado</p>
@@ -153,6 +166,17 @@ const CrearCuestionarios = () => {
           </button>
         </div>
       </>
+    )
+  } else if (borrador.modo === 'ASISTIDO') {
+    contenido = (
+      <Asistente
+        borrador={borrador}
+        actualizar={actualizar}
+        errores={errores}
+        intentado={intentado}
+        creando={creando}
+        onCrear={crear}
+      />
     )
   } else {
     const pie = (
