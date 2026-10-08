@@ -49,6 +49,10 @@ export const borradorVacio = () => ({
   // Solo en la plantilla ORDENAR: jerarquía o reparto, y cuántos puntos.
   formatoOrden: FORMATO.JERARQUIA,
   puntos: 10,
+  // Solo en la plantilla AFIRMACIONES: cómo se responde cada frase.
+  respuestaFrase: 'SI_NO',
+  mideEscala: 'FRECUENCIA',
+  puntosEscala: 4,
   meta: { nombre: '', siglas: '', descripcion: '', autor: '', version: '' },
   estilos: [],
   preguntas: [],
@@ -162,27 +166,101 @@ export const nuevaPregunta = (formato = FORMATO.UNICA, opciones = []) => ({
   opciones,
 })
 
-/** Afirmación: "De acuerdo" suma 1 a su estilo; "En desacuerdo" no puntúa. */
-export const opcionesAfirmacion = (estiloId) => [
-  nuevaOpcion('De acuerdo', estiloId),
-  nuevaOpcion('En desacuerdo'),
-]
+/* Frases (plantilla AFIRMACIONES): se responden con Sí/No o con una escala. */
 
-/** Estilo al que pertenece una afirmación (el de "De acuerdo"). */
+export const RESPUESTA_FRASE = { SI_NO: 'SI_NO', ESCALA: 'ESCALA' }
+export const MIDE_ESCALA = { FRECUENCIA: 'FRECUENCIA', ACUERDO: 'ACUERDO' }
+
+/**
+ * Etiquetas de cada escala, de menos a más. La de 4 puntos no tiene punto
+ * medio y obliga a inclinarse; la de 5 tiene uno neutral.
+ */
+const ETIQUETAS_ESCALA = {
+  FRECUENCIA: {
+    4: [
+      'Nunca o casi nunca',
+      'Algunas veces',
+      'Bastantes veces',
+      'Siempre o casi siempre',
+    ],
+    5: ['Nunca', 'Casi nunca', 'A veces', 'Casi siempre', 'Siempre'],
+  },
+  ACUERDO: {
+    4: [
+      'Totalmente en desacuerdo',
+      'En desacuerdo',
+      'De acuerdo',
+      'Totalmente de acuerdo',
+    ],
+    5: [
+      'Totalmente en desacuerdo',
+      'En desacuerdo',
+      'Ni de acuerdo ni en desacuerdo',
+      'De acuerdo',
+      'Totalmente de acuerdo',
+    ],
+  },
+}
+
+/** Respuestas que verá el estudiante en cada frase, en el orden en que aparecen. */
+export const etiquetasFrase = (b) =>
+  b.respuestaFrase === RESPUESTA_FRASE.ESCALA
+    ? ETIQUETAS_ESCALA[b.mideEscala][b.puntosEscala]
+    : ['De acuerdo', 'En desacuerdo']
+
+/**
+ * Opciones de una frase. Sí/No: "De acuerdo" suma 1 al estilo. Escala: cada
+ * respuesta suma de 1 (la primera) a N (la última). Una frase al revés, escrita
+ * en contra del estilo, puntúa al contrario: "En desacuerdo" suma 1, o la
+ * escala va de N a 1.
+ */
+export const opcionesFrase = (b, estiloId, inversa = false) => {
+  if (b.respuestaFrase !== RESPUESTA_FRASE.ESCALA) {
+    return [
+      nuevaOpcion('De acuerdo', inversa ? null : estiloId),
+      nuevaOpcion('En desacuerdo', inversa ? estiloId : null),
+    ]
+  }
+  const etiquetas = etiquetasFrase(b)
+  const n = etiquetas.length
+  return etiquetas.map((texto, i) => ({
+    ...nuevaOpcion(texto),
+    pesos: estiloId ? [{ estiloId, peso: inversa ? n - i : i + 1 }] : [],
+  }))
+}
+
+/** Estilo al que pertenece una frase: el de la opción que puntúa. */
 export const estiloDeAfirmacion = (p) =>
-  p.opciones[0]?.pesos[0]?.estiloId ?? null
+  p.opciones.find((o) => o.pesos.length > 0)?.pesos[0]?.estiloId ?? null
+
+/** Rehace las opciones de todas las frases al cambiar la forma de responder. */
+export const sincronizarFrases = (b) =>
+  b.plantilla !== PLANTILLA.AFIRMACIONES
+    ? b
+    : {
+        ...b,
+        preguntas: b.preguntas.map((p) => ({
+          ...p,
+          opciones: opcionesFrase(b, estiloDeAfirmacion(p), p.inversa),
+        })),
+      }
 
 /** Pregunta nueva según la plantilla del asistente. */
-export const preguntaDePlantilla = (b, texto = '', estiloId = null) => {
+export const preguntaDePlantilla = (
+  b,
+  texto = '',
+  estiloId = null,
+  inversa = false,
+) => {
   const prim = primarios(b)
   const unaPorEstilo = () => prim.map((e) => nuevaOpcion('', e.id))
   switch (b.plantilla) {
     case PLANTILLA.AFIRMACIONES: {
       const p = nuevaPregunta(
         FORMATO.UNICA,
-        opcionesAfirmacion(estiloId ?? prim[0]?.id),
+        opcionesFrase(b, estiloId ?? prim[0]?.id, inversa),
       )
-      return { ...p, texto }
+      return { ...p, texto, inversa }
     }
     case PLANTILLA.VARIAS:
       return { ...nuevaPregunta(FORMATO.MULTIPLE, unaPorEstilo()), texto }

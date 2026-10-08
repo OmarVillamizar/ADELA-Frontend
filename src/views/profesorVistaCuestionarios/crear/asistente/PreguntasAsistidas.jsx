@@ -3,15 +3,18 @@ import PropTypes from 'prop-types'
 import SelectorEstilo from './SelectorEstilo'
 import {
   FORMATO,
+  MIDE_ESCALA,
   PLANTILLA,
+  RESPUESTA_FRASE,
   actualizarPregunta,
   agregarPregunta,
   duplicarPregunta,
   estiloDeAfirmacion,
+  etiquetasFrase,
   moverPregunta,
   nombreDe,
   nuevaOpcion,
-  opcionesAfirmacion,
+  opcionesFrase,
   preguntaDePlantilla,
   primarios,
   quitarPregunta,
@@ -65,7 +68,25 @@ Acciones.propTypes = {
   onQuitar: PropTypes.func.isRequired,
 }
 
-/** Frases de acuerdo/desacuerdo: cada una pertenece a un estilo. */
+/**
+ * Pista de redacción para una frase, o null. Una pregunta con "?" no encaja en
+ * una escala de "qué tanto"; una frase en negativo suele necesitar puntuar al
+ * revés.
+ */
+const pistaFrase = (texto, inversa, maxima) => {
+  const t = texto.trim()
+  if (!t) return null
+  if (t.endsWith('?'))
+    return 'Escríbela como afirmación, no como pregunta: el estudiante responde qué tanto se aplica a él.'
+  if (!inversa && /(^|\s)(no|nunca|jamás|jamas|evito)\s/i.test(` ${t} `))
+    return `Parece escrita en negativo. Si responder «${maxima}» muestra MENOS de este estilo, márcala «Al revés».`
+  return null
+}
+
+/**
+ * Frases que pertenecen a un estilo y se responden con Sí/No o con una escala
+ * (frecuencia o acuerdo). La forma de responder se elige en el primer paso.
+ */
 const Afirmaciones = ({ borrador, actualizar }) => {
   const prim = primarios(borrador)
   const [elegido, setEstiloNuevo] = useState(prim[0]?.id)
@@ -77,6 +98,14 @@ const Afirmaciones = ({ borrador, actualizar }) => {
     .split('\n')
     .map((l) => l.trim())
     .filter(Boolean)
+  const escala = borrador.respuestaFrase === RESPUESTA_FRASE.ESCALA
+  const etiquetas = etiquetasFrase(borrador)
+  const maxima = escala ? etiquetas[etiquetas.length - 1] : 'De acuerdo'
+  const ejemplo = escala
+    ? borrador.mideEscala === MIDE_ESCALA.FRECUENCIA
+      ? 'Ej.: Hago esquemas para estudiar un tema'
+      : 'Ej.: Aprendo mejor cuando practico'
+    : 'Ej.: Me gusta probar cosas nuevas'
 
   const agregar = (textos) =>
     actualizar((b) =>
@@ -87,50 +116,83 @@ const Afirmaciones = ({ borrador, actualizar }) => {
       ),
     )
 
+  const rehacer = (p, estiloId, inversa) =>
+    actualizar((b) =>
+      actualizarPregunta(b, p.id, {
+        inversa,
+        opciones: opcionesFrase(b, estiloId, inversa),
+      }),
+    )
+
   return (
     <>
-      <p className="adela-ayuda mt-0 mb-3">
-        Cada estudiante responderá «De acuerdo» o «En desacuerdo». Cada «De
-        acuerdo» suma un punto al estilo de la frase.
-      </p>
-      {borrador.preguntas.map((p, i) => (
-        <div key={p.id} className="adela-item">
-          <div className="adela-item__cabeza">
-            <span className="adela-item__num">{i + 1}</span>
-            <input
-              className="adela-input adela-crece"
-              aria-label={`Frase ${i + 1}`}
-              placeholder="Ej.: Me gusta probar cosas nuevas"
-              value={p.texto}
-              onChange={(e) =>
-                actualizar((b) =>
-                  actualizarPregunta(b, p.id, { texto: e.target.value }),
-                )
-              }
-            />
-            <Acciones
-              numero={i + 1}
-              total={borrador.preguntas.length}
-              onMover={(paso) =>
-                actualizar((b) => moverPregunta(b, p.id, paso))
-              }
-              onQuitar={() => actualizar((b) => quitarPregunta(b, p.id))}
-            />
-          </div>
-          <SelectorEstilo
-            etiqueta={`Estilo de la frase ${i + 1}`}
-            estilos={prim}
-            valor={estiloDeAfirmacion(p)}
-            onChange={(id) =>
-              actualizar((b) =>
-                actualizarPregunta(b, p.id, {
-                  opciones: opcionesAfirmacion(id),
-                }),
-              )
-            }
-          />
+      <div className="adela-ayuda mt-0 mb-3">
+        <p className="m-0">
+          Cada estudiante elegirá una de estas respuestas en cada frase:
+        </p>
+        <div className="adela-chips my-2">
+          {etiquetas.map((t, i) => (
+            <span key={t} className="adela-chip">
+              {t}
+              {escala && ` · ${i + 1}`}
+            </span>
+          ))}
         </div>
-      ))}
+        <p className="m-0">
+          {escala
+            ? `La respuesta suma de 1 a ${etiquetas.length} puntos al estilo de la frase.`
+            : '«De acuerdo» suma un punto al estilo de la frase.'}{' '}
+          Marca «Al revés» las frases escritas en contra del estilo: puntúan al
+          contrario.
+        </p>
+      </div>
+      {borrador.preguntas.map((p, i) => {
+        const pista = pistaFrase(p.texto, p.inversa, maxima)
+        return (
+          <div key={p.id} className="adela-item">
+            <div className="adela-item__cabeza">
+              <span className="adela-item__num">{i + 1}</span>
+              <input
+                className="adela-input adela-crece"
+                aria-label={`Frase ${i + 1}`}
+                placeholder={ejemplo}
+                value={p.texto}
+                onChange={(e) =>
+                  actualizar((b) =>
+                    actualizarPregunta(b, p.id, { texto: e.target.value }),
+                  )
+                }
+              />
+              <Acciones
+                numero={i + 1}
+                total={borrador.preguntas.length}
+                onMover={(paso) =>
+                  actualizar((b) => moverPregunta(b, p.id, paso))
+                }
+                onQuitar={() => actualizar((b) => quitarPregunta(b, p.id))}
+              />
+            </div>
+            <div className="adela-fila">
+              <SelectorEstilo
+                etiqueta={`Estilo de la frase ${i + 1}`}
+                estilos={prim}
+                valor={estiloDeAfirmacion(p)}
+                onChange={(id) => rehacer(p, id, Boolean(p.inversa))}
+              />
+              <button
+                type="button"
+                className="adela-chip-btn"
+                aria-pressed={Boolean(p.inversa)}
+                title="La frase está escrita en contra del estilo: puntúa al contrario"
+                onClick={() => rehacer(p, estiloDeAfirmacion(p), !p.inversa)}
+              >
+                ⇅ Al revés
+              </button>
+            </div>
+            {pista && <p className="adela-ayuda mb-0">{pista}</p>}
+          </div>
+        )
+      })}
 
       <div className="adela-panel mt-3 mb-0" style={{ boxShadow: 'none' }}>
         <div className="adela-fila mb-2">
@@ -154,9 +216,7 @@ const Afirmaciones = ({ borrador, actualizar }) => {
             <textarea
               className="adela-input mt-2"
               rows={6}
-              placeholder={
-                'Una frase por línea.\nMe gusta probar cosas nuevas\nPrefiero pensar antes de actuar'
-              }
+              placeholder={`Una frase por línea.\n${ejemplo.replace('Ej.: ', '')}`}
               value={pegado}
               onChange={(e) => setPegado(e.target.value)}
             />
