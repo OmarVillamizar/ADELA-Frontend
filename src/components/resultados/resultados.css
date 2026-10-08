@@ -484,11 +484,22 @@
 
 .adela-grafico {
   position: relative;
-  min-height: 280px;
+  min-height: 320px;
 }
 
+/* CoreUI envuelve el canvas en .chart-wrapper sin altura; con
+   maintainAspectRatio: false, Chart.js caería a 150px. Ocupa el contenedor. */
+.adela-grafico > .chart-wrapper {
+  position: absolute;
+  inset: 0;
+}
+
+/* El plano es cuadrado: los dos ejes tienen el mismo peso visual. */
 .adela-grafico--mapa {
-  min-height: 380px;
+  min-height: 0;
+  aspect-ratio: 1;
+  max-width: 420px;
+  margin-inline: auto;
 }
 
 /* ---------- Estado vacío y carga ---------- */
