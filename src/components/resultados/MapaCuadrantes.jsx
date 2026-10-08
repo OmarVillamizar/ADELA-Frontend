@@ -10,12 +10,17 @@ import {
 } from '../../util/calificacion/opcionesGrafico'
 import './resultados.css'
 
+const EPS = 1e-9
+
 const titulo = (nombre) => {
   const polos = polosDe(nombre)
   return polos ? `← ${polos.b} · ${polos.a} →` : nombre
 }
 
-const linea = (puntos) => ({
+// Cada línea necesita su propio label: al actualizar, CChart empareja los
+// datasets por label y, sin él, la segunda línea pisa los datos de la primera.
+const linea = (label, puntos) => ({
+  label,
   data: puntos,
   showLine: true,
   pointRadius: 0,
@@ -41,6 +46,10 @@ const MapaCuadrantes = ({ plano, estilos, puntos, grupal }) => {
       ? { x: ejeX.valor, y: ejeY.valor }
       : null
   const nube = grupal ? (puntos ?? []) : punto ? [punto] : []
+  // Igual que el servidor: alto solo por encima del corte; igual al corte es bajo.
+  const activa =
+    punto &&
+    `x${punto.x > plano.corteX + EPS ? 'Alto' : 'Bajo'}Y${punto.y > plano.corteY + EPS ? 'Alto' : 'Bajo'}`
   const x = { min: ejeX.rangoMin, max: ejeX.rangoMax }
   const y = { min: ejeY.rangoMin, max: ejeY.rangoMax }
 
@@ -56,11 +65,11 @@ const MapaCuadrantes = ({ plano, estilos, puntos, grupal }) => {
         borderColor: grupal ? 'rgba(42, 120, 214, 0.6)' : '#ffffff',
         borderWidth: grupal ? 1 : 2,
       },
-      linea([
+      linea('Corte horizontal', [
         { x: plano.corteX, y: y.min },
         { x: plano.corteX, y: y.max },
       ]),
-      linea([
+      linea('Corte vertical', [
         { x: x.min, y: plano.corteY },
         { x: x.max, y: plano.corteY },
       ]),
@@ -84,6 +93,11 @@ const MapaCuadrantes = ({ plano, estilos, puntos, grupal }) => {
             {grupal
               ? ' Cada punto es un resultado, sin nombre.'
               : !punto && ' No se pudo ubicar este resultado en el mapa.'}
+            {punto &&
+              ` Tu punto: horizontal ${formatoNumero(punto.x)}, vertical ${formatoNumero(punto.y)}.`}
+            {punto &&
+              (punto.x === plano.corteX || punto.y === plano.corteY) &&
+              ' Cae justo sobre un corte, así que cuenta del lado bajo de esa línea.'}
           </p>
         </div>
       </div>
@@ -97,7 +111,7 @@ const MapaCuadrantes = ({ plano, estilos, puntos, grupal }) => {
             tituloX: titulo(plano.ejeX),
             tituloY: titulo(plano.ejeY),
           })}
-          plugins={[esquinasPlano(plano)]}
+          plugins={[esquinasPlano(plano, activa)]}
         />
       </div>
     </section>
