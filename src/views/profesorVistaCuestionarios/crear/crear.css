@@ -1,0 +1,383 @@
+/*
+ * Creación de cuestionarios (asistido y avanzado). Usa los tokens de
+ * components/resultados/resultados.css (.adela-r): mismo lenguaje que los
+ * reportes y los controles de respuesta.
+ */
+
+.adela-crear {
+  max-width: 980px;
+  margin: 0 auto;
+  padding-bottom: 5.5rem;
+}
+
+.adela-crear h2 {
+  margin: 0;
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.adela-crear__lema {
+  margin: 0.35rem 0 1.5rem;
+  color: var(--ink-3);
+  max-width: 62ch;
+}
+
+/* ---------- Tarjetas seleccionables ---------- */
+
+.adela-tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.9rem;
+}
+
+.adela-tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1.1rem 1.15rem;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 2px 0 var(--line);
+  transition:
+    transform 140ms var(--ease),
+    border-color 140ms var(--ease),
+    box-shadow 140ms var(--ease);
+}
+
+.adela-tarjeta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 0 var(--line);
+}
+
+.adela-tarjeta[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: 0 2px 0 var(--accent-press);
+}
+
+.adela-tarjeta:focus-visible {
+  outline: 3px solid rgba(200, 16, 46, 0.35);
+  outline-offset: 2px;
+}
+
+.adela-tarjeta__marca {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.adela-tarjeta__titulo {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 800;
+}
+
+.adela-tarjeta__texto {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 0.9rem;
+}
+
+.adela-tarjeta__ejemplo {
+  margin: 0.25rem 0 0;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: 0.82rem;
+  font-style: italic;
+}
+
+/* ---------- Pasos del asistente ---------- */
+
+.adela-pasos {
+  display: flex;
+  gap: 0.35rem;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  list-style: none;
+}
+
+.adela-pasos li {
+  flex: 1;
+  min-width: 0;
+}
+
+.adela-pasos__barra {
+  height: 5px;
+  border-radius: 999px;
+  background: var(--line);
+  transition: background-color 200ms var(--ease);
+}
+
+.adela-pasos li[data-estado='hecho'] .adela-pasos__barra,
+.adela-pasos li[aria-current='step'] .adela-pasos__barra {
+  background: var(--accent);
+}
+
+.adela-pasos__nombre {
+  display: block;
+  margin-top: 0.35rem;
+  overflow: hidden;
+  color: var(--ink-3);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adela-pasos li[aria-current='step'] .adela-pasos__nombre {
+  color: var(--ink);
+}
+
+/* ---------- Campos ---------- */
+
+.adela-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.adela-campo > span {
+  color: var(--ink-2);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.adela-input {
+  width: 100%;
+  min-height: 2.4rem;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-ctl);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+}
+
+.adela-input:focus {
+  outline: none;
+  border-color: var(--ink-3);
+  box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.18);
+}
+
+.adela-input--num {
+  width: 5.5rem;
+  text-align: center;
+}
+
+textarea.adela-input {
+  min-height: 5rem;
+  resize: vertical;
+}
+
+.adela-rejilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.9rem;
+}
+
+.adela-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+}
+
+.adela-fila--fin {
+  justify-content: flex-end;
+}
+
+.adela-crece {
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+/* ---------- Chips seleccionables ---------- */
+
+.adela-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.adela-chip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2rem;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background-color 140ms var(--ease),
+    color 140ms var(--ease),
+    border-color 140ms var(--ease);
+}
+
+.adela-chip-btn[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.adela-chip-btn:focus-visible {
+  outline: 3px solid rgba(200, 16, 46, 0.35);
+  outline-offset: 1px;
+}
+
+.adela-chip-btn__quitar {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* ---------- Elementos editables (preguntas, estilos, niveles) ---------- */
+
+.adela-item {
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-ctl);
+  background: var(--surface);
+}
+
+.adela-item + .adela-item {
+  margin-top: 0.75rem;
+}
+
+.adela-item--error {
+  border-color: var(--accent);
+}
+
+.adela-item__cabeza {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.adela-item__num {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 8px;
+  background: var(--ink);
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 800;
+  font-style: italic;
+}
+
+.adela-sub {
+  margin-top: 0.6rem;
+  padding-left: 0.9rem;
+  border-left: 2px solid var(--line-soft);
+}
+
+.adela-sub > * + * {
+  margin-top: 0.45rem;
+}
+
+/* ---------- Mensajes ---------- */
+
+.adela-errores {
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem 0.85rem 2rem;
+  border-radius: var(--radius-card);
+  background: var(--accent-soft);
+  color: var(--accent-press);
+  font-size: 0.9rem;
+}
+
+.adela-errores button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.adela-falta {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: 0.85rem;
+}
+
+/* ---------- Barra de navegación inferior ---------- */
+
+.adela-navegacion {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(6px);
+}
+
+/* ---------- Secciones plegables (avanzado) ---------- */
+
+.adela-seccion > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  list-style: none;
+  cursor: pointer;
+}
+
+.adela-seccion > summary::-webkit-details-marker {
+  display: none;
+}
+
+.adela-seccion > summary::after {
+  content: '+';
+  color: var(--ink-3);
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.adela-seccion[open] > summary::after {
+  content: '−';
+}
+
+.adela-seccion[open] > summary {
+  margin-bottom: 1rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adela-tarjeta,
+  .adela-chip-btn,
+  .adela-pasos__barra {
+    transition: none;
+  }
+}
