@@ -164,6 +164,19 @@ const ProfesorVistaCuestionarios = () => {
                             Ver Detalles
                           </CButton>
                           <CButton
+                            color="secondary"
+                            size="sm"
+                            variant="outline"
+                            className="me-2"
+                            onClick={() =>
+                              navigate(
+                                `/administrar-cuestionarios/${cuestionario.id}/interpretacion`,
+                              )
+                            }
+                          >
+                            Lectura de resultados
+                          </CButton>
+                          <CButton
                             color="danger"
                             size="sm"
                             onClick={() =>

@@ -318,11 +318,45 @@ export const interpretacionVigente = (b) =>
     ? interpretacionDeLectura(b)
     : b.interpretacion
 
+/**
+ * InterpretacionDTO desde la forma del editor. nombre traduce el id local de
+ * un estilo a su nombre (el servidor identifica las bandas por nombre); el
+ * orden de cada banda es su posición dentro de su estilo y escala.
+ */
+export const interpretacionADTO = (inter, nombre, esIpsativo = null) => {
+  const ordenBanda = new Map()
+  return {
+    esquema: inter.esquema,
+    delta: numero(inter.delta),
+    esIpsativo,
+    bandas: inter.bandas.map((x) => {
+      const clave = `${x.estiloId}|${x.escala}`
+      const orden = (ordenBanda.get(clave) ?? 0) + 1
+      ordenBanda.set(clave, orden)
+      return {
+        estilo: nombre(x.estiloId).trim(),
+        escala: x.escala,
+        limiteInferior: numero(x.li),
+        limiteSuperior: numero(x.ls),
+        etiqueta: (x.etiqueta ?? '').trim(),
+        orden,
+      }
+    }),
+    escalones:
+      inter.esquema === ESQUEMA.RELATIVO_ESCALONADO
+        ? inter.escalones.map((s) => ({
+            totalMin: numero(s.totalMin),
+            totalMax: numero(s.totalMax),
+            distancia: numero(s.distancia),
+          }))
+        : [],
+  }
+}
+
 /** CuestionarioDTO para POST /api/cuestionarios. */
 export const aDTO = (b) => {
   const idx = new Map(b.estilos.map((e, i) => [e.id, i + 1]))
   const inter = interpretacionVigente(b)
-  const ordenBanda = new Map()
   return {
     ...Object.fromEntries(
       Object.entries(b.meta).map(([k, v]) => [k, (v ?? '').trim()]),
@@ -360,32 +394,7 @@ export const aDTO = (b) => {
         })),
       }
     }),
-    interpretacion: {
-      esquema: inter.esquema,
-      delta: numero(inter.delta),
-      esIpsativo: null,
-      bandas: inter.bandas.map((x) => {
-        const clave = `${x.estiloId}|${x.escala}`
-        const orden = (ordenBanda.get(clave) ?? 0) + 1
-        ordenBanda.set(clave, orden)
-        return {
-          estilo: nombreDe(b, x.estiloId).trim(),
-          escala: x.escala,
-          limiteInferior: numero(x.li),
-          limiteSuperior: numero(x.ls),
-          etiqueta: (x.etiqueta ?? '').trim(),
-          orden,
-        }
-      }),
-      escalones:
-        inter.esquema === ESQUEMA.RELATIVO_ESCALONADO
-          ? inter.escalones.map((s) => ({
-              totalMin: numero(s.totalMin),
-              totalMax: numero(s.totalMax),
-              distancia: numero(s.distancia),
-            }))
-          : [],
-    },
+    interpretacion: interpretacionADTO(inter, (id) => nombreDe(b, id)),
   }
 }
 
@@ -417,6 +426,85 @@ export const aVistaPrevia = (b) => {
 /* ------------------------------------------------------------------ */
 
 const esNumero = (v) => v !== '' && v != null && Number.isFinite(Number(v))
+
+/** Problemas de la lectura de resultados (mismas reglas que el servidor). */
+export const erroresInterpretacion = (inter, nombre) => {
+  const errores = []
+  const error = (seccion, mensaje, ref = null) =>
+    errores.push({ seccion, mensaje, ref })
+  if (inter.esquema === ESQUEMA.RELATIVO) {
+    const d = numero(inter.delta)
+    if (d == null || d < 0 || d > 100)
+      error('interpretacion', 'El margen de empate debe estar entre 0 y 100.')
+  }
+  const grupos = new Map()
+  inter.bandas.forEach((x) => {
+    const estilo = nombre(x.estiloId) || 'un estilo'
+    if (!(x.etiqueta ?? '').trim() || x.etiqueta.trim().length > 60)
+      error(
+        'interpretacion',
+        `Un nivel de ${estilo} no tiene nombre (máx. 60).`,
+        x.id,
+      )
+    if (!esNumero(x.li) || !esNumero(x.ls) || Number(x.li) > Number(x.ls))
+      error(
+        'interpretacion',
+        `Un nivel de ${estilo} tiene "desde" mayor que "hasta".`,
+        x.id,
+      )
+    const clave = `${x.estiloId}|${x.escala}`
+    grupos.set(clave, [...(grupos.get(clave) ?? []), x])
+  })
+  grupos.forEach((lista) => {
+    const ord = lista
+      .filter((x) => esNumero(x.li) && esNumero(x.ls))
+      .sort((p, q) => Number(p.li) - Number(q.li))
+    for (let i = 1; i < ord.length; i++) {
+      const li = Number(ord[i].li)
+      const anterior = Number(ord[i - 1].ls)
+      const solapa =
+        ord[i].escala === ESCALA.POMP ? li < anterior : li <= anterior
+      if (solapa) {
+        error(
+          'interpretacion',
+          `Los niveles de ${nombre(ord[i].estiloId)} (${ord[i].escala === ESCALA.POMP ? '%' : 'puntaje'}) se superponen.`,
+          ord[i].id,
+        )
+        break
+      }
+    }
+  })
+  if (inter.esquema === ESQUEMA.RELATIVO_ESCALONADO) {
+    if (inter.escalones.length === 0)
+      error(
+        'interpretacion',
+        'El perfil escalonado necesita la tabla de escalones.',
+      )
+    const ok = inter.escalones.every(
+      (s) =>
+        esNumero(s.totalMin) &&
+        esNumero(s.totalMax) &&
+        esNumero(s.distancia) &&
+        Number(s.totalMin) <= Number(s.totalMax) &&
+        Number(s.distancia) >= 0,
+    )
+    if (!ok)
+      error(
+        'interpretacion',
+        'Cada escalón necesita "total desde" ≤ "total hasta" y una distancia ≥ 0.',
+      )
+    const ord = [...inter.escalones].sort(
+      (p, q) => Number(p.totalMin) - Number(q.totalMin),
+    )
+    for (let i = 1; i < ord.length; i++) {
+      if (Number(ord[i].totalMin) <= Number(ord[i - 1].totalMax)) {
+        error('interpretacion', 'Los escalones se superponen.')
+        break
+      }
+    }
+  }
+  return errores
+}
 
 /**
  * Problemas que impiden crear, en lenguaje llano. Cada uno dice a qué sección
@@ -544,78 +632,8 @@ export const validarBorrador = (b) => {
       )
   })
 
-  // Interpretación
-  const inter = interpretacionVigente(b)
-  if (inter.esquema === ESQUEMA.RELATIVO) {
-    const d = numero(inter.delta)
-    if (d == null || d < 0 || d > 100)
-      error('interpretacion', 'El margen de empate debe estar entre 0 y 100.')
-  }
-  const grupos = new Map()
-  inter.bandas.forEach((x) => {
-    const nombre = nombreDe(b, x.estiloId) || 'un estilo'
-    if (!(x.etiqueta ?? '').trim() || x.etiqueta.trim().length > 60)
-      error(
-        'interpretacion',
-        `Un nivel de ${nombre} no tiene nombre (máx. 60).`,
-        x.id,
-      )
-    if (!esNumero(x.li) || !esNumero(x.ls) || Number(x.li) > Number(x.ls))
-      error(
-        'interpretacion',
-        `Un nivel de ${nombre} tiene "desde" mayor que "hasta".`,
-        x.id,
-      )
-    const clave = `${x.estiloId}|${x.escala}`
-    grupos.set(clave, [...(grupos.get(clave) ?? []), x])
-  })
-  grupos.forEach((lista) => {
-    const ord = lista
-      .filter((x) => esNumero(x.li) && esNumero(x.ls))
-      .sort((p, q) => Number(p.li) - Number(q.li))
-    for (let i = 1; i < ord.length; i++) {
-      const li = Number(ord[i].li)
-      const anterior = Number(ord[i - 1].ls)
-      const solapa =
-        ord[i].escala === ESCALA.POMP ? li < anterior : li <= anterior
-      if (solapa) {
-        error(
-          'interpretacion',
-          `Los niveles de ${nombreDe(b, ord[i].estiloId)} (${ord[i].escala === ESCALA.POMP ? '%' : 'puntaje'}) se superponen.`,
-          ord[i].id,
-        )
-        break
-      }
-    }
-  })
-  if (inter.esquema === ESQUEMA.RELATIVO_ESCALONADO) {
-    if (inter.escalones.length === 0)
-      error(
-        'interpretacion',
-        'El perfil escalonado necesita la tabla de escalones.',
-      )
-    const ok = inter.escalones.every(
-      (s) =>
-        esNumero(s.totalMin) &&
-        esNumero(s.totalMax) &&
-        esNumero(s.distancia) &&
-        Number(s.totalMin) <= Number(s.totalMax) &&
-        Number(s.distancia) >= 0,
-    )
-    if (!ok)
-      error(
-        'interpretacion',
-        'Cada escalón necesita "total desde" ≤ "total hasta" y una distancia ≥ 0.',
-      )
-    const ord = [...inter.escalones].sort(
-      (p, q) => Number(p.totalMin) - Number(q.totalMin),
-    )
-    for (let i = 1; i < ord.length; i++) {
-      if (Number(ord[i].totalMin) <= Number(ord[i - 1].totalMax)) {
-        error('interpretacion', 'Los escalones se superponen.')
-        break
-      }
-    }
-  }
+  errores.push(
+    ...erroresInterpretacion(interpretacionVigente(b), (id) => nombreDe(b, id)),
+  )
   return errores
 }

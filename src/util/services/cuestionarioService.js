@@ -31,6 +31,20 @@ export const eliminarCuestionario = async (id) => {
 }
 
 // Obtener Cuestionarios por Grupo
+// Lectura de resultados (esquema, niveles, escalones). Solo administrador.
+export const obtenerInterpretacion = async (id) => {
+  const response = await api.get(`/api/cuestionarios/${id}/interpretacion`)
+  return response.data
+}
+
+export const guardarInterpretacion = async (id, interpretacion) => {
+  const response = await api.put(
+    `/api/cuestionarios/${id}/interpretacion`,
+    interpretacion,
+  )
+  return response.data
+}
+
 export const obtenerCuestionariosPorGrupo = async (idGrupo) => {
   const response = await api.get(`/api/cuestionarios/reporte/grupo/${idGrupo}`)
   return response.data

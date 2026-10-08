@@ -60,6 +60,10 @@ const ProfesorVistaCuestionarios = React.lazy(
   () =>
     import('./views/profesorVistaCuestionarios/ProfesorVistaCuestionarios.js'),
 )
+const InterpretacionCuestionario = React.lazy(
+  () =>
+    import('./views/profesorVistaCuestionarios/InterpretacionCuestionario.jsx'),
+)
 
 const CrearCuestionarios = React.lazy(
   () => import('./views/profesorVistaCuestionarios/CrearCuestionarios.js'),
@@ -112,6 +116,12 @@ const protectedRoutes = [
     name: 'Administrar Cuestionarios',
     element: ProfesorVistaCuestionarios,
     roles: [Roles.ADMINISTRADOR, Roles.PROFESOR_ACTIVO],
+  },
+  {
+    path: '/administrar-cuestionarios/:id/interpretacion',
+    name: 'Lectura de resultados',
+    element: InterpretacionCuestionario,
+    roles: [Roles.ADMINISTRADOR],
   },
   //CREACION CUESTIONARIOS
   {
