@@ -4,10 +4,11 @@ import Segmentado from '../../../../components/resultados/Segmentado'
 import {
   CORTE,
   CORTES_REFERENCIA,
-  ESQUINAS,
   editarPlano,
   elegirCorte,
+  esquinasDe,
   intercambiarEjes,
+  ladosDe,
   planoAsistenteDe,
   polosNombres,
 } from '../borrador'
@@ -29,9 +30,12 @@ const PlanoAsistente = ({ borrador, actualizar }) => {
   const x = estilo(plano.ejeX)
   const y = estilo(plano.ejeY)
   if (!x || !y) return null
-  const polosX = polosNombres(borrador, x)
-  const polosY = polosNombres(borrador, y)
-  const [bajoAlto, altoAlto, bajoBajo, altoBajo] = ESQUINAS
+  const lados = ladosDe(
+    plano,
+    polosNombres(borrador, x),
+    polosNombres(borrador, y),
+  )
+  const [arribaIzq, arribaDer, abajoIzq, abajoDer] = esquinasDe(plano)
   const esquina = ([k, lugar]) => (
     <input
       key={k}
@@ -64,21 +68,38 @@ const PlanoAsistente = ({ borrador, actualizar }) => {
       </p>
       <div className="adela-cruz mb-3">
         <span className="adela-cruz__polo adela-cruz__polo--arriba">
-          ↑ {polosY.a}
+          ↑ {lados.arriba}
         </span>
         <span className="adela-cruz__polo adela-cruz__polo--izq">
-          ← {polosX.b}
+          ← {lados.izq}
         </span>
-        {esquina(bajoAlto)}
-        {esquina(altoAlto)}
+        {esquina(arribaIzq)}
+        {esquina(arribaDer)}
         <span className="adela-cruz__polo adela-cruz__polo--der">
-          {polosX.a} →
+          {lados.der} →
         </span>
-        {esquina(bajoBajo)}
-        {esquina(altoBajo)}
+        {esquina(abajoIzq)}
+        {esquina(abajoDer)}
         <span className="adela-cruz__polo adela-cruz__polo--abajo">
-          ↓ {polosY.b}
+          ↓ {lados.abajo}
         </span>
+      </div>
+      <div className="adela-fila mb-3" style={{ gap: '1rem' }}>
+        {[
+          ['invertirX', 'Invertir horizontal'],
+          ['invertirY', 'Invertir vertical'],
+        ].map(([k, texto]) => (
+          <label key={k} className="adela-fila" style={{ gap: '0.35rem' }}>
+            <input
+              type="checkbox"
+              checked={Boolean(plano[k])}
+              onChange={(e) =>
+                actualizar((b) => editarPlano(b, { [k]: e.target.checked }))
+              }
+            />
+            {texto}
+          </label>
+        ))}
       </div>
 
       <div className="adela-campo mb-2">

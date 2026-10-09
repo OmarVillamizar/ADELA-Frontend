@@ -12,9 +12,13 @@ import './resultados.css'
 
 const EPS = 1e-9
 
-const titulo = (nombre) => {
+/** "← bajo · alto →", o al revés si el eje se dibuja invertido. */
+const titulo = (nombre, invertido) => {
   const polos = polosDe(nombre)
-  return polos ? `← ${polos.b} · ${polos.a} →` : nombre
+  if (!polos) return nombre
+  return invertido
+    ? `← ${polos.a} · ${polos.b} →`
+    : `← ${polos.b} · ${polos.a} →`
 }
 
 // Cada línea necesita su propio label: al actualizar, CChart empareja los
@@ -108,8 +112,10 @@ const MapaCuadrantes = ({ plano, estilos, puntos, grupal }) => {
           options={dispersionPlano({
             x,
             y,
-            tituloX: titulo(plano.ejeX),
-            tituloY: titulo(plano.ejeY),
+            tituloX: titulo(plano.ejeX, plano.invertirX),
+            tituloY: titulo(plano.ejeY, plano.invertirY),
+            invertirX: Boolean(plano.invertirX),
+            invertirY: Boolean(plano.invertirY),
           })}
           plugins={[esquinasPlano(plano, activa)]}
         />
@@ -128,6 +134,8 @@ MapaCuadrantes.propTypes = {
     xBajoYAlto: PropTypes.string,
     xBajoYBajo: PropTypes.string,
     xAltoYBajo: PropTypes.string,
+    invertirX: PropTypes.bool,
+    invertirY: PropTypes.bool,
   }).isRequired,
   estilos: PropTypes.arrayOf(PropTypes.object).isRequired,
   puntos: PropTypes.arrayOf(

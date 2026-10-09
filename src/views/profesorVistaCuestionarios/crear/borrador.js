@@ -175,13 +175,35 @@ export const polosDeNombre = (nombre) => {
 /* ------------------------------------------------------------------ */
 
 /** Cortes de referencia (inventario de ciclo de aprendizaje 3.1): X ≤ 6, Y ≤ 7 es lado bajo. */
-/** Esquinas del plano con su rótulo para mensajes. */
-export const ESQUINAS = [
-  ['xBajoYAlto', 'izquierda arriba'],
-  ['xAltoYAlto', 'derecha arriba'],
-  ['xBajoYBajo', 'izquierda abajo'],
-  ['xAltoYBajo', 'derecha abajo'],
+const LUGARES = [
+  [false, true, 'izquierda arriba'],
+  [true, true, 'derecha arriba'],
+  [false, false, 'izquierda abajo'],
+  [true, false, 'derecha abajo'],
 ]
+
+/**
+ * Esquinas del plano en orden de lectura (arriba izq., arriba der., abajo
+ * izq., abajo der.) con su rótulo. La clave nombra el puntaje (alto = por
+ * encima del corte); dónde se dibuja depende de la orientación: con invertirX
+ * el lado alto de X va a la izquierda y con invertirY el de Y va abajo.
+ */
+export const esquinasDe = (plano) =>
+  LUGARES.map(([der, arriba, lugar]) => [
+    `x${der !== Boolean(plano?.invertirX) ? 'Alto' : 'Bajo'}Y${arriba !== Boolean(plano?.invertirY) ? 'Alto' : 'Bajo'}`,
+    lugar,
+  ])
+
+/** Esquinas con la orientación por defecto (lado alto a la derecha y arriba). */
+export const ESQUINAS = esquinasDe(null)
+
+/** Polo que se dibuja en cada lado del plano. polosX/Y son { a: alto, b: bajo }. */
+export const ladosDe = (plano, polosX, polosY) => ({
+  izq: plano.invertirX ? polosX.a : polosX.b,
+  der: plano.invertirX ? polosX.b : polosX.a,
+  arriba: plano.invertirY ? polosY.b : polosY.a,
+  abajo: plano.invertirY ? polosY.a : polosY.b,
+})
 
 export const CORTES_REFERENCIA = { x: 6, y: 7 }
 
@@ -194,6 +216,8 @@ export const planoVacio = (ejeX = '', ejeY = '') => ({
   xBajoYAlto: '',
   xBajoYBajo: '',
   xAltoYBajo: '',
+  invertirX: false,
+  invertirY: false,
 })
 
 /**
@@ -480,6 +504,8 @@ export const intercambiarEjes = (b) => {
     corteY: p.corteX,
     xBajoYAlto: p.xAltoYBajo,
     xAltoYBajo: p.xBajoYAlto,
+    invertirX: p.invertirY,
+    invertirY: p.invertirX,
   }
   return { ...b, planoAsistente: { ...g, plano } }
 }
@@ -522,6 +548,8 @@ export const aplicarModeloCiclo = (b) => {
     ids[nombre] = n.estilos.at(-1).id
   })
   // Lo alto de cada eje es hacia el primer polo: hacer − observar, pensar − sentir.
+  // Se dibuja como la rejilla del inventario 3.1: hacer a la izquierda y pensar
+  // abajo, así que Convergente queda abajo a la izquierda.
   n = agregarPar(n, ids['Experimentación activa'], ids['Observación reflexiva'])
   n = agregarPar(
     n,
@@ -536,6 +564,8 @@ export const aplicarModeloCiclo = (b) => {
       xBajoYAlto: 'Asimilador',
       xBajoYBajo: 'Divergente',
       xAltoYBajo: 'Acomodador',
+      invertirX: true,
+      invertirY: true,
     }),
     CORTE.REFERENCIA,
   )
@@ -638,6 +668,8 @@ export const interpretacionADTO = (inter, nombre, esIpsativo = null) => {
             ...Object.fromEntries(
               ESQUINAS.map(([k]) => [k, (inter.plano[k] ?? '').trim()]),
             ),
+            invertirX: Boolean(inter.plano.invertirX),
+            invertirY: Boolean(inter.plano.invertirY),
           },
         }
       : {}),
@@ -826,7 +858,7 @@ export const erroresInterpretacion = (inter, nombre) => {
         )
     })
     const vistos = new Set()
-    ESQUINAS.forEach(([k, lugar]) => {
+    esquinasDe(p).forEach(([k, lugar]) => {
       const nombreEsquina = (p[k] ?? '').trim()
       if (!nombreEsquina || nombreEsquina.length > 60)
         error(

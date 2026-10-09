@@ -155,13 +155,22 @@ export const estiloBarra = (color) => ({
 })
 
 /**
- * Mapa de cuadrantes (dispersión): cada eje va de su mínimo a su máximo y los
- * títulos nombran los polos ("← B · A →"). Solo el primer dataset (los puntos)
- * tiene tooltip; los otros dos son las líneas de corte.
+ * Mapa de cuadrantes (dispersión): cada eje va de su mínimo a su máximo (o al
+ * revés con invertirX / invertirY) y los títulos nombran los polos
+ * ("← B · A →"). Solo el primer dataset (los puntos) tiene tooltip; los otros
+ * dos son las líneas de corte.
  */
-export const dispersionPlano = ({ x, y, tituloX, tituloY }) => {
-  const eje = (rango, titulo) => ({
+export const dispersionPlano = ({
+  x,
+  y,
+  tituloX,
+  tituloY,
+  invertirX = false,
+  invertirY = false,
+}) => {
+  const eje = (rango, titulo, reverse) => ({
     type: 'linear',
+    reverse,
     min: rango.min,
     max: rango.max,
     grid: { color: REJILLA },
@@ -188,7 +197,10 @@ export const dispersionPlano = ({ x, y, tituloX, tituloY }) => {
         },
       },
     },
-    scales: { x: eje(x, tituloX), y: eje(y, tituloY) },
+    scales: {
+      x: eje(x, tituloX, invertirX),
+      y: eje(y, tituloY, invertirY),
+    },
   }
 }
 
@@ -196,43 +208,52 @@ export const dispersionPlano = ({ x, y, tituloX, tituloY }) => {
  * Plugin que escribe el nombre de cada esquina dentro del área del gráfico.
  * Con `activa` (la clave de una esquina, p. ej. 'xBajoYBajo') sombrea esa región
  * y resalta su nombre: así se ve de qué lado cuenta un punto que cae sobre un corte.
+ * La clave nombra el puntaje; con invertirX / invertirY el lado alto se dibuja a
+ * la izquierda o abajo.
  */
-export const esquinasPlano = (plano, activa) => ({
-  id: 'esquinasPlano',
-  beforeDatasetsDraw(chart) {
-    if (!activa) return
-    const { ctx, chartArea, scales } = chart
-    const cx = scales.x.getPixelForValue(plano.corteX)
-    const cy = scales.y.getPixelForValue(plano.corteY)
-    const xs = activa.startsWith('xAlto')
-      ? [cx, chartArea.right]
-      : [chartArea.left, cx]
-    const ys = activa.endsWith('YAlto')
-      ? [chartArea.top, cy]
-      : [cy, chartArea.bottom]
-    ctx.save()
-    ctx.fillStyle = COLOR_DATO_SUAVE
-    ctx.fillRect(xs[0], ys[0], xs[1] - xs[0], ys[1] - ys[0])
-    ctx.restore()
-  },
-  afterDatasetsDraw(chart) {
-    const { ctx, chartArea } = chart
-    const { left, right, top, bottom } = chartArea
-    const ancho = (right - left) / 2 - 12
-    ctx.save()
-    ;[
-      ['xBajoYAlto', left + 8, top + 8, 'left', 'top'],
-      ['xAltoYAlto', right - 8, top + 8, 'right', 'top'],
-      ['xBajoYBajo', left + 8, bottom - 8, 'left', 'bottom'],
-      ['xAltoYBajo', right - 8, bottom - 8, 'right', 'bottom'],
-    ].forEach(([clave, px, py, alinear, base]) => {
-      const esActiva = clave === activa
-      ctx.font = `${esActiva ? 800 : 600} 12px sans-serif`
-      ctx.fillStyle = esActiva ? COLOR_DATO : TINTA_SUAVE
-      ctx.textAlign = alinear
-      ctx.textBaseline = base
-      ctx.fillText(plano[clave], px, py, ancho)
-    })
-    ctx.restore()
-  },
-})
+export const esquinasPlano = (plano, activa) => {
+  const aLaDerecha = (clave) =>
+    clave.startsWith('xAlto') !== Boolean(plano.invertirX)
+  const arriba = (clave) => clave.endsWith('YAlto') !== Boolean(plano.invertirY)
+  return {
+    id: 'esquinasPlano',
+    beforeDatasetsDraw(chart) {
+      if (!activa) return
+      const { ctx, chartArea, scales } = chart
+      const cx = scales.x.getPixelForValue(plano.corteX)
+      const cy = scales.y.getPixelForValue(plano.corteY)
+      const xs = aLaDerecha(activa)
+        ? [cx, chartArea.right]
+        : [chartArea.left, cx]
+      const ys = arriba(activa) ? [chartArea.top, cy] : [cy, chartArea.bottom]
+      ctx.save()
+      ctx.fillStyle = COLOR_DATO_SUAVE
+      ctx.fillRect(xs[0], ys[0], xs[1] - xs[0], ys[1] - ys[0])
+      ctx.restore()
+    },
+    afterDatasetsDraw(chart) {
+      const { ctx, chartArea } = chart
+      const { left, right, top, bottom } = chartArea
+      const ancho = (right - left) / 2 - 12
+      ctx.save()
+      ;['xBajoYAlto', 'xAltoYAlto', 'xBajoYBajo', 'xAltoYBajo'].forEach(
+        (clave) => {
+          const der = aLaDerecha(clave)
+          const sube = arriba(clave)
+          const esActiva = clave === activa
+          ctx.font = `${esActiva ? 800 : 600} 12px sans-serif`
+          ctx.fillStyle = esActiva ? COLOR_DATO : TINTA_SUAVE
+          ctx.textAlign = der ? 'right' : 'left'
+          ctx.textBaseline = sube ? 'top' : 'bottom'
+          ctx.fillText(
+            plano[clave],
+            der ? right - 8 : left + 8,
+            sube ? top + 8 : bottom - 8,
+            ancho,
+          )
+        },
+      )
+      ctx.restore()
+    },
+  }
+}

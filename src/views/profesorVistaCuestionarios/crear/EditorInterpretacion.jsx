@@ -6,6 +6,8 @@ import {
   ESQUEMA,
   ESQUINAS,
   TIPO,
+  esquinasDe,
+  ladosDe,
   planoVacio,
   polosNombres,
   sugerirEsquinas,
@@ -69,8 +71,14 @@ const EditorPlano = ({ estilos, plano, onChange, marcados }) => {
   }
   const cambiar = (cambios) => onChange({ ...plano, ...cambios })
 
-  const polosX = polosEje(estilos, plano.ejeX)
-  const polosY = polosEje(estilos, plano.ejeY)
+  const lados = ladosDe(
+    plano,
+    polosEje(estilos, plano.ejeX) ?? {
+      a: 'Horizontal alto',
+      b: 'Horizontal bajo',
+    },
+    polosEje(estilos, plano.ejeY) ?? { a: 'Vertical alto', b: 'Vertical bajo' },
+  )
   const selectorEje = (campo, texto) => (
     <label className="adela-campo adela-crece">
       <span>{texto}</span>
@@ -99,7 +107,7 @@ const EditorPlano = ({ estilos, plano, onChange, marcados }) => {
       onChange={(e) => cambiar({ [k]: e.target.value })}
     />
   )
-  const [bajoAlto, altoAlto, bajoBajo, altoBajo] = ESQUINAS
+  const [arribaIzq, arribaDer, abajoIzq, abajoDer] = esquinasDe(plano)
 
   return (
     <div className="adela-item mb-3">
@@ -112,7 +120,8 @@ const EditorPlano = ({ estilos, plano, onChange, marcados }) => {
       </div>
       <p className="adela-ayuda mt-0 mb-3">
         El lado alto de cada eje es hacia el primer polo de &quot;A − B&quot;.
-        Invertir el orden invierte el eje.
+        Invertir el orden invierte el eje. Las casillas de invertir solo cambian
+        el dibujo: cada esquina conserva su nombre.
       </p>
       <div className="adela-fila mb-3">
         {[
@@ -129,23 +138,36 @@ const EditorPlano = ({ estilos, plano, onChange, marcados }) => {
             />
           </label>
         ))}
+        {[
+          ['invertirX', 'Invertir horizontal'],
+          ['invertirY', 'Invertir vertical'],
+        ].map(([k, texto]) => (
+          <label key={k} className="adela-fila" style={{ gap: '0.35rem' }}>
+            <input
+              type="checkbox"
+              checked={Boolean(plano[k])}
+              onChange={(e) => cambiar({ [k]: e.target.checked })}
+            />
+            {texto}
+          </label>
+        ))}
       </div>
       <div className="adela-cruz">
         <span className="adela-cruz__polo adela-cruz__polo--arriba">
-          ↑ {polosY?.a ?? 'Vertical alto'}
+          ↑ {lados.arriba}
         </span>
         <span className="adela-cruz__polo adela-cruz__polo--izq">
-          ← {polosX?.b ?? 'Horizontal bajo'}
+          ← {lados.izq}
         </span>
-        {esquina(bajoAlto)}
-        {esquina(altoAlto)}
+        {esquina(arribaIzq)}
+        {esquina(arribaDer)}
         <span className="adela-cruz__polo adela-cruz__polo--der">
-          {polosX?.a ?? 'Horizontal alto'} →
+          {lados.der} →
         </span>
-        {esquina(bajoBajo)}
-        {esquina(altoBajo)}
+        {esquina(abajoIzq)}
+        {esquina(abajoDer)}
         <span className="adela-cruz__polo adela-cruz__polo--abajo">
-          ↓ {polosY?.b ?? 'Vertical bajo'}
+          ↓ {lados.abajo}
         </span>
       </div>
     </div>
