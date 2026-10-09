@@ -15,11 +15,11 @@ img {
 }
 
 .header-brand {
-  padding: 15px 0;
+  padding: 6px 0;
 }
 
 .app-title {
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   font-weight: 600;
   color: #333;
   margin: 0;
@@ -27,13 +27,13 @@ img {
 }
 
 .adela-logo {
-  max-width: 160px;
+  max-width: 120px;
   height: auto;
 }
 
 /* Login cards - Desktop original */
 .login-card-group {
-  min-height: 300px;
+  min-height: 220px;
 }
 
 /* Acceso a cápsulas: discreto frente a los dos logins, pero visible. */
@@ -54,15 +54,15 @@ img {
 }
 
 .login-card-title {
-  font-size: 1.8rem;
+  font-size: 1.6rem;
   font-weight: bold;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .login-card-description {
   font-size: 1rem;
   line-height: 1.4;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .login-btn {
@@ -119,8 +119,17 @@ img {
     justify-content: space-between;
   }
   
+  /* Lados de igual ancho: el bloque central queda en el centro de la pantalla. */
+  .header-side {
+    flex: 1 1 0;
+  }
+
+  .header-side-end {
+    text-align: right;
+  }
+
   .app-title {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
   }
   
   .mobile-logos {

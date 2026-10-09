@@ -49,7 +49,7 @@ const Login = () => {
 
   const LoginButton = ({ userType, title, description }) => (
     <CCard
-      className={`h-100 ${userType === 'estudiante' ? 'p-4' : 'text-white bg-primary py-5 p-4'} login-card`}
+      className={`h-100 ${userType === 'estudiante' ? 'p-4' : 'text-white bg-primary p-4'} login-card`}
     >
       <CCardBody className="d-flex align-items-center justify-content-center">
         <div className="d-flex flex-column align-items-center justify-content-center text-center login-card-content">
@@ -95,18 +95,18 @@ const Login = () => {
         <CContainer fluid>
           <CHeaderBrand className="header-brand d-flex align-items-center justify-content-between w-100">
             {/* Desktop layout - logos on sides, title in center */}
-            <div className="d-none d-lg-flex align-items-center">
+            <div className="d-none d-lg-flex align-items-center header-side">
               <img
                 src={logoUfps}
                 alt="UFPS Logo"
                 className="img-fluid me-3"
-                style={{ width: '90px', height: '90px', objectFit: 'contain' }}
+                style={{ width: '64px', height: '64px', objectFit: 'contain' }}
               />
               <img
                 src={ingSistemas}
                 alt="Ingeniería de Sistemas"
                 className="img-fluid"
-                style={{ width: '90px', height: '90px', objectFit: 'contain' }}
+                style={{ width: '64px', height: '64px', objectFit: 'contain' }}
               />
             </div>
 
@@ -116,18 +116,18 @@ const Login = () => {
                 src={AdelaTitle}
                 alt="Adela Title"
                 className="img-fluid adela-logo"
-                style={{ width: '160px', height: 'auto', objectFit: 'contain', display: 'block' }}
+                style={{ width: '120px', height: 'auto', objectFit: 'contain', display: 'block' }}
               />
               <h2 className="mt-1 app-title">Aplicativo para la Detección de Estilo del Aprendizaje</h2>
             </div>
 
             {/* Desktop right logo */}
-            <div className="d-none d-lg-block">
+            <div className="d-none d-lg-block header-side header-side-end">
               <img
                 src={chaealogo}
                 alt="CHAEA Logo"
                 className="img-fluid"
-                style={{ width: '160px', height: '160px', objectFit: 'contain' }}
+                style={{ width: '96px', height: '96px', objectFit: 'contain' }}
               />
             </div>
 
@@ -156,7 +156,7 @@ const Login = () => {
       </CHeader>
 
       <CContainer className="flex-grow-1 d-flex align-items-center login-container">
-        <CRow className="w-100 justify-content-center">
+        <CRow className="flex-grow-1 justify-content-center">
           <CCol md={10} lg={8}>
             <CCardGroup className="h-100 card-group login-card-group">
               <LoginButton
@@ -171,7 +171,7 @@ const Login = () => {
               />
             </CCardGroup>
             {/* Cápsulas: se responden sin cuenta, con el código del expositor. */}
-            <div className="text-center mt-4">
+            <div className="text-center mt-3">
               <Link to="/c" className="capsula-acceso">
                 ¿Tienes el código de una cápsula? Haz clic aquí para ingresar
               </Link>
