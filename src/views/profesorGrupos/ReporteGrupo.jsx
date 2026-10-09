@@ -14,6 +14,7 @@ import {
   descargarCsvGrupo,
   obtenerReporteGrupo,
 } from '../../util/services/cuestionarioService'
+import { simularGrupo } from '../../util/dev/simulacion'
 import { useEscala } from '../../util/calificacion/useEscala'
 import {
   AVISO_IPSATIVO,
@@ -117,12 +118,42 @@ const ReporteGrupo = () => {
     }
   }
 
+  const simular = async () => {
+    const { value: cantidad } = await Swal.fire({
+      title: '[dev] Simular estudiantes',
+      text: 'Crea estudiantes ficticios en el grupo con el cuestionario respondido.',
+      input: 'number',
+      inputValue: 30,
+      inputAttributes: { min: 1, max: 200 },
+      showCancelButton: true,
+    })
+    if (!cantidad) return
+    try {
+      await simularGrupo(id1, id2, Number(cantidad))
+      setReporte(await obtenerReporteGrupo(id1, id2))
+    } catch (e) {
+      console.error('Error al simular:', e)
+      Swal.fire(
+        'Error',
+        e?.status === 404
+          ? 'Arranca el backend con DEV_SIMULACION=true.'
+          : (e?.message ?? 'No se pudo simular.'),
+        'error',
+      )
+    }
+  }
+
   return (
     <CContainer className="adela-r">
       <EncabezadoReporte
         titulo={`Reporte del grupo ${reporte.grupo?.nombre ?? ''}`}
         subtitulo={`${reporte.cuestionario?.nombre} (${reporte.cuestionario?.siglas})`}
       >
+        {import.meta.env.DEV && (
+          <button type="button" className="adela-btn" onClick={simular}>
+            [dev] Simular estudiantes
+          </button>
+        )}
         <button
           type="button"
           className="adela-btn"

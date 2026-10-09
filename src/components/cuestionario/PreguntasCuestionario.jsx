@@ -18,6 +18,7 @@ import {
   errorPregunta,
   limitesSeleccion,
 } from '../../util/cuestionario/validarRespuesta'
+import { respuestasAlAzar } from '../../util/dev/simulacion'
 
 const porOrden = (a, b) => a.orden - b.orden
 
@@ -173,6 +174,16 @@ const PreguntasCuestionario = ({ cuestionario, onEnviar, enviando }) => {
 
       <div className="mb-4 text-center">
         <p className="text-medium-emphasis">{cuestionario.descripcion}</p>
+        {import.meta.env.DEV && (
+          <CButton
+            color="warning"
+            variant="outline"
+            size="sm"
+            onClick={() => setRespuestas(respuestasAlAzar(preguntas))}
+          >
+            [dev] Rellenar al azar
+          </CButton>
+        )}
       </div>
 
       {preguntas.map((pregunta, preguntaIndex) => (
