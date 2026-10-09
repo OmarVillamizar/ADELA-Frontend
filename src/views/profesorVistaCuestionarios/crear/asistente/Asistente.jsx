@@ -5,11 +5,15 @@ import Segmentado from '../../../../components/resultados/Segmentado'
 import CamposDatos from '../CamposDatos'
 import EditorComplementaria from '../EditorComplementaria'
 import ListaErrores from '../ListaErrores'
+import Nelse from '../Nelse'
 import VistaPrevia from '../VistaPrevia'
+import CalculoLectura from './CalculoLectura'
+import GuiaPreguntas from './GuiaPreguntas'
 import PlanoAsistente from './PlanoAsistente'
 import PreguntasAsistidas from './PreguntasAsistidas'
+import TarjetasModelo from './TarjetasModelo'
+import { aplicarModelo, modeloDe } from './modelos'
 import {
-  CORTE,
   FORMATO,
   LECTURA,
   MIDE_ESCALA,
@@ -18,7 +22,6 @@ import {
   agregarEstilo,
   agregarPar,
   agregarPregunta,
-  aplicarModeloCiclo,
   compuestos,
   erroresComplementaria,
   erroresInterpretacion,
@@ -27,12 +30,11 @@ import {
   interpretacionDeLectura,
   nombreDe,
   pasarAAvanzado,
-  planoAsistenteDe,
   polosDe,
   preguntaDePlantilla,
   primarios,
   quitarEstilo,
-  reproducePuntuacionOriginal,
+  renombrarEstilo,
   sincronizarFrases,
   sincronizarOrdenar,
 } from '../borrador'
@@ -98,7 +100,10 @@ const faltaEn = (b, paso) => {
   }
   if (paso === 1 && prim.length < 2) return 'Agrega al menos dos estilos.'
   if (paso === 2 && !b.lectura) return 'Elige cómo leer los resultados.'
-  if (paso === 2 && b.lectura === LECTURA.PREDOMINANTE) {
+  if (
+    paso === 2 &&
+    (b.lectura === LECTURA.PREDOMINANTE || b.lectura === LECTURA.ESCALONADO)
+  ) {
     const m = erroresComplementaria(b.complementaria)[0]
     if (m) return m
   }
@@ -132,8 +137,11 @@ const resumenFrases = (b, n) => {
   const base = n === 1 ? 'frase' : 'frases'
   if (b.respuestaFrase !== RESPUESTA_FRASE.ESCALA)
     return `${base} de acuerdo o desacuerdo`
-  const mide =
-    b.mideEscala === MIDE_ESCALA.FRECUENCIA ? 'frecuencia' : 'acuerdo'
+  const mide = {
+    [MIDE_ESCALA.FRECUENCIA]: 'frecuencia',
+    [MIDE_ESCALA.ACUERDO]: 'acuerdo',
+    [MIDE_ESCALA.DESEMPENO]: 'qué tan bien lo hace',
+  }[b.mideEscala]
   const alReves = b.preguntas.filter((p) => p.inversa).length
   return `${base} con escala de ${mide} de ${b.puntosEscala} puntos${
     alReves > 0 ? ` (${alReves} al revés)` : ''
@@ -162,14 +170,23 @@ const resumen = (b) => {
     [LECTURA.CUADRANTES]: 'se asignará uno de cuatro estilos según dos ejes',
     [LECTURA.DOMINANCIA]:
       'dominan los estilos en nivel primario (simple, doble, triple o cuádruple)',
+    [LECTURA.BAREMO_MODELO]:
+      'cada estilo tendrá su nivel con los cortes del modelo',
+    [LECTURA.ESCALONADO]:
+      'el perfil reunirá los estilos que quedan cerca del más alto',
   }[b.lectura]
-  const pares = compuestos(b).length
+  const pares = compuestos(b).filter((e) => polosDe(e)).length
+  const grupos = compuestos(b).length - pares
+  const m = modeloDe(b)
   return [
+    m && `modelo «${m.nombre}»`,
     `${n} ${tipo}`,
     `${primarios(b).length} estilos`,
     pares > 0 && `${pares} ${pares === 1 ? 'par opuesto' : 'pares opuestos'}`,
+    grupos > 0 &&
+      `${grupos} ${grupos === 1 ? 'grupo que suma' : 'grupos que suman'}`,
     lectura,
-    b.lectura === LECTURA.PREDOMINANTE &&
+    (b.lectura === LECTURA.PREDOMINANTE || b.lectura === LECTURA.ESCALONADO) &&
       b.complementaria &&
       'con pregunta extra si destacan todos',
   ]
@@ -218,6 +235,10 @@ const OpcionesFrase = ({ borrador, actualizar }) => {
                   valor: MIDE_ESCALA.ACUERDO,
                   etiqueta: 'Qué tan de acuerdo está',
                 },
+                {
+                  valor: MIDE_ESCALA.DESEMPENO,
+                  etiqueta: 'Qué tan bien lo hace',
+                },
               ]}
               valor={borrador.mideEscala}
               onChange={(mideEscala) => cambiar({ mideEscala })}
@@ -226,7 +247,8 @@ const OpcionesFrase = ({ borrador, actualizar }) => {
           <p className="adela-ayuda mt-0 mb-2">
             Frecuencia sirve para hábitos y estrategias («Hago resúmenes al
             estudiar»). Acuerdo, para preferencias y opiniones («Prefiero
-            trabajar en grupo»).
+            trabajar en grupo»). Qué tan bien lo hace, para habilidades
+            («Planificar mis tareas con fechas»).
           </p>
           <div className="adela-campo mb-1">
             <span>¿Cuántas respuestas tiene la escala?</span>
@@ -271,7 +293,10 @@ const PasoEstilos = ({ borrador, actualizar }) => {
   const [parA, setParA] = useState('')
   const [parB, setParB] = useState('')
   const prim = primarios(borrador)
-  const pares = compuestos(borrador)
+  const pares = compuestos(borrador).filter((e) => polosDe(e))
+  const grupos = compuestos(borrador).filter((e) => !polosDe(e))
+  const m = modeloDe(borrador)
+  const conDescripcion = prim.some((e) => e.describe)
 
   const agregar = () => {
     const limpio = nombre.trim()
@@ -299,12 +324,22 @@ const PasoEstilos = ({ borrador, actualizar }) => {
     <>
       <h3 className="adela-panel__titulo">¿Qué estilos mide?</h3>
       <p className="adela-panel__nota mb-3">
-        Escribe el nombre de cada estilo y pulsa Enter. Por ejemplo:{' '}
-        {borrador.plantilla === PLANTILLA.AFIRMACIONES &&
-        borrador.respuestaFrase === RESPUESTA_FRASE.ESCALA &&
-        borrador.mideEscala === MIDE_ESCALA.FRECUENCIA
-          ? 'Adquisición, Codificación, Recuperación, Apoyo (estrategias de estudio).'
-          : 'Activo, Reflexivo, Teórico, Pragmático.'}
+        {m ? (
+          <>
+            Estos son los estilos del modelo «{m.nombre}». Revisa qué describe
+            cada uno: te guiará al escribir las preguntas. Puedes cambiarles el
+            nombre, quitarlos o agregar otros.
+          </>
+        ) : (
+          <>
+            Escribe el nombre de cada estilo y pulsa Enter. Por ejemplo:{' '}
+            {borrador.plantilla === PLANTILLA.AFIRMACIONES &&
+            borrador.respuestaFrase === RESPUESTA_FRASE.ESCALA &&
+            borrador.mideEscala === MIDE_ESCALA.FRECUENCIA
+              ? 'Adquisición, Codificación, Recuperación, Apoyo (estrategias de estudio).'
+              : 'Activo, Reflexivo, Teórico, Pragmático.'}
+          </>
+        )}
       </p>
       <div className="adela-fila mb-3">
         <input
@@ -323,24 +358,83 @@ const PasoEstilos = ({ borrador, actualizar }) => {
           Agregar
         </button>
       </div>
-      <div className="adela-chips mb-2">
-        {prim.length === 0 && (
-          <span className="adela-falta">Aún no hay estilos.</span>
-        )}
-        {prim.map((e) => (
-          <span key={e.id} className="adela-chip-btn" aria-pressed="true">
-            {e.nombre}
-            <button
-              type="button"
-              className="adela-chip-btn__quitar"
-              aria-label={`Quitar ${e.nombre}`}
-              onClick={() => actualizar((b) => quitarEstilo(b, e.id))}
-            >
-              ×
-            </button>
-          </span>
-        ))}
-      </div>
+      {conDescripcion ? (
+        <div className="adela-guia mb-2">
+          {prim.map((e) => (
+            <div key={e.id} className="adela-guia__estilo">
+              <div className="adela-fila">
+                <input
+                  className="adela-input adela-crece"
+                  aria-label={`Nombre del estilo ${e.nombre}`}
+                  maxLength={100}
+                  value={e.nombre}
+                  onChange={(ev) =>
+                    actualizar((b) => renombrarEstilo(b, e.id, ev.target.value))
+                  }
+                />
+                <button
+                  type="button"
+                  className="adela-btn adela-btn--sm"
+                  aria-label={`Quitar ${e.nombre}`}
+                  onClick={() => actualizar((b) => quitarEstilo(b, e.id))}
+                >
+                  ×
+                </button>
+              </div>
+              <span className="adela-ayuda m-0">
+                {e.describe ?? 'Estilo agregado por ti (no es del modelo).'}
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="adela-chips mb-2">
+          {prim.length === 0 && (
+            <span className="adela-falta">Aún no hay estilos.</span>
+          )}
+          {prim.map((e) => (
+            <span key={e.id} className="adela-chip-btn" aria-pressed="true">
+              {e.nombre}
+              <button
+                type="button"
+                className="adela-chip-btn__quitar"
+                aria-label={`Quitar ${e.nombre}`}
+                onClick={() => actualizar((b) => quitarEstilo(b, e.id))}
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {grupos.length > 0 && (
+        <div className="adela-item mt-4">
+          <strong className="d-block">Grupos que se suman</strong>
+          <p className="adela-ayuda mt-1 mb-3">
+            Cada grupo es la suma de sus estilos. En el reporte aparece como una
+            escala aparte, de su mínimo a su máximo.
+          </p>
+          <div className="adela-chips">
+            {grupos.map((g) => (
+              <span key={g.id} className="adela-chip-btn">
+                {g.nombre} ={' '}
+                {g.coeficientes
+                  .map((c) => nombreDe(borrador, c.estiloId))
+                  .join(' + ')}
+                <button
+                  type="button"
+                  className="adela-chip-btn__quitar"
+                  aria-label={`Quitar el grupo ${g.nombre}`}
+                  onClick={() => actualizar((b) => quitarEstilo(b, g.id))}
+                >
+                  ×
+                </button>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       {ofrecePolos(borrador) && prim.length >= 2 && (
         <div className="adela-item mt-4">
@@ -428,6 +522,52 @@ PasoEstilos.propTypes = {
   actualizar: PropTypes.func.isRequired,
 }
 
+/** Lo que dice el guía en cada paso: una pose y un consejo corto. */
+const consejo = (b, paso, modelo) => {
+  const n = b.preguntas.length
+  switch (paso) {
+    case 0:
+      return {
+        pose: 'piensa',
+        titulo: 'Empecemos por la forma de responder',
+        texto: b.plantilla
+          ? 'Debajo están los modelos que usan esta forma. Un modelo arma los estilos y la manera de calcular los resultados; las preguntas siempre las escribes tú. Si ninguno se parece a tu instrumento, pulsa «Siguiente».'
+          : 'Elige la tarjeta que más se parezca a tu instrumento. Fíjate en el ejemplo gris: es lo que verá el estudiante.',
+      }
+    case 1:
+      return {
+        pose: 'lee',
+        titulo: modelo
+          ? 'Revisa los estilos del modelo'
+          : 'Nombra lo que mides',
+        texto: modelo
+          ? 'Cada estilo trae una frase que explica qué describe. Léelas antes de escribir: cada pregunta debe apuntar a uno solo.'
+          : 'Un estilo es lo que suma puntos con las respuestas. Usa nombres cortos y que no se parezcan entre sí.',
+      }
+    case 2:
+      return {
+        pose: 'reporte',
+        titulo: 'Así se convertirán las respuestas en un resultado',
+        texto:
+          'Debajo de las tarjetas te muestro la cuenta paso a paso, con un ejemplo en números, para que sepas qué significará cada puntaje.',
+      }
+    case 3:
+      return {
+        pose: 'anota',
+        titulo: 'Ahora, tus preguntas',
+        texto: modelo
+          ? 'En la guía tienes qué describe cada estilo y ejemplos que puedes usar con «Usar» y luego editar. Procura una cantidad parecida de preguntas para cada estilo.'
+          : 'Escribe cada pregunta pensando en un solo estilo. Frases cortas, en primera persona y sin dobles negaciones se entienden mejor.',
+      }
+    default:
+      return {
+        pose: 'listo',
+        titulo: '¡Casi listo!',
+        texto: `Completa los datos y revisa la cuenta final: así se leerán los resultados con tus ${n} ${n === 1 ? 'pregunta' : 'preguntas'}. En la vista previa ves exactamente lo que verán tus estudiantes.`,
+      }
+  }
+}
+
 /**
  * Crear un cuestionario contestando pocas preguntas: cómo responderán, qué
  * estilos mide y cómo leer los resultados. Después, un editor de preguntas a la
@@ -447,9 +587,8 @@ const Asistente = ({
   const prim = primarios(borrador)
   const e1 = prim[0]?.nombre || 'Activo'
   const e2 = prim[1]?.nombre || 'Reflexivo'
-  const referencia =
-    borrador.lectura === LECTURA.CUADRANTES &&
-    planoAsistenteDe(borrador).corte === CORTE.REFERENCIA
+  const modelo = modeloDe(borrador)
+  const guia = consejo(borrador, paso, modelo)
 
   const irA = (n) => {
     actualizar((b) => {
@@ -482,6 +621,11 @@ const Asistente = ({
       preguntas: [],
       // Los pares solo existen en las plantillas que los ofrecen.
       estilos: ofrecePolos({ plantilla: valor }) ? b.estilos : primarios(b),
+      // El modelo era de otra forma de responder: queda sin modelo.
+      modelo: null,
+      baremoModelo: null,
+      preguntaPorPar: false,
+      lectura: b.lectura === LECTURA.BAREMO_MODELO ? null : b.lectura,
     }))
   }
 
@@ -527,8 +671,33 @@ const Asistente = ({
         'Cada estilo queda en nivel primario, secundario o terciario; dominan los que llegan a primario. Pensado para frases valoradas de 1 a 5.',
       ejemplo: `Dominancia doble: ${e1} + ${e2} · código 1-1-2-3`,
     },
+    // Con un modelo que trae sus propios cortes.
+    ...(borrador.baremoModelo
+      ? [
+          {
+            valor: LECTURA.BAREMO_MODELO,
+            titulo: 'Niveles del modelo',
+            texto:
+              modelo?.explica.titulo ??
+              'Cada estilo recibe un nivel con los cortes del modelo.',
+            ejemplo: modelo?.explica.ejemplo.split('.')[0] ?? '',
+          },
+        ]
+      : []),
+    // Pensado para varias respuestas: canales que quedan cerca del más alto.
+    ...(borrador.plantilla === PLANTILLA.VARIAS
+      ? [
+          {
+            valor: LECTURA.ESCALONADO,
+            titulo: 'Perfil escalonado',
+            texto:
+              'Se suman al perfil los estilos que quedan cerca del más alto; la tolerancia crece con el total de marcas.',
+            ejemplo: `Perfil: ${e1} + ${e2}`,
+          },
+        ]
+      : []),
     // Solo con exactamente dos pares: uno va en horizontal y el otro en vertical.
-    ...(compuestos(borrador).length === 2
+    ...(compuestos(borrador).filter((e) => polosDe(e)).length === 2
       ? [
           {
             valor: LECTURA.CUADRANTES,
@@ -541,11 +710,12 @@ const Asistente = ({
       : []),
   ]
 
-  const usarModelo = async () => {
+  /** Arma la estructura del modelo y lleva a revisar sus estilos, sin saltar pasos. */
+  const usarModelo = async (m) => {
     if (borrador.estilos.length > 0 || borrador.preguntas.length > 0) {
       const { isConfirmed } = await Swal.fire({
-        title: '¿Partir del modelo?',
-        text: 'Se reemplazarán los estilos y las preguntas que llevas.',
+        title: `¿Usar «${m.nombre}»?`,
+        text: 'Se reemplazarán los estilos, las preguntas y la lectura que llevas.',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonText: 'Usar el modelo',
@@ -553,8 +723,8 @@ const Asistente = ({
       })
       if (!isConfirmed) return
     }
-    actualizar(aplicarModeloCiclo)
-    irA(3)
+    actualizar((b) => aplicarModelo(b, m))
+    irA(1)
   }
 
   let cuerpo
@@ -582,24 +752,13 @@ const Asistente = ({
             </button>
           ))}
         </div>
-        <div className="adela-item mt-3">
-          <strong className="d-block">
-            ¿Prefieres partir de un modelo listo?
-          </strong>
-          <p className="adela-ayuda mt-1 mb-2">
-            «Ciclo de aprendizaje: cuatro modos y dos ejes» arma los cuatro
-            estilos, sus dos pares opuestos y el mapa de cuatro estilos con sus
-            cortes de referencia. Tú escribes las preguntas; todo se puede
-            editar.
-          </p>
-          <button
-            type="button"
-            className="adela-btn adela-btn--sm"
-            onClick={usarModelo}
-          >
-            Usar el modelo
-          </button>
-        </div>
+        {borrador.plantilla && (
+          <TarjetasModelo
+            plantilla={borrador.plantilla}
+            enUso={borrador.modelo}
+            onUsar={usarModelo}
+          />
+        )}
         {borrador.plantilla === PLANTILLA.AFIRMACIONES && (
           <OpcionesFrase borrador={borrador} actualizar={actualizar} />
         )}
@@ -658,13 +817,20 @@ const Asistente = ({
               aria-pressed={borrador.lectura === t.valor}
               onClick={() => actualizar((b) => ({ ...b, lectura: t.valor }))}
             >
+              {modelo?.lectura === t.valor && (
+                <span className="adela-tarjeta__marca">
+                  Recomendada por el modelo
+                </span>
+              )}
               <p className="adela-tarjeta__titulo">{t.titulo}</p>
               <p className="adela-tarjeta__texto">{t.texto}</p>
               <p className="adela-tarjeta__ejemplo">{t.ejemplo}</p>
             </button>
           ))}
         </div>
-        {borrador.lectura === LECTURA.PREDOMINANTE && (
+        <CalculoLectura borrador={borrador} />
+        {(borrador.lectura === LECTURA.PREDOMINANTE ||
+          borrador.lectura === LECTURA.ESCALONADO) && (
           <div className="mt-3">
             <EditorComplementaria
               valor={borrador.complementaria}
@@ -684,12 +850,13 @@ const Asistente = ({
     cuerpo = (
       <>
         <h3 className="adela-panel__titulo mb-2">Escribe las preguntas</h3>
-        {referencia && (
+        {modelo && (
           <p className="adela-ayuda mt-0 mb-3">
-            Los cortes de referencia piden 12 preguntas de ordenar con 4
-            opciones, una por cada estilo. Escribe tus 12 preguntas.
+            Sugerido: {modelo.sugerido.texto}. Es una guía, no una regla: con
+            más o menos preguntas los cortes se ajustan en proporción.
           </p>
         )}
+        <GuiaPreguntas borrador={borrador} actualizar={actualizar} />
         <PreguntasAsistidas borrador={borrador} actualizar={actualizar} />
       </>
     )
@@ -698,17 +865,11 @@ const Asistente = ({
       <>
         <h3 className="adela-panel__titulo">Datos y revisión</h3>
         <p className="adela-panel__nota mb-3">{resumen(borrador)}</p>
-        {referencia && !reproducePuntuacionOriginal(borrador) && (
-          <div className="adela-aviso" role="alert">
-            Elegiste los cortes de referencia, que solo valen con 12 preguntas
-            de ordenar de 4 opciones cada una. Con otra estructura el mapa
-            clasificaría mal: ajusta las preguntas o elige otro corte.
-          </div>
-        )}
         <CamposDatos
           meta={borrador.meta}
           onChange={(meta) => actualizar((b) => ({ ...b, meta }))}
         />
+        <CalculoLectura borrador={borrador} />
         <details className="adela-seccion mt-4">
           <summary>
             <strong>Vista previa: así lo verán los estudiantes</strong>
@@ -735,6 +896,10 @@ const Asistente = ({
           </li>
         ))}
       </ol>
+
+      <Nelse pose={guia.pose} titulo={guia.titulo}>
+        <p>{guia.texto}</p>
+      </Nelse>
 
       <div className="adela-panel">{cuerpo}</div>
 

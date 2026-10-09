@@ -4,6 +4,7 @@ import Segmentado from '../../../../components/resultados/Segmentado'
 import {
   CORTE,
   CORTES_REFERENCIA,
+  cortesReferencia,
   editarPlano,
   elegirCorte,
   esquinasDe,
@@ -12,6 +13,9 @@ import {
   planoAsistenteDe,
   polosNombres,
 } from '../borrador'
+
+const fmt = (v) =>
+  Number(v).toLocaleString('es-CO', { maximumFractionDigits: 1 })
 
 const OPCIONES_CORTE = [
   { valor: CORTE.EQUILIBRIO, etiqueta: 'En el equilibrio (0)' },
@@ -36,6 +40,7 @@ const PlanoAsistente = ({ borrador, actualizar }) => {
     polosNombres(borrador, y),
   )
   const [arribaIzq, arribaDer, abajoIzq, abajoDer] = esquinasDe(plano)
+  const ref = cortesReferencia(borrador)
   const esquina = ([k, lugar]) => (
     <input
       key={k}
@@ -135,7 +140,7 @@ const PlanoAsistente = ({ borrador, actualizar }) => {
         {corte === CORTE.EQUILIBRIO &&
           'Se separa a quien prefiere un polo de quien prefiere el otro. Un puntaje exactamente en 0 cuenta como lado bajo.'}
         {corte === CORTE.REFERENCIA &&
-          `Cortes de referencia del inventario de ciclo de aprendizaje 3.1: horizontal +${CORTES_REFERENCIA.x}, vertical +${CORTES_REFERENCIA.y}. Ubican al estudiante respecto de una población (son la mediana). Solo valen si el cuestionario reproduce la puntuación original: 12 preguntas de ordenar con 4 opciones y los ejes en la orientación «hacer − observar» y «pensar − sentir».`}
+          `Cortes de referencia del ciclo de aprendizaje: +${CORTES_REFERENCIA.x} en horizontal y +${CORTES_REFERENCIA.y} en vertical para 12 preguntas de ordenar 4 frases. Son la mediana de una población: ubican al estudiante respecto de ella. Con ${borrador.preguntas.length || 12} ${borrador.preguntas.length === 1 ? 'pregunta' : 'preguntas'} se ajustan en proporción a +${fmt(ref.corteX)} y +${fmt(ref.corteY)}. Suponen los ejes «hacer − observar» y «pensar − sentir».`}
         {corte === CORTE.PERSONALIZADO &&
           'Un puntaje igual al corte cuenta como lado bajo; el lado alto empieza por encima.'}
       </p>

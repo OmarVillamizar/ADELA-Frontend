@@ -102,9 +102,11 @@ const Afirmaciones = ({ borrador, actualizar }) => {
   const etiquetas = etiquetasFrase(borrador)
   const maxima = escala ? etiquetas[etiquetas.length - 1] : 'De acuerdo'
   const ejemplo = escala
-    ? borrador.mideEscala === MIDE_ESCALA.FRECUENCIA
-      ? 'Ej.: Hago esquemas para estudiar un tema'
-      : 'Ej.: Aprendo mejor cuando practico'
+    ? {
+        [MIDE_ESCALA.FRECUENCIA]: 'Ej.: Hago esquemas para estudiar un tema',
+        [MIDE_ESCALA.ACUERDO]: 'Ej.: Aprendo mejor cuando practico',
+        [MIDE_ESCALA.DESEMPENO]: 'Ej.: Planificar mis tareas con fechas',
+      }[borrador.mideEscala]
     : 'Ej.: Me gusta probar cosas nuevas'
 
   const agregar = (textos) =>

@@ -35,6 +35,10 @@ export const LECTURA = {
   NIVELES: 'NIVELES',
   CUADRANTES: 'CUADRANTES',
   DOMINANCIA: 'DOMINANCIA',
+  // Niveles con los cortes de un modelo, en proporción a las preguntas reales.
+  BAREMO_MODELO: 'BAREMO_MODELO',
+  // Perfil por distancia de paso, con la tabla escalada a las marcas posibles.
+  ESCALONADO: 'ESCALONADO',
 }
 
 /** Dónde corta el mapa de cuatro estilos en el asistente. */
@@ -198,6 +202,13 @@ export const borradorVacio = () => ({
   estilos: [],
   preguntas: [],
   lectura: null,
+  // Modelo guía elegido en el asistente (asistente/modelos.js), o null.
+  modelo: null,
+  // Cortes del modelo para la lectura BAREMO_MODELO: clave de estilo ->
+  // { min, max, niveles: [[desde, hasta, etiqueta]] } en la escala original.
+  baremoModelo: null,
+  // Las preguntas nuevas traen dos opciones, una por polo de cada par.
+  preguntaPorPar: false,
   // Pregunta complementaria del asistente (lectura PREDOMINANTE), o null.
   complementaria: null,
   // Lo que el usuario fija en el asistente para la lectura CUADRANTES.
@@ -294,6 +305,27 @@ export const polosDe = (e) => {
   const a = e.coeficientes.find((c) => Number(c.coeficiente) > 0)
   const z = e.coeficientes.find((c) => Number(c.coeficiente) < 0)
   return a && z ? { a: a.estiloId, b: z.estiloId } : null
+}
+
+/**
+ * Cambia el nombre de un estilo. Los pares "A − B" que lo usan se renombran
+ * con él, para que el reporte no muestre el nombre viejo; los grupos que suman
+ * conservan el suyo, que no se deriva de sus partes.
+ */
+export const renombrarEstilo = (b, id, nombre) => {
+  const conNombre = actualizarEstilo(b, id, { nombre })
+  return {
+    ...conNombre,
+    estilos: conNombre.estilos.map((e) => {
+      const p = polosDe(e)
+      return p && (p.a === id || p.b === id)
+        ? {
+            ...e,
+            nombre: `${nombreDe(conNombre, p.a).trim()} − ${nombreDe(conNombre, p.b).trim()}`,
+          }
+        : e
+    }),
+  }
 }
 
 /** Polos (nombres) de un compuesto "A − B" a partir de su nombre, o null. */
@@ -393,7 +425,11 @@ export const nuevaPregunta = (formato = FORMATO.UNICA, opciones = []) => ({
 /* Frases (plantilla AFIRMACIONES): se responden con Sí/No o con una escala. */
 
 export const RESPUESTA_FRASE = { SI_NO: 'SI_NO', ESCALA: 'ESCALA' }
-export const MIDE_ESCALA = { FRECUENCIA: 'FRECUENCIA', ACUERDO: 'ACUERDO' }
+export const MIDE_ESCALA = {
+  FRECUENCIA: 'FRECUENCIA',
+  ACUERDO: 'ACUERDO',
+  DESEMPENO: 'DESEMPENO',
+}
 
 /**
  * Etiquetas de cada escala, de menos a más. La de 4 puntos no tiene punto
@@ -422,6 +458,16 @@ const ETIQUETAS_ESCALA = {
       'Ni de acuerdo ni en desacuerdo',
       'De acuerdo',
       'Totalmente de acuerdo',
+    ],
+  },
+  DESEMPENO: {
+    4: ['Lo hago mal', 'Lo hago regular', 'Lo hago bien', 'Lo hago muy bien'],
+    5: [
+      'Lo hago peor',
+      'Lo hago menos bien',
+      'Lo hago regular',
+      'Lo hago bien',
+      'Lo hago mejor',
     ],
   },
 }
@@ -492,8 +538,23 @@ export const preguntaDePlantilla = (
       const p = nuevaPregunta(b.formatoOrden, unaPorEstilo())
       return { ...p, texto, puntosRepartir: b.puntos }
     }
-    default:
+    default: {
+      // Con pares de polos, cada pregunta es a/b de un par, rotando entre
+      // ellos para que queden repartidas.
+      const pares = compuestos(b).filter((e) => polosDe(e))
+      if (b.preguntaPorPar && pares.length > 0) {
+        const par = pares[b.preguntas.length % pares.length]
+        const { a, b: z } = polosDe(par)
+        return {
+          ...nuevaPregunta(FORMATO.UNICA, [
+            nuevaOpcion('', a),
+            nuevaOpcion('', z),
+          ]),
+          texto,
+        }
+      }
       return { ...nuevaPregunta(FORMATO.UNICA, unaPorEstilo()), texto }
+    }
   }
 }
 
@@ -656,65 +717,161 @@ export const intercambiarEjes = (b) => {
   return { ...b, planoAsistente: { ...g, plano } }
 }
 
-/**
- * Los cortes de referencia solo valen con la puntuación original: preguntas
- * de ordenar, 12 de ellas, con 4 opciones cada una.
- */
-export const reproducePuntuacionOriginal = (b) =>
-  b.plantilla === PLANTILLA.ORDENAR &&
-  b.formatoOrden === FORMATO.JERARQUIA &&
-  b.preguntas.length === 12 &&
-  b.preguntas.every((p) => p.opciones.length === 4)
+/* ------------------------------------------------------------------ */
+/* Cortes proporcionales: los de un modelo, ajustados a las preguntas   */
+/* reales. Con la misma estructura que el original dan sus mismos cortes. */
+/* ------------------------------------------------------------------ */
+
+const redondear = (v, decimales = 2) => {
+  const f = 10 ** decimales
+  return Math.round(v * f) / f
+}
+
+/** Peso que suma una opción a un estilo: directo, o combinado si es compuesto. */
+const pesoEn = (b, o, e) => {
+  const w = (id) =>
+    Number(o.pesos.find((x) => x.estiloId === id)?.peso ?? 0) || 0
+  if (e.tipo !== TIPO.COMPUESTO) return w(e.id)
+  return e.coeficientes.reduce(
+    (s, c) => s + (Number(c.coeficiente) || 0) * w(c.estiloId),
+    0,
+  )
+}
+
+/** Mínimo y máximo que aporta una pregunta a un estilo (mismas reglas que el motor). */
+const rangoPregunta = (p, w) => {
+  const k = w.length
+  if (k === 0) return [0, 0]
+  let lo
+  let hi
+  if (p.formato === FORMATO.MULTIPLE) {
+    const min = Math.max(Number(p.minSelecciones) || 0, p.obligatoria ? 1 : 0)
+    const max =
+      p.maxSelecciones === '' || p.maxSelecciones == null
+        ? k
+        : Math.min(Number(p.maxSelecciones), k)
+    const asc = [...w].sort((x, y) => x - y)
+    const desc = [...w].sort((x, y) => y - x)
+    const suma = (lista, t) => lista.slice(0, t).reduce((s, v) => s + v, 0)
+    lo = Infinity
+    hi = -Infinity
+    for (let t = min; t <= max; t++) {
+      lo = Math.min(lo, suma(asc, t))
+      hi = Math.max(hi, suma(desc, t))
+    }
+  } else if (p.formato === FORMATO.JERARQUIA) {
+    // El rango más alto (k) va a la opción de mayor peso para el máximo.
+    const asc = [...w].sort((x, y) => x - y)
+    hi = asc.reduce((s, v, i) => s + v * (i + 1), 0)
+    lo = asc.reduce((s, v, i) => s + v * (k - i), 0)
+  } else if (p.formato === FORMATO.REPARTO) {
+    const pts = Number(p.puntosRepartir) || 0
+    lo = pts * Math.min(...w)
+    hi = pts * Math.max(...w)
+  } else {
+    lo = Math.min(...w)
+    hi = Math.max(...w)
+  }
+  return p.obligatoria === false ? [Math.min(lo, 0), Math.max(hi, 0)] : [lo, hi]
+}
 
 /**
- * Modelo listo "Ciclo de aprendizaje: cuatro modos y dos ejes". Deja la
- * estructura (estilos, pares, mapa y cortes de referencia) sin ningún
- * enunciado: las preguntas las escribe el usuario.
+ * Puntaje mínimo y máximo posible de un estilo con las preguntas actuales,
+ * y cuántas preguntas lo puntúan. Sirve para mostrar los cortes en puntos.
  */
-export const aplicarModeloCiclo = (b) => {
-  let n = {
-    ...b,
-    modo: 'ASISTIDO',
-    plantilla: PLANTILLA.ORDENAR,
-    formatoOrden: FORMATO.JERARQUIA,
-    estilos: [],
-    preguntas: [],
-    lectura: LECTURA.CUADRANTES,
-    planoAsistente: null,
-    interpretacion: interpretacionVacia(),
-  }
-  const ids = {}
-  ;[
-    'Experiencia concreta',
-    'Observación reflexiva',
-    'Conceptualización abstracta',
-    'Experimentación activa',
-  ].forEach((nombre) => {
-    n = agregarEstilo(n, nombre)
-    ids[nombre] = n.estilos.at(-1).id
+export const rangoEstilo = (b, e) => {
+  let min = 0
+  let max = 0
+  let preguntas = 0
+  b.preguntas.forEach((p) => {
+    const w = p.opciones.map((o) => pesoEn(b, o, e))
+    if (w.every((v) => v === 0)) return
+    preguntas += 1
+    const [lo, hi] = rangoPregunta(p, w)
+    min += lo
+    max += hi
   })
-  // Lo alto de cada eje es hacia el primer polo: hacer − observar, pensar − sentir.
-  // Se dibuja como la rejilla del inventario 3.1: hacer a la izquierda y pensar
-  // abajo, así que Convergente queda abajo a la izquierda.
-  n = agregarPar(n, ids['Experimentación activa'], ids['Observación reflexiva'])
-  n = agregarPar(
-    n,
-    ids['Conceptualización abstracta'],
-    ids['Experiencia concreta'],
-  )
-  const [x, y] = compuestos(n)
-  return elegirCorte(
-    editarPlano(n, {
-      ...planoVacio(x.id, y.id),
-      xAltoYAlto: 'Convergente',
-      xBajoYAlto: 'Asimilador',
-      xBajoYBajo: 'Divergente',
-      xAltoYBajo: 'Acomodador',
-      invertirX: true,
-      invertirY: true,
-    }),
-    CORTE.REFERENCIA,
-  )
+  return { min, max, preguntas }
+}
+
+/** % del máximo de un puntaje, como lo calcula el motor. */
+export const porcentajeDelMaximo = (valor, { min, max }) =>
+  max - min < 1e-9 ? null : ((valor - min) / (max - min)) * 100
+
+/**
+ * Niveles de un modelo como bandas de % del máximo. El original da cada nivel
+ * en puntos ({min, max, niveles: [[desde, hasta, etiqueta]]}); el corte entre
+ * dos niveles queda a mitad de camino entre ellos, convertido a %. Así, con
+ * el mismo número de preguntas que el original los niveles son idénticos, y
+ * con otro se conservan las proporciones.
+ */
+export const bandasProporcionales = ({ min, max, niveles }, polos = null) => {
+  const pct = (v) => redondear(((v - min) / (max - min)) * 100)
+  const rotulo = (t) =>
+    polos ? t.replace('{a}', polos.a).replace('{b}', polos.b) : t
+  return niveles.map(([, hasta, etiqueta], i) => ({
+    li: i === 0 ? 0 : pct((niveles[i - 1][1] + niveles[i][0]) / 2),
+    ls: i === niveles.length - 1 ? 100 : pct((hasta + niveles[i + 1][0]) / 2),
+    etiqueta: rotulo(etiqueta),
+  }))
+}
+
+/**
+ * Tabla de distancia de paso de referencia: pensada para 64 marcas posibles
+ * (16 preguntas de 4 opciones). Total de marcas -> diferencia tolerada.
+ */
+export const ESCALONES_REFERENCIA = {
+  marcas: 64,
+  tabla: [
+    [1, 21, 1],
+    [22, 27, 2],
+    [28, 32, 3],
+    [33, 64, 4],
+  ],
+}
+
+/** Marcas posibles: la suma de opciones de todas las preguntas. */
+export const marcasPosibles = (b) =>
+  b.preguntas.reduce((s, p) => s + p.opciones.length, 0)
+
+/**
+ * Escalones de referencia escalados a las marcas posibles reales. Los totales
+ * se escalan y redondean; la distancia también, sin bajar de 1 (con puntajes
+ * enteros, menos de 1 solo admitiría empates).
+ */
+export const escalonesProporcionales = (b) => {
+  const ref = ESCALONES_REFERENCIA
+  const marcas = marcasPosibles(b) || ref.marcas
+  const f = marcas / ref.marcas
+  let desde = 1
+  return ref.tabla.map(([, hasta, distancia], i) => {
+    const ultimo = i === ref.tabla.length - 1
+    const fin = ultimo
+      ? Math.max(marcas, desde)
+      : Math.max(desde, Math.round(hasta * f))
+    const escalon = {
+      totalMin: desde,
+      totalMax: fin,
+      distancia: Math.max(1, Math.round(distancia * f)),
+    }
+    desde = fin + 1
+    return escalon
+  })
+}
+
+/**
+ * Cortes de referencia del mapa de cuatro estilos, escalados. Se pensaron para
+ * 12 preguntas de ordenar 4 opciones, donde cada eje va de −36 a 36; con otra
+ * estructura se conserva la misma proporción del eje.
+ */
+export const cortesReferencia = (b) => {
+  const k = primarios(b).length || 4
+  const n = b.preguntas.length || 12
+  const f = (n * (k - 1)) / (12 * 3)
+  return {
+    corteX: redondear(CORTES_REFERENCIA.x * f, 1),
+    corteY: redondear(CORTES_REFERENCIA.y * f, 1),
+  }
 }
 
 /** Interpretación que produce cada lectura lista con los estilos actuales. */
@@ -726,13 +883,40 @@ export const interpretacionDeLectura = (b, lectura = b.lectura) => {
       complementaria: b.complementaria ?? null,
     }
   }
+  if (lectura === LECTURA.ESCALONADO) {
+    return {
+      ...interpretacionVacia(),
+      esquema: ESQUEMA.RELATIVO_ESCALONADO,
+      escalones: escalonesProporcionales(b),
+      complementaria: b.complementaria ?? null,
+    }
+  }
   if (lectura === LECTURA.CUADRANTES) {
     if (compuestos(b).length !== 2) return interpretacionVacia()
+    const { corte, plano } = planoAsistenteDe(b)
     return {
       ...interpretacionVacia(),
       esquema: ESQUEMA.CUADRANTES,
-      plano: { ...planoAsistenteDe(b).plano },
+      plano: {
+        ...plano,
+        ...(corte === CORTE.REFERENCIA ? cortesReferencia(b) : {}),
+      },
     }
+  }
+  if (lectura === LECTURA.BAREMO_MODELO) {
+    const baremo = b.baremoModelo ?? {}
+    const bandas = b.estilos.flatMap((e) => {
+      const def = baremo[e.clave]
+      if (!def) return []
+      const polos = polosDe(e) ? polosNombres(b, e) : null
+      return bandasProporcionales(def, polos).map((x) => ({
+        id: nuevoId(),
+        estiloId: e.id,
+        escala: ESCALA.POMP,
+        ...x,
+      }))
+    })
+    return { ...interpretacionVacia(), esquema: ESQUEMA.BAREMO, bandas }
   }
   if (lectura === LECTURA.DOMINANCIA) {
     const bandas = primarios(b).flatMap((e) =>

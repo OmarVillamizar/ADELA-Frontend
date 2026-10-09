@@ -6,6 +6,7 @@ import useBorrador from './crear/useBorrador'
 import EditorAvanzado from './crear/avanzado/EditorAvanzado'
 import Asistente from './crear/asistente/Asistente'
 import ListaErrores from './crear/ListaErrores'
+import Nelse from './crear/Nelse'
 import { aDTO, tieneContenido, validarBorrador } from './crear/borrador'
 import '../../components/resultados/resultados.css'
 import './crear/crear.css'
@@ -140,6 +141,13 @@ const CrearCuestionarios = () => {
   } else if (!borrador.modo) {
     contenido = (
       <>
+        <Nelse pose="feliz" titulo="¡Hola! Soy Nelse, tu guía de cuestionarios">
+          <p>
+            En el modo asistido te acompaño paso a paso: eliges cómo responden
+            tus estudiantes, puedes partir de un modelo conocido y te muestro
+            con números cómo se calculará cada resultado antes de crearlo.
+          </p>
+        </Nelse>
         <p className="adela-crear__lema">¿Cómo quieres crearlo?</p>
         <div className="adela-tarjetas">
           <button
@@ -150,8 +158,9 @@ const CrearCuestionarios = () => {
             <span className="adela-tarjeta__marca">Recomendado</span>
             <p className="adela-tarjeta__titulo">Asistido</p>
             <p className="adela-tarjeta__texto">
-              Responde tres preguntas sobre tu instrumento y escribe solo el
-              contenido: el asistente arma el resto.
+              Elige cómo responden, parte de un modelo si quieres y escribe solo
+              el contenido: el asistente arma los estilos, los cortes y la
+              lectura de resultados.
             </p>
           </button>
           <button

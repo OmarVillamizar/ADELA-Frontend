@@ -410,10 +410,260 @@ textarea.adela-input {
   grid-row: 4;
 }
 
+/* ---------- Nelse, el guía del asistente ---------- */
+
+.adela-nelse {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin: 0 0 1.1rem;
+}
+
+/* El avatar va del lado contrario hacia donde mira. */
+.adela-nelse--der {
+  flex-direction: row-reverse;
+}
+
+.adela-nelse__img {
+  flex: 0 0 auto;
+  width: auto;
+  height: 104px;
+  user-select: none;
+}
+
+.adela-nelse__globo {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  margin-bottom: 1.1rem;
+  padding: 0.8rem 1rem;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: 0 2px 0 var(--line);
+  color: var(--ink-2);
+  font-size: 0.92rem;
+}
+
+/* Cola del globo, hacia el avatar. */
+.adela-nelse__globo::before {
+  content: '';
+  position: absolute;
+  bottom: 14px;
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  transform: rotate(45deg);
+}
+
+.adela-nelse--izq .adela-nelse__globo::before {
+  left: -8px;
+  border-top-color: transparent;
+  border-right-color: transparent;
+}
+
+.adela-nelse--der .adela-nelse__globo::before {
+  right: -8px;
+  border-bottom-color: transparent;
+  border-left-color: transparent;
+}
+
+.adela-nelse__titulo {
+  display: block;
+  margin-bottom: 0.2rem;
+  color: var(--ink);
+}
+
+.adela-nelse__texto > p {
+  margin: 0;
+}
+
+.adela-nelse__texto > p + p {
+  margin-top: 0.4rem;
+}
+
+@media (max-width: 576px) {
+  .adela-nelse__img {
+    height: 76px;
+  }
+}
+
+/* ---------- Modelos guía ---------- */
+
+.adela-modelos {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 1rem;
+}
+
+.adela-modelo {
+  padding: 1rem 1.1rem;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+.adela-modelo[data-en-uso='true'] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.adela-modelo__titulo {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.adela-modelo__resumen {
+  margin: 0.25rem 0 0.75rem;
+  color: var(--ink-2);
+  font-size: 0.9rem;
+}
+
+.adela-modelo__rejilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.adela-modelo__etiqueta {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--ink-3);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.adela-ejemplo {
+  margin: 0.3rem 0 0;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: 0.84rem;
+}
+
+.adela-ejemplo--cuenta {
+  border-left: 3px solid var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Guía de redacción ---------- */
+
+.adela-guia {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.adela-guia__estilo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-ctl);
+  background: var(--surface);
+}
+
+.adela-guia__cabeza {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.adela-guia__cuenta {
+  flex: 0 0 auto;
+  color: var(--ink-3);
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.adela-guia__cuenta[data-completo='true'] {
+  color: var(--ok);
+}
+
+.adela-guia__barra {
+  height: 5px;
+  border-radius: 999px;
+  background: var(--line-soft);
+  overflow: hidden;
+}
+
+.adela-guia__relleno {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transition: width 200ms var(--ease);
+}
+
+.adela-guia__ejemplo {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.84rem;
+  color: var(--ink-2);
+}
+
+.adela-guia__ejemplo > span {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* ---------- Cómo se calcula ---------- */
+
+.adela-calculo {
+  margin-top: 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface-2);
+}
+
+.adela-calculo__titulo {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.adela-calculo__tabla {
+  width: 100%;
+  margin-top: 0.6rem;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.adela-calculo__tabla th,
+.adela-calculo__tabla td {
+  padding: 0.4rem 0.5rem;
+  border-top: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.adela-calculo__tabla th {
+  color: var(--ink);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.adela-calculo__scroll {
+  overflow-x: auto;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .adela-tarjeta,
   .adela-chip-btn,
-  .adela-pasos__barra {
+  .adela-pasos__barra,
+  .adela-guia__relleno {
     transition: none;
   }
 }
