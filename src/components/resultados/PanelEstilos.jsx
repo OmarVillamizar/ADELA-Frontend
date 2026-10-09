@@ -44,7 +44,10 @@ const PanelEstilos = ({ estilos, calificacion, etiqueta }) => {
           etiqueta={etiqueta}
         />
         <div className="mt-4">
-          <TablaEstilos estilos={primarios} />
+          <TablaEstilos
+            estilos={primarios}
+            escalonado={calificacion?.esquema === 'RELATIVO_ESCALONADO'}
+          />
         </div>
       </section>
       <EscalasCompuestas estilos={compuestos} />

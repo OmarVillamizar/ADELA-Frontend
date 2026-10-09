@@ -10,8 +10,12 @@ import './resultados.css'
 /**
  * Puntaje de cada estilo con su rango, el % del máximo como medidor y el nivel
  * según el baremo del cuestionario.
+ *
+ * Con distancia de paso el perfil reúne los estilos cercanos entre sí, no los
+ * más altos: uno con puntaje bajo puede entrar. "Preferencia" lo dice sin
+ * sugerir que ese estilo sea fuerte.
  */
-const TablaEstilos = ({ estilos }) => {
+const TablaEstilos = ({ estilos, escalonado }) => {
   const hayNivel = estilos.some((e) => e.nivel)
   return (
     <div className="adela-tabla__scroll">
@@ -34,7 +38,7 @@ const TablaEstilos = ({ estilos }) => {
                 <span className="adela-tabla__nombre">{e.nombre}</span>
                 {e.dominante && (
                   <span className="adela-chip adela-chip--acento ms-2">
-                    Dominante
+                    {escalonado ? 'Preferencia' : 'Dominante'}
                   </span>
                 )}
               </td>
@@ -88,6 +92,7 @@ const TablaEstilos = ({ estilos }) => {
 
 TablaEstilos.propTypes = {
   estilos: PropTypes.arrayOf(PropTypes.object).isRequired,
+  escalonado: PropTypes.bool,
 }
 
 export default TablaEstilos
