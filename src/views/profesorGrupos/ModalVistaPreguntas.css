@@ -1,0 +1,152 @@
+.details-modal .modal-body {
+  padding: 2rem;
+}
+
+/* Estilos para el modal de preguntas */
+.questions-modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.questions-modal .modal-content {
+  max-height: 90vh;
+  width: 100%; /* Ajustar ancho */
+  margin: 0 auto;
+  border-radius: 8px;
+  overflow: hidden; /* Importante para evitar el doble scroll */
+}
+
+.modal-header {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #dee2e6;
+  padding: 1.5rem;
+}
+
+.modal-title {
+  color: #2c3e50;
+  font-weight: 600;
+  font-size: 1.5rem;
+}
+
+.modal-body {
+  padding: 2rem;
+  overflow-y: auto; /* Solo un scroll en el body */
+  max-height: calc(
+    90vh - 140px
+  ); /* Ajusta según el tamaño del header y footer */
+}
+
+/* Contenedor de preguntas */
+.questions-container {
+  padding-right: 1rem; /* Evita el espacio en blanco a la derecha */
+}
+
+.question-item {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Ajustes para el scroll */
+.modal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Resto de los estilos anteriores... */
+.question-text {
+  font-size: 1.1rem;
+  color: #2c3e50;
+  margin-bottom: 1rem;
+}
+
+.question-number {
+  font-weight: bold;
+  color: #3498db;
+  margin-right: 0.5rem;
+}
+
+.options-list {
+  list-style-type: none;
+  padding-left: 1.5rem;
+  margin: 0;
+}
+
+.option-item {
+  padding: 0.5rem 0;
+  color: #576574;
+  position: relative;
+}
+
+.option-item::before {
+  content: '•';
+  color: #3498db;
+  position: absolute;
+  left: -1rem;
+}
+
+.learning-styles-section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 2px solid #dee2e6;
+}
+
+.modal-footer {
+  background-color: #f8f9fa;
+  border-top: 2px solid #dee2e6;
+  padding: 1.5rem;
+}
+
+.close-button {
+  padding: 0.5rem 2rem;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.close-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para botones específicos */
+.btn-info {
+  background-color: #17a2b8;
+  border-color: #17a2b8;
+  color: white;
+}
+
+.btn-info:hover {
+  background-color: #138496;
+  border-color: #117a8b;
+}
+
+/* Ajustes para dispositivos móviles */
+@media (max-width: 768px) {
+  .modal-dialog {
+    margin: 1rem;
+  }
+
+  .modal-body {
+    padding: 1rem;
+  }
+
+  .question-item {
+    padding: 1rem;
+  }
+}
