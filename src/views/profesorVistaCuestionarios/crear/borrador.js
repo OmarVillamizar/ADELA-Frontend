@@ -34,6 +34,7 @@ export const LECTURA = {
   PREDOMINANTE: 'PREDOMINANTE',
   NIVELES: 'NIVELES',
   CUADRANTES: 'CUADRANTES',
+  DOMINANCIA: 'DOMINANCIA',
 }
 
 /** Dónde corta el mapa de cuatro estilos en el asistente. */
@@ -572,6 +573,18 @@ const TERCIOS = [
   [66.7, 100],
 ]
 
+/**
+ * Dominancia por nivel: con una escala de 1 a 5, 50 % y 75 % del máximo
+ * equivalen a los cortes de 60 y 80 sobre 100 del perfil de pensamiento por
+ * cuadrantes. No comparten límite: 50 y 75 exactos son del nivel de arriba,
+ * como 60 y 80 en el original (con límite compartido ganaría el de abajo).
+ */
+const NIVELES_DOMINANCIA = [
+  [0, 49.99, 'Terciaria'],
+  [50, 74.99, 'Secundaria'],
+  [75, 100, 'Primaria'],
+]
+
 /** Polos (nombres) de un estilo: los de un compuesto, o "alto"/"bajo". */
 export const polosNombres = (b, e) => {
   const p = polosDe(e)
@@ -719,6 +732,23 @@ export const interpretacionDeLectura = (b, lectura = b.lectura) => {
       ...interpretacionVacia(),
       esquema: ESQUEMA.CUADRANTES,
       plano: { ...planoAsistenteDe(b).plano },
+    }
+  }
+  if (lectura === LECTURA.DOMINANCIA) {
+    const bandas = primarios(b).flatMap((e) =>
+      NIVELES_DOMINANCIA.map(([li, ls, etiqueta]) => ({
+        id: nuevoId(),
+        estiloId: e.id,
+        escala: ESCALA.POMP,
+        li,
+        ls,
+        etiqueta,
+      })),
+    )
+    return {
+      ...interpretacionVacia(),
+      esquema: ESQUEMA.NIVEL_SUPERIOR,
+      bandas,
     }
   }
   if (lectura !== LECTURA.NIVELES) return interpretacionVacia()

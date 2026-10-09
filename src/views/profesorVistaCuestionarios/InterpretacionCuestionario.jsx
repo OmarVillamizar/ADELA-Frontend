@@ -68,6 +68,7 @@ const ATAJOS = [
   [LECTURA.SOLO_PUNTAJES, 'Solo puntajes'],
   [LECTURA.PREDOMINANTE, 'Destacar el predominante'],
   [LECTURA.NIVELES, 'Bajo · Medio · Alto en todos'],
+  [LECTURA.DOMINANCIA, 'Dominancia por nivel'],
 ]
 
 /**

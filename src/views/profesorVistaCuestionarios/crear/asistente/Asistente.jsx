@@ -160,6 +160,8 @@ const resumen = (b) => {
     [LECTURA.PREDOMINANTE]: 'se destacará el estilo predominante',
     [LECTURA.NIVELES]: 'cada estilo tendrá nivel bajo, medio o alto',
     [LECTURA.CUADRANTES]: 'se asignará uno de cuatro estilos según dos ejes',
+    [LECTURA.DOMINANCIA]:
+      'dominan los estilos en nivel primario (simple, doble, triple o cuádruple)',
   }[b.lectura]
   const pares = compuestos(b).length
   return [
@@ -517,6 +519,13 @@ const Asistente = ({
           ? 'Cada estilo recibe un nivel según su porcentaje del máximo; cada par opuesto, hacia qué polo tiende.'
           : 'Cada estilo recibe un nivel según su porcentaje del máximo.',
       ejemplo: `${e1}: Alto · ${e2}: Medio`,
+    },
+    {
+      valor: LECTURA.DOMINANCIA,
+      titulo: 'Dominancia por nivel',
+      texto:
+        'Cada estilo queda en nivel primario, secundario o terciario; dominan los que llegan a primario. Pensado para frases valoradas de 1 a 5.',
+      ejemplo: `Dominancia doble: ${e1} + ${e2} · código 1-1-2-3`,
     },
     // Solo con exactamente dos pares: uno va en horizontal y el otro en vertical.
     ...(compuestos(borrador).length === 2

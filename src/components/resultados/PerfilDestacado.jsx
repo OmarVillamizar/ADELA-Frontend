@@ -11,33 +11,50 @@ const DOMINANCIA = {
   MULTIPLE: 'Dominancia múltiple',
 }
 
+/** Texto de la dominancia por nivel, que siempre trae el código de niveles. */
+const textoPorNivel = (tipo) => {
+  if (tipo === 'SIMPLE') return 'Un estilo alcanza el nivel más alto.'
+  if (DOMINANCIA[tipo]) return 'Estos estilos alcanzan el nivel más alto.'
+  if (tipo === 'MEDIA')
+    return 'Ningún estilo queda en el nivel más alto ni en el más bajo.'
+  return 'Ningún estilo alcanza el nivel más alto.'
+}
+
 /**
  * El perfil de aprendizaje como lo define el manual del cuestionario (VARK,
- * Herrmann). Si el cuestionario no define dominancia, no se muestra nada.
+ * Herrmann). Si el cuestionario no define dominancia, no se muestra nada. Con
+ * dominancia por nivel se muestra también el código (1-2-3-3: el nivel de cada
+ * estilo, en orden, contado desde el más alto), aunque ninguno domine.
  */
 const PerfilDestacado = ({
   calificacion,
   titulo = 'Perfil de aprendizaje',
 }) => {
-  if (!calificacion?.perfilEtiqueta) return null
+  const codigo = calificacion?.perfilCodigo
+  if (!calificacion?.perfilEtiqueta && !codigo) return null
   const multimodal = calificacion.perfilTipo === 'MULTIMODAL'
   const cuadrante = calificacion.perfilTipo === 'CUADRANTE'
   const dominancia = DOMINANCIA[calificacion.perfilTipo]
   return (
     <section className="adela-perfil adela-aparece" aria-label={titulo}>
       <p className="adela-perfil__etiqueta">{titulo}</p>
-      <p className="adela-perfil__valor">{calificacion.perfilEtiqueta}</p>
+      <p className="adela-perfil__valor">
+        {calificacion.perfilEtiqueta ?? 'Sin estilo dominante'}
+      </p>
       <p className="adela-perfil__texto">
         {cuadrante ? (
           'Tu estilo según los dos ejes.'
-        ) : dominancia ? (
+        ) : codigo ? (
           <>
+            {dominancia && (
+              <span className="adela-chip adela-chip--claro me-2">
+                {dominancia}
+              </span>
+            )}
             <span className="adela-chip adela-chip--claro me-2">
-              {dominancia}
+              Código {codigo}
             </span>
-            {calificacion.perfilTipo === 'SIMPLE'
-              ? 'Un estilo alcanza el nivel más alto.'
-              : 'Estos estilos alcanzan el nivel más alto.'}
+            {textoPorNivel(calificacion.perfilTipo)}
           </>
         ) : (
           <>
@@ -58,6 +75,7 @@ PerfilDestacado.propTypes = {
   calificacion: PropTypes.shape({
     perfilEtiqueta: PropTypes.string,
     perfilTipo: PropTypes.string,
+    perfilCodigo: PropTypes.string,
   }),
   titulo: PropTypes.string,
 }
