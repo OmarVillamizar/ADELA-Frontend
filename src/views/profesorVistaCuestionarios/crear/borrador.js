@@ -18,6 +18,7 @@ export const ESQUEMA = {
   RELATIVO: 'RELATIVO',
   RELATIVO_ESCALONADO: 'RELATIVO_ESCALONADO',
   CUADRANTES: 'CUADRANTES',
+  NIVEL_SUPERIOR: 'NIVEL_SUPERIOR',
 }
 export const ESCALA = { BRUTO: 'BRUTO', POMP: 'POMP' }
 
@@ -936,6 +937,11 @@ export const erroresInterpretacion = (inter, nombre) => {
       }
     }
   })
+  if (inter.esquema === ESQUEMA.NIVEL_SUPERIOR && inter.bandas.length === 0)
+    error(
+      'interpretacion',
+      'Dominancia por nivel necesita los niveles de cada estilo.',
+    )
   if (inter.esquema === ESQUEMA.RELATIVO_ESCALONADO) {
     if (inter.escalones.length === 0)
       error(

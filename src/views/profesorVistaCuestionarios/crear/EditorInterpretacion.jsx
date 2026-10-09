@@ -22,6 +22,7 @@ const ESQUEMAS = [
   { valor: ESQUEMA.RELATIVO, etiqueta: 'Predominante' },
   { valor: ESQUEMA.RELATIVO_ESCALONADO, etiqueta: 'Perfil escalonado' },
   { valor: ESQUEMA.CUADRANTES, etiqueta: 'Cuadrantes' },
+  { valor: ESQUEMA.NIVEL_SUPERIOR, etiqueta: 'Dominancia por nivel' },
 ]
 
 const AYUDA = {
@@ -35,6 +36,8 @@ const AYUDA = {
     'Se ordenan los estilos por puntaje y se suman al perfil mientras la distancia con el anterior no supere la del escalón que corresponde al total.',
   CUADRANTES:
     'Se cruzan dos ejes y cada estudiante recibe el estilo de la esquina donde cae. Un puntaje igual al corte cuenta como lado bajo.',
+  NIVEL_SUPERIOR:
+    'Dominan los estilos cuyo puntaje cae en su nivel más alto (el último de la tabla). Según cuántos dominen, la dominancia es simple, doble, triple o cuádruple.',
 }
 
 /** Polos (nombres) del eje elegido: los de un compuesto o "alto"/"bajo". */
