@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { CContainer } from '@coreui/react'
-import { getCuestionarioResultado } from '../../util/services/cuestionarioService'
+import {
+  declararPreferencia,
+  getCuestionarioResultado,
+} from '../../util/services/cuestionarioService'
 import { useInsignias } from '../../util/insignias/InsigniasProvider'
 import ReporteIndividual from '../../components/resultados/ReporteIndividual'
 import EsqueletoReporte from '../../components/resultados/EsqueletoReporte'
@@ -39,6 +42,9 @@ const ResultadoCuestionario = () => {
           resultado={resultado}
           titulo="Tu resultado"
           onVolver={() => navigate('/cuestionarios/')}
+          onDeclarar={async (preferencia) =>
+            setResultado(await declararPreferencia(id, preferencia))
+          }
         />
       ) : (
         <EsqueletoReporte />

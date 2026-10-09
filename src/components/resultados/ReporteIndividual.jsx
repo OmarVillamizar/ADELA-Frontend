@@ -7,6 +7,9 @@ import { cilArrowLeft, cilCloudDownload } from '@coreui/icons'
 import EncabezadoReporte from './EncabezadoReporte'
 import PerfilDestacado from './PerfilDestacado'
 import PanelEstilos from './PanelEstilos'
+import PreferenciaMultimodal, {
+  PreguntaPreferencia,
+} from './PreferenciaMultimodal'
 import TablaRespuestas from './TablaRespuestas'
 import { dateFromMsToString } from '../../util/dateUtils'
 import './resultados.css'
@@ -22,9 +25,10 @@ const edad = (fechaNacimiento) => {
 
 /**
  * Resultado de un estudiante en un cuestionario. Lo ven el propio estudiante y
- * su profesor; solo cambian el título y a dónde vuelve.
+ * su profesor; solo cambian el título y a dónde vuelve. onDeclarar solo lo
+ * pasa el estudiante: es quien responde la pregunta de preferencia.
  */
-const ReporteIndividual = ({ resultado, titulo, onVolver }) => {
+const ReporteIndividual = ({ resultado, titulo, onVolver, onDeclarar }) => {
   const { toPDF, targetRef } = usePDF({ page: { margin: 20, format: 'a4' } })
   const { cuestionario, estudiante, grupo } = resultado
 
@@ -70,8 +74,22 @@ const ReporteIndividual = ({ resultado, titulo, onVolver }) => {
         </button>
       </EncabezadoReporte>
 
+      {/* Fuera del PDF: es una pregunta pendiente, no parte del reporte. */}
+      {onDeclarar &&
+        resultado.pidePreferencia &&
+        !resultado.preferenciaMultimodal && (
+          <PreguntaPreferencia onDeclarar={onDeclarar} />
+        )}
+
       <div ref={targetRef}>
         <PerfilDestacado calificacion={resultado.calificacion} />
+        {resultado.pidePreferencia &&
+          (resultado.preferenciaMultimodal || !onDeclarar) && (
+            <PreferenciaMultimodal
+              preferencia={resultado.preferenciaMultimodal}
+              propio={Boolean(onDeclarar)}
+            />
+          )}
 
         <section className="adela-panel adela-aparece">
           <dl className="adela-ficha">
@@ -108,6 +126,7 @@ ReporteIndividual.propTypes = {
   resultado: PropTypes.object.isRequired,
   titulo: PropTypes.string.isRequired,
   onVolver: PropTypes.func.isRequired,
+  onDeclarar: PropTypes.func,
 }
 
 export default ReporteIndividual

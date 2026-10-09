@@ -34,3 +34,12 @@ export const obtenerResultadoCapsula = async (codigo) => {
   )
   return response.data
 }
+
+// Una sola vez: el backend rechaza cambiarla después.
+export const declararPreferenciaCapsula = async (codigo, preferencia) => {
+  const response = await publicApi.post(
+    `/api/publico/resultados/${encodeURIComponent(codigo)}/preferencia`,
+    { preferencia },
+  )
+  return response.data
+}

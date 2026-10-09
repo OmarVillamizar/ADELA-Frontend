@@ -124,6 +124,15 @@ export const getCuestionarioResultado = async (id) => {
   return envuelto(response)
 }
 
+// Una sola vez: el backend rechaza cambiarla después.
+export const declararPreferencia = async (id, preferencia) => {
+  const response = await api.post(
+    `/api/cuestionarios/mis-cuestionarios/resuelto/${id}/preferencia`,
+    { preferencia },
+  )
+  return response.data
+}
+
 export const getReporteEstudiante = async (id) => {
   const response = await api.get(`/api/cuestionarios/reporte-estudiante/${id}`)
   return envuelto(response)

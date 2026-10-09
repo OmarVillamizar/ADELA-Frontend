@@ -10,7 +10,13 @@ import EsqueletoReporte from '../../components/resultados/EsqueletoReporte'
 import PanelEstilos from '../../components/resultados/PanelEstilos'
 import PerfilDestacado from '../../components/resultados/PerfilDestacado'
 import TablaRespuestas from '../../components/resultados/TablaRespuestas'
-import { obtenerResultadoCapsula } from '../../util/services/capsulaPublicaService'
+import PreferenciaMultimodal, {
+  PreguntaPreferencia,
+} from '../../components/resultados/PreferenciaMultimodal'
+import {
+  declararPreferenciaCapsula,
+  obtenerResultadoCapsula,
+} from '../../util/services/capsulaPublicaService'
 import {
   formatearCodigo,
   normalizarCodigo,
@@ -124,11 +130,27 @@ const ResultadoCapsula = () => {
           </button>
         </EncabezadoReporte>
 
+        {resultado.pidePreferencia && !resultado.preferenciaMultimodal && (
+          <PreguntaPreferencia
+            onDeclarar={async (preferencia) =>
+              setResultado(
+                await declararPreferenciaCapsula(resultado.codigo, preferencia),
+              )
+            }
+          />
+        )}
+
         <div ref={targetRef}>
           <PerfilDestacado
             calificacion={resultado.calificacion}
             titulo="Tu perfil de aprendizaje"
           />
+          {resultado.preferenciaMultimodal && (
+            <PreferenciaMultimodal
+              preferencia={resultado.preferenciaMultimodal}
+              propio
+            />
+          )}
 
           <section className="adela-panel adela-aparece text-center">
             <p className="adela-cifra__etiqueta">Tu código de resultado</p>

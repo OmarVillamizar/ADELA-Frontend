@@ -50,6 +50,7 @@ export const interpretacionVacia = () => ({
   delta: 10,
   bandas: [],
   escalones: [],
+  preguntaPreferencia: false,
 })
 
 export const borradorVacio = () => ({
@@ -658,6 +659,10 @@ export const interpretacionADTO = (inter, nombre, esIpsativo = null) => {
             distancia: numero(s.distancia),
           }))
         : [],
+    // Solo tiene sentido con el perfil escalonado; el servidor la apaga en otro esquema.
+    preguntaPreferencia:
+      inter.esquema === ESQUEMA.RELATIVO_ESCALONADO &&
+      Boolean(inter.preguntaPreferencia),
     ...(inter.esquema === ESQUEMA.CUADRANTES && inter.plano
       ? {
           plano: {

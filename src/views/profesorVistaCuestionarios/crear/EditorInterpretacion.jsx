@@ -357,6 +357,27 @@ const EditorInterpretacion = ({ estilos, valor, onChange, marcados }) => {
               </button>
             </div>
           ))}
+          <label className="d-flex gap-2 mt-3">
+            <input
+              type="checkbox"
+              className="form-check-input flex-shrink-0"
+              checked={Boolean(valor.preguntaPreferencia)}
+              onChange={(e) =>
+                cambiar({ preguntaPreferencia: e.target.checked })
+              }
+            />
+            <span>
+              <strong className="d-block">
+                Preguntar la preferencia multimodal
+              </strong>
+              <span className="adela-ayuda d-block mt-0">
+                Opcional. Si el perfil reúne todos los estilos, se pregunta una
+                vez si la persona los usa según la situación (selectivo) o
+                combinándolos (integrativo). Es autodeclarada y no cambia el
+                perfil calculado.
+              </span>
+            </span>
+          </label>
         </div>
       )}
 
@@ -478,6 +499,7 @@ EditorInterpretacion.propTypes = {
     delta: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
     bandas: PropTypes.array,
     escalones: PropTypes.array,
+    preguntaPreferencia: PropTypes.bool,
     plano: PropTypes.object,
   }).isRequired,
   onChange: PropTypes.func.isRequired,

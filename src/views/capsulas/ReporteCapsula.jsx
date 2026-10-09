@@ -13,6 +13,7 @@ import EsqueletoReporte from '../../components/resultados/EsqueletoReporte'
 import GraficasResultado from '../../components/resultados/GraficasResultado'
 import EscalasCompuestas from '../../components/resultados/EscalasCompuestas'
 import MapaCuadrantes from '../../components/resultados/MapaCuadrantes'
+import { PreferenciasGrupo } from '../../components/resultados/PreferenciaMultimodal'
 import SelectorEscala from '../../components/resultados/SelectorEscala'
 import TablaEstadisticos from '../../components/resultados/TablaEstadisticos'
 import { obtenerReporteCapsula } from '../../util/services/capsulaService'
@@ -176,6 +177,7 @@ const ReporteCapsula = () => {
                 distribucion={calificacion?.distribucionPerfiles}
               />
             )}
+            <PreferenciasGrupo conteo={reporte.preferenciasMultimodales} />
 
             {participantes && participantes.length > 0 && (
               <section className="adela-panel adela-aparece">
