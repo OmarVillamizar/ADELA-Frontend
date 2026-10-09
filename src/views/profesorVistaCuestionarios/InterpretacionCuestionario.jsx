@@ -12,6 +12,7 @@ import EsqueletoReporte from '../../components/resultados/EsqueletoReporte'
 import {
   LECTURA,
   TIPO,
+  complementariaDeDTO,
   erroresInterpretacion,
   interpretacionADTO,
   interpretacionDeLectura,
@@ -38,7 +39,7 @@ const aEditor = (dto) => ({
     etiqueta: b.etiqueta,
   })),
   escalones: (dto.escalones ?? []).map((s) => ({ ...s })),
-  preguntaPreferencia: Boolean(dto.preguntaPreferencia),
+  complementaria: complementariaDeDTO(dto.complementaria),
   // Los ejes llegan por nombre, que aquí es también el id del estilo.
   ...(dto.plano ? { plano: { ...dto.plano } } : {}),
 })

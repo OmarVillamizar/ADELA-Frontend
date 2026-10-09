@@ -7,9 +7,9 @@ import { cilArrowLeft, cilCloudDownload } from '@coreui/icons'
 import EncabezadoReporte from './EncabezadoReporte'
 import PerfilDestacado from './PerfilDestacado'
 import PanelEstilos from './PanelEstilos'
-import PreferenciaMultimodal, {
-  PreguntaPreferencia,
-} from './PreferenciaMultimodal'
+import PreguntaComplementaria, {
+  RespuestaComplementaria,
+} from './PreguntaComplementaria'
 import TablaRespuestas from './TablaRespuestas'
 import { dateFromMsToString } from '../../util/dateUtils'
 import './resultados.css'
@@ -25,10 +25,10 @@ const edad = (fechaNacimiento) => {
 
 /**
  * Resultado de un estudiante en un cuestionario. Lo ven el propio estudiante y
- * su profesor; solo cambian el título y a dónde vuelve. onDeclarar solo lo
- * pasa el estudiante: es quien responde la pregunta de preferencia.
+ * su profesor; solo cambian el título y a dónde vuelve. onResponder solo lo
+ * pasa el estudiante: es quien responde la pregunta complementaria.
  */
-const ReporteIndividual = ({ resultado, titulo, onVolver, onDeclarar }) => {
+const ReporteIndividual = ({ resultado, titulo, onVolver, onResponder }) => {
   const { toPDF, targetRef } = usePDF({ page: { margin: 20, format: 'a4' } })
   const { cuestionario, estudiante, grupo } = resultado
 
@@ -75,21 +75,27 @@ const ReporteIndividual = ({ resultado, titulo, onVolver, onDeclarar }) => {
       </EncabezadoReporte>
 
       {/* Fuera del PDF: es una pregunta pendiente, no parte del reporte. */}
-      {onDeclarar &&
-        resultado.pidePreferencia &&
-        !resultado.preferenciaMultimodal && (
-          <PreguntaPreferencia onDeclarar={onDeclarar} />
+      {onResponder &&
+        resultado.complementaria &&
+        !resultado.respuestaComplementaria && (
+          <PreguntaComplementaria
+            pregunta={resultado.complementaria}
+            onResponder={onResponder}
+          />
         )}
 
       <div ref={targetRef}>
         <PerfilDestacado calificacion={resultado.calificacion} />
-        {resultado.pidePreferencia &&
-          (resultado.preferenciaMultimodal || !onDeclarar) && (
-            <PreferenciaMultimodal
-              preferencia={resultado.preferenciaMultimodal}
-              propio={Boolean(onDeclarar)}
-            />
-          )}
+        {(resultado.respuestaComplementaria ||
+          (resultado.complementaria && !onResponder)) && (
+          <RespuestaComplementaria
+            respuesta={resultado.respuestaComplementaria}
+            titulo={
+              resultado.respuestaComplementaria?.titulo ??
+              resultado.complementaria.titulo
+            }
+          />
+        )}
 
         <section className="adela-panel adela-aparece">
           <dl className="adela-ficha">
@@ -126,7 +132,7 @@ ReporteIndividual.propTypes = {
   resultado: PropTypes.object.isRequired,
   titulo: PropTypes.string.isRequired,
   onVolver: PropTypes.func.isRequired,
-  onDeclarar: PropTypes.func,
+  onResponder: PropTypes.func,
 }
 
 export default ReporteIndividual

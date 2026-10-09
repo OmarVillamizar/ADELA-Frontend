@@ -125,10 +125,10 @@ export const getCuestionarioResultado = async (id) => {
 }
 
 // Una sola vez: el backend rechaza cambiarla después.
-export const declararPreferencia = async (id, preferencia) => {
+export const responderComplementaria = async (id, opcionId) => {
   const response = await api.post(
-    `/api/cuestionarios/mis-cuestionarios/resuelto/${id}/preferencia`,
-    { preferencia },
+    `/api/cuestionarios/mis-cuestionarios/resuelto/${id}/complementaria`,
+    { opcionId },
   )
   return response.data
 }

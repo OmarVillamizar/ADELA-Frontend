@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { CContainer } from '@coreui/react'
 import {
-  declararPreferencia,
+  responderComplementaria,
   getCuestionarioResultado,
 } from '../../util/services/cuestionarioService'
 import { useInsignias } from '../../util/insignias/InsigniasProvider'
@@ -42,8 +42,8 @@ const ResultadoCuestionario = () => {
           resultado={resultado}
           titulo="Tu resultado"
           onVolver={() => navigate('/cuestionarios/')}
-          onDeclarar={async (preferencia) =>
-            setResultado(await declararPreferencia(id, preferencia))
+          onResponder={async (opcionId) =>
+            setResultado(await responderComplementaria(id, opcionId))
           }
         />
       ) : (

@@ -50,8 +50,137 @@ export const interpretacionVacia = () => ({
   delta: 10,
   bandas: [],
   escalones: [],
-  preguntaPreferencia: false,
+  complementaria: null,
 })
+
+/** Esquemas que destacan varios estilos: con ellos puede salir "todos destacados". */
+export const admiteComplementaria = (esquema) =>
+  esquema === ESQUEMA.RELATIVO || esquema === ESQUEMA.RELATIVO_ESCALONADO
+
+/**
+ * Punto de partida editable de la pregunta complementaria: si la persona usa
+ * sus estilos según la situación o combinándolos. Todo se puede reescribir.
+ */
+export const plantillaComplementaria = () => ({
+  titulo: '¿Cómo prefieres aprender?',
+  introduccion:
+    'Tu resultado destaca todos los estilos por igual. Queremos conocer un poco mejor cómo prefieres utilizarlos.',
+  enunciado:
+    'Cuando aprendes algo nuevo, ¿cuál de estas situaciones describe mejor tu forma habitual de aprender?',
+  nota: 'No hay respuestas correctas o incorrectas. Elige la opción con la que más te identifiques.',
+  opciones: [
+    {
+      id: nuevoId(),
+      texto: 'Adapto mi forma de aprender según la situación.',
+      descripcion:
+        'Prefiero elegir la forma de aprender que mejor se ajuste a lo que necesito. Por ejemplo, si debo estudiar un documento, prefiero leerlo; si necesito aprender una actividad práctica, prefiero realizarla.',
+      resultado: 'Multimodal selectivo',
+      resultadoDescripcion:
+        'Prefiere adaptar su forma de aprender a cada situación, eligiendo el estilo más útil en cada momento.',
+    },
+    {
+      id: nuevoId(),
+      texto: 'Prefiero combinar diferentes formas de aprender.',
+      descripcion:
+        'Cuando quiero comprender algo nuevo, prefiero usar varias formas de aprendizaje a la vez. Por ejemplo, leer una explicación, observar un diagrama, conversar sobre el tema y ponerlo en práctica.',
+      resultado: 'Multimodal integrativo',
+      resultadoDescripcion:
+        'Prefiere combinar varias formas de aprender para comprender algo nuevo, complementando unas con otras.',
+    },
+  ],
+})
+
+export const nuevaOpcionComplementaria = () => ({
+  id: nuevoId(),
+  texto: '',
+  descripcion: '',
+  resultado: '',
+  resultadoDescripcion: '',
+})
+
+const texto = (v) => (v ?? '').trim()
+const textoOpcional = (v) => texto(v) || null
+
+/** ComplementariaConfigDTO desde la forma del editor (o null). */
+export const complementariaADTO = (c) =>
+  c
+    ? {
+        titulo: texto(c.titulo),
+        introduccion: textoOpcional(c.introduccion),
+        enunciado: texto(c.enunciado),
+        nota: textoOpcional(c.nota),
+        opciones: c.opciones.map((o) => ({
+          texto: texto(o.texto),
+          descripcion: textoOpcional(o.descripcion),
+          resultado: texto(o.resultado),
+          resultadoDescripcion: textoOpcional(o.resultadoDescripcion),
+        })),
+      }
+    : null
+
+/** ComplementariaConfigDTO del servidor -> forma del editor. */
+export const complementariaDeDTO = (dto) =>
+  dto
+    ? {
+        titulo: dto.titulo ?? '',
+        introduccion: dto.introduccion ?? '',
+        enunciado: dto.enunciado ?? '',
+        nota: dto.nota ?? '',
+        opciones: (dto.opciones ?? []).map((o) => ({
+          id: nuevoId(),
+          texto: o.texto ?? '',
+          descripcion: o.descripcion ?? '',
+          resultado: o.resultado ?? '',
+          resultadoDescripcion: o.resultadoDescripcion ?? '',
+        })),
+      }
+    : null
+
+/** Problemas de la pregunta complementaria (mismas reglas que el servidor). */
+export const erroresComplementaria = (c) => {
+  if (!c) return []
+  const errores = []
+  const largo = (v, max, obligatorio, mensaje) => {
+    if (obligatorio && !texto(v)) errores.push(mensaje)
+    else if (texto(v).length > max) errores.push(`${mensaje} (máx. ${max}).`)
+  }
+  largo(c.titulo, 150, true, 'La pregunta complementaria necesita un título.')
+  largo(c.introduccion, 500, false, 'La introducción es muy larga')
+  largo(c.enunciado, 500, true, 'Escribe la pregunta complementaria.')
+  largo(c.nota, 300, false, 'La nota es muy larga')
+  if (c.opciones.length < 2)
+    errores.push('La pregunta complementaria necesita al menos 2 opciones.')
+  const vistos = new Set()
+  c.opciones.forEach((o, i) => {
+    const n = i + 1
+    largo(o.texto, 200, true, `La opción ${n} necesita un texto.`)
+    largo(
+      o.descripcion,
+      1000,
+      false,
+      `La descripción de la opción ${n} es muy larga`,
+    )
+    largo(
+      o.resultado,
+      100,
+      true,
+      `La opción ${n} necesita el nombre del resultado.`,
+    )
+    largo(
+      o.resultadoDescripcion,
+      1000,
+      false,
+      `La descripción del resultado ${n} es muy larga`,
+    )
+    const clave = texto(o.resultado).toLowerCase()
+    if (clave && vistos.has(clave))
+      errores.push(
+        `La opción ${n} repite un resultado: cada opción debe llevar a uno distinto.`,
+      )
+    vistos.add(clave)
+  })
+  return errores
+}
 
 export const borradorVacio = () => ({
   modo: null,
@@ -67,6 +196,8 @@ export const borradorVacio = () => ({
   estilos: [],
   preguntas: [],
   lectura: null,
+  // Pregunta complementaria del asistente (lectura PREDOMINANTE), o null.
+  complementaria: null,
   // Lo que el usuario fija en el asistente para la lectura CUADRANTES.
   planoAsistente: null,
   interpretacion: interpretacionVacia(),
@@ -575,7 +706,11 @@ export const aplicarModeloCiclo = (b) => {
 /** Interpretación que produce cada lectura lista con los estilos actuales. */
 export const interpretacionDeLectura = (b, lectura = b.lectura) => {
   if (lectura === LECTURA.PREDOMINANTE) {
-    return { ...interpretacionVacia(), esquema: ESQUEMA.RELATIVO }
+    return {
+      ...interpretacionVacia(),
+      esquema: ESQUEMA.RELATIVO,
+      complementaria: b.complementaria ?? null,
+    }
   }
   if (lectura === LECTURA.CUADRANTES) {
     if (compuestos(b).length !== 2) return interpretacionVacia()
@@ -659,10 +794,9 @@ export const interpretacionADTO = (inter, nombre, esIpsativo = null) => {
             distancia: numero(s.distancia),
           }))
         : [],
-    // Solo tiene sentido con el perfil escalonado; el servidor la apaga en otro esquema.
-    preguntaPreferencia:
-      inter.esquema === ESQUEMA.RELATIVO_ESCALONADO &&
-      Boolean(inter.preguntaPreferencia),
+    complementaria: admiteComplementaria(inter.esquema)
+      ? complementariaADTO(inter.complementaria)
+      : null,
     ...(inter.esquema === ESQUEMA.CUADRANTES && inter.plano
       ? {
           plano: {
@@ -831,6 +965,10 @@ export const erroresInterpretacion = (inter, nombre) => {
       }
     }
   }
+  if (admiteComplementaria(inter.esquema))
+    erroresComplementaria(inter.complementaria).forEach((m) =>
+      error('interpretacion', m, 'complementaria'),
+    )
   if (inter.esquema === ESQUEMA.CUADRANTES) {
     const p = inter.plano
     if (!p) {

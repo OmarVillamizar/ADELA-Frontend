@@ -10,11 +10,11 @@ import EsqueletoReporte from '../../components/resultados/EsqueletoReporte'
 import PanelEstilos from '../../components/resultados/PanelEstilos'
 import PerfilDestacado from '../../components/resultados/PerfilDestacado'
 import TablaRespuestas from '../../components/resultados/TablaRespuestas'
-import PreferenciaMultimodal, {
-  PreguntaPreferencia,
-} from '../../components/resultados/PreferenciaMultimodal'
+import PreguntaComplementaria, {
+  RespuestaComplementaria,
+} from '../../components/resultados/PreguntaComplementaria'
 import {
-  declararPreferenciaCapsula,
+  responderComplementariaCapsula,
   obtenerResultadoCapsula,
 } from '../../util/services/capsulaPublicaService'
 import {
@@ -130,11 +130,15 @@ const ResultadoCapsula = () => {
           </button>
         </EncabezadoReporte>
 
-        {resultado.pidePreferencia && !resultado.preferenciaMultimodal && (
-          <PreguntaPreferencia
-            onDeclarar={async (preferencia) =>
+        {resultado.complementaria && !resultado.respuestaComplementaria && (
+          <PreguntaComplementaria
+            pregunta={resultado.complementaria}
+            onResponder={async (opcionId) =>
               setResultado(
-                await declararPreferenciaCapsula(resultado.codigo, preferencia),
+                await responderComplementariaCapsula(
+                  resultado.codigo,
+                  opcionId,
+                ),
               )
             }
           />
@@ -145,10 +149,10 @@ const ResultadoCapsula = () => {
             calificacion={resultado.calificacion}
             titulo="Tu perfil de aprendizaje"
           />
-          {resultado.preferenciaMultimodal && (
-            <PreferenciaMultimodal
-              preferencia={resultado.preferenciaMultimodal}
-              propio
+          {resultado.respuestaComplementaria && (
+            <RespuestaComplementaria
+              respuesta={resultado.respuestaComplementaria}
+              titulo={resultado.respuestaComplementaria.titulo}
             />
           )}
 

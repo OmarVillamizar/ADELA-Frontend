@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import Swal from 'sweetalert2'
 import Segmentado from '../../../../components/resultados/Segmentado'
 import CamposDatos from '../CamposDatos'
+import EditorComplementaria from '../EditorComplementaria'
 import ListaErrores from '../ListaErrores'
 import VistaPrevia from '../VistaPrevia'
 import PlanoAsistente from './PlanoAsistente'
@@ -19,6 +20,7 @@ import {
   agregarPregunta,
   aplicarModeloCiclo,
   compuestos,
+  erroresComplementaria,
   erroresInterpretacion,
   estiloDeAfirmacion,
   etiquetasFrase,
@@ -96,6 +98,10 @@ const faltaEn = (b, paso) => {
   }
   if (paso === 1 && prim.length < 2) return 'Agrega al menos dos estilos.'
   if (paso === 2 && !b.lectura) return 'Elige cómo leer los resultados.'
+  if (paso === 2 && b.lectura === LECTURA.PREDOMINANTE) {
+    const m = erroresComplementaria(b.complementaria)[0]
+    if (m) return m
+  }
   if (paso === 2 && b.lectura === LECTURA.CUADRANTES) {
     if (compuestos(b).length !== 2)
       return 'El mapa de cuatro estilos necesita exactamente dos pares opuestos.'
@@ -161,6 +167,9 @@ const resumen = (b) => {
     `${primarios(b).length} estilos`,
     pares > 0 && `${pares} ${pares === 1 ? 'par opuesto' : 'pares opuestos'}`,
     lectura,
+    b.lectura === LECTURA.PREDOMINANTE &&
+      b.complementaria &&
+      'con pregunta extra si destacan todos',
   ]
     .filter(Boolean)
     .join(' · ')
@@ -646,6 +655,16 @@ const Asistente = ({
             </button>
           ))}
         </div>
+        {borrador.lectura === LECTURA.PREDOMINANTE && (
+          <div className="mt-3">
+            <EditorComplementaria
+              valor={borrador.complementaria}
+              onChange={(complementaria) =>
+                actualizar((b) => ({ ...b, complementaria }))
+              }
+            />
+          </div>
+        )}
         {borrador.lectura === LECTURA.CUADRANTES &&
           compuestos(borrador).length === 2 && (
             <PlanoAsistente borrador={borrador} actualizar={actualizar} />
