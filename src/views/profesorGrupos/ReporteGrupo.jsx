@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
+import { flushSync } from 'react-dom'
 import { usePDF } from 'react-to-pdf'
 import { CContainer } from '@coreui/react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import Swal from 'sweetalert2'
 import CIcon from '@coreui/icons-react'
 import {
@@ -29,11 +30,27 @@ import EncabezadoReporte from '../../components/resultados/EncabezadoReporte'
 import EsqueletoReporte from '../../components/resultados/EsqueletoReporte'
 import GraficasResultado from '../../components/resultados/GraficasResultado'
 import EscalasCompuestas from '../../components/resultados/EscalasCompuestas'
+import FiltroDemografico from '../../components/resultados/FiltroDemografico'
+import ListadoEstudiantes from '../../components/resultados/ListadoEstudiantes'
 import MapaCuadrantes from '../../components/resultados/MapaCuadrantes'
 import { ConteoComplementaria } from '../../components/resultados/PreguntaComplementaria'
+import ResumenGrupo from '../../components/resultados/ResumenGrupo'
 import SelectorEscala from '../../components/resultados/SelectorEscala'
+import SelectorSecciones from '../../components/resultados/SelectorSecciones'
 import TablaEstadisticos from '../../components/resultados/TablaEstadisticos'
+import {
+  FILTRO_INICIAL,
+  describirFiltro,
+  filtrar,
+} from '../../util/calificacion/demografia'
 import '../../components/resultados/resultados.css'
+
+const SECCIONES_INICIALES = {
+  resumen: true,
+  graficas: true,
+  estadisticas: true,
+  estudiantes: true,
+}
 
 const ReporteGrupo = () => {
   const { id1, id2 } = useParams()
@@ -41,6 +58,10 @@ const ReporteGrupo = () => {
 
   const [reporte, setReporte] = useState(null)
   const [error, setError] = useState(null)
+  const [secciones, setSecciones] = useState(SECCIONES_INICIALES)
+  const [filtro, setFiltro] = useState(FILTRO_INICIAL)
+  // Mientras se genera el PDF el listado muestra todas las filas, no una página.
+  const [pdfCompleto, setPdfCompleto] = useState(false)
   const { escala, setEscala, disponibles } = useEscala(reporte?.calificacion)
 
   // usePDF congela las opciones del primer render, cuando reporte todavia es
@@ -95,13 +116,23 @@ const ReporteGrupo = () => {
   const resueltos = estudiantesResuelto.length
   const total = resueltos + estudiantesNoResuelto.length
   const ipsativo = calificacion?.esIpsativo
+  const resueltosFiltrados = filtrar(estudiantesResuelto, filtro)
+  const filasFiltradas = [
+    ...resueltosFiltrados,
+    ...filtrar(estudiantesNoResuelto, filtro),
+  ]
+  const textoFiltro = describirFiltro(filtro)
+  const verPromedio = secciones.graficas || secciones.estadisticas
 
   const descargarPDF = async () => {
     try {
+      flushSync(() => setPdfCompleto(true))
       await toPDF({ filename: `reporte-grupo-${reporte.grupo?.nombre}.pdf` })
     } catch (e) {
       console.error('Error al generar PDF:', e)
       Swal.fire('Error', 'Hubo un problema al generar el PDF.', 'error')
+    } finally {
+      setPdfCompleto(false)
     }
   }
 
@@ -189,6 +220,25 @@ const ReporteGrupo = () => {
         </button>
       </EncabezadoReporte>
 
+      <div className="adela-controles">
+        <SelectorSecciones
+          secciones={[
+            { clave: 'resumen', etiqueta: 'Resumen' },
+            { clave: 'graficas', etiqueta: 'Gráficas' },
+            { clave: 'estadisticas', etiqueta: 'Estadísticas avanzadas' },
+            {
+              clave: 'estudiantes',
+              etiqueta: `Listado de estudiantes (${total})`,
+            },
+          ]}
+          valor={secciones}
+          onChange={setSecciones}
+        />
+        {(secciones.resumen || secciones.estudiantes) && (
+          <FiltroDemografico valor={filtro} onChange={setFiltro} />
+        )}
+      </div>
+
       <div ref={targetRef}>
         <div className="adela-cifras">
           <Cifra indice={0} etiqueta="Estudiantes" valor={total} />
@@ -226,120 +276,95 @@ const ReporteGrupo = () => {
                 <span>{AVISO_IPSATIVO}</span>
               </div>
             )}
-            {ipsativo && (
+            {secciones.resumen && (
+              <ResumenGrupo
+                resueltos={resueltosFiltrados}
+                nombresEstilos={separarPorTipo(estilos).primarios.map(
+                  (e) => e.nombre,
+                )}
+                filtro={textoFiltro}
+              />
+            )}
+
+            {secciones.graficas && ipsativo && (
               <DistribucionPerfiles
                 distribucion={calificacion?.distribucionPerfiles}
                 destacado
               />
             )}
 
-            <section className="adela-panel adela-aparece">
-              <div className="adela-panel__cabeza">
-                <div>
-                  <h2 className="adela-panel__titulo">
-                    Promedio por estilo de aprendizaje
-                  </h2>
-                  {escala === ESCALA.POMP && (
-                    <p className="adela-panel__nota">{AYUDA_POMP}</p>
-                  )}
+            {verPromedio && (
+              <section className="adela-panel adela-aparece">
+                <div className="adela-panel__cabeza">
+                  <div>
+                    <h2 className="adela-panel__titulo">
+                      {secciones.graficas
+                        ? 'Promedio por estilo de aprendizaje'
+                        : 'Estadísticas avanzadas'}
+                    </h2>
+                    {escala === ESCALA.POMP && (
+                      <p className="adela-panel__nota">{AYUDA_POMP}</p>
+                    )}
+                  </div>
+                  <SelectorEscala
+                    disponibles={disponibles}
+                    valor={escala}
+                    onChange={setEscala}
+                  />
                 </div>
-                <SelectorEscala
-                  disponibles={disponibles}
-                  valor={escala}
-                  onChange={setEscala}
-                />
-              </div>
-              <GraficasResultado
-                estilos={separarPorTipo(estilos).primarios}
-                escala={escala}
-                etiqueta="Promedio"
-              />
-              <h3 className="adela-panel__titulo mt-4 mb-3">Estadísticos</h3>
-              <TablaEstadisticos estilos={estilos} escala={escala} />
-            </section>
+                {secciones.graficas && (
+                  <GraficasResultado
+                    estilos={separarPorTipo(estilos).primarios}
+                    escala={escala}
+                    etiqueta="Promedio"
+                  />
+                )}
+                {secciones.estadisticas && (
+                  <>
+                    {secciones.graficas && (
+                      <h3 className="adela-panel__titulo mt-4 mb-3">
+                        Estadísticas avanzadas
+                      </h3>
+                    )}
+                    <TablaEstadisticos estilos={estilos} escala={escala} />
+                  </>
+                )}
+              </section>
+            )}
 
-            <EscalasCompuestas
-              estilos={separarPorTipo(estilos).compuestos}
-              grupal
-            />
-            {calificacion?.plano && (
-              <MapaCuadrantes
-                plano={calificacion.plano}
-                estilos={estilos}
-                puntos={calificacion.puntosPlano}
-                grupal
-              />
+            {secciones.graficas && (
+              <>
+                <EscalasCompuestas
+                  estilos={separarPorTipo(estilos).compuestos}
+                  grupal
+                />
+                {calificacion?.plano && (
+                  <MapaCuadrantes
+                    plano={calificacion.plano}
+                    estilos={estilos}
+                    puntos={calificacion.puntosPlano}
+                    grupal
+                  />
+                )}
+                <DistribucionNiveles estilos={estilos} />
+                {!ipsativo && (
+                  <DistribucionPerfiles
+                    distribucion={calificacion?.distribucionPerfiles}
+                  />
+                )}
+                <ConteoComplementaria conteo={reporte.complementaria} />
+              </>
             )}
-            <DistribucionNiveles estilos={estilos} />
-            {!ipsativo && (
-              <DistribucionPerfiles
-                distribucion={calificacion?.distribucionPerfiles}
-              />
-            )}
-            <ConteoComplementaria conteo={reporte.complementaria} />
           </>
         )}
 
-        <section className="adela-panel adela-aparece">
-          <div className="adela-panel__cabeza">
-            <h2 className="adela-panel__titulo">Estudiantes</h2>
-          </div>
-          <div className="adela-tabla__scroll">
-            <table className="adela-tabla">
-              <thead>
-                <tr>
-                  <th scope="col" className="num">
-                    #
-                  </th>
-                  <th scope="col">Nombre</th>
-                  <th scope="col">Estado</th>
-                  <th scope="col">
-                    <span className="visually-hidden">Acciones</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {estudiantesResuelto.map((r, i) => (
-                  <tr key={r.id}>
-                    <td className="num text-body-secondary">{i + 1}</td>
-                    <td className="adela-tabla__nombre">
-                      {r.estudiante.nombre}
-                    </td>
-                    <td>
-                      <span className="adela-chip adela-chip--ok">
-                        Respondió
-                      </span>
-                    </td>
-                    <td className="num">
-                      <Link
-                        to={`/reporte-estudiante/${r.id}`}
-                        className="adela-btn adela-btn--sm"
-                      >
-                        Ver resultado
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-                {estudiantesNoResuelto.map((r, i) => (
-                  <tr key={r.id}>
-                    <td className="num text-body-secondary">
-                      {resueltos + i + 1}
-                    </td>
-                    <td className="adela-tabla__nombre">
-                      {r.estudiante.nombre}
-                    </td>
-                    <td>
-                      <span className="adela-chip adela-chip--aviso">
-                        Pendiente
-                      </span>
-                    </td>
-                    <td />
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+        {secciones.estudiantes && (
+          <ListadoEstudiantes
+            filas={filasFiltradas}
+            filtro={textoFiltro}
+            completo={pdfCompleto}
+          />
+        )}
       </div>
     </CContainer>
   )

@@ -12,16 +12,8 @@ import PreguntaComplementaria, {
 } from './PreguntaComplementaria'
 import TablaRespuestas from './TablaRespuestas'
 import { dateFromMsToString } from '../../util/dateUtils'
+import { edad } from '../../util/calificacion/demografia'
 import './resultados.css'
-
-const edad = (fechaNacimiento) => {
-  const nacimiento = new Date(fechaNacimiento)
-  const hoy = new Date()
-  let anios = hoy.getFullYear() - nacimiento.getFullYear()
-  const mes = hoy.getMonth() - nacimiento.getMonth()
-  if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) anios--
-  return anios
-}
 
 /**
  * Resultado de un estudiante en un cuestionario. Lo ven el propio estudiante y
