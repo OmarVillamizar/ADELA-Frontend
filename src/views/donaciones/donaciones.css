@@ -1,0 +1,290 @@
+/* Página de donaciones: colores del logo de ADELA (ver scss/adela-marca.css).
+   Compacta y a lo ancho: portada en una franja, cuentas y destinos lado a lado. */
+
+/* Cada bloque elige su color con una clase de acento. */
+.don-acento-azul {
+  --don-acento: var(--adela-azul);
+  --don-suave: rgba(26, 115, 232, 0.12);
+}
+
+.don-acento-cian {
+  --don-acento: #0e9fc4;
+  --don-suave: rgba(18, 191, 232, 0.14);
+}
+
+.don-acento-verde {
+  --don-acento: #4fa524;
+  --don-suave: rgba(108, 201, 58, 0.16);
+}
+
+.don-acento-naranja {
+  --don-acento: #e07d0a;
+  --don-suave: rgba(247, 147, 30, 0.16);
+}
+
+.don-acento-morado {
+  --don-acento: var(--adela-morado);
+  --don-suave: rgba(166, 63, 240, 0.12);
+}
+
+/* Portada: arte a la izquierda, texto a la derecha, en una sola franja. */
+.don-hero {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
+  border-radius: 1rem;
+  background-color: var(--cui-body-bg);
+  background-image:
+    radial-gradient(circle at 0% 0%, rgba(26, 115, 232, 0.16), transparent 45%),
+    radial-gradient(circle at 100% 0%, rgba(18, 191, 232, 0.14), transparent 45%),
+    radial-gradient(circle at 0% 100%, rgba(108, 201, 58, 0.14), transparent 45%),
+    radial-gradient(circle at 100% 100%, rgba(247, 147, 30, 0.16), transparent 45%);
+  box-shadow: 0 6px 20px rgba(16, 24, 40, 0.06);
+}
+
+/* Franja de colores en el borde inferior de la portada. */
+.don-hero::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 5px;
+  background: var(--adela-franja);
+}
+
+.don-hero h1 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin-bottom: 0.3rem;
+}
+
+.don-hero p {
+  margin: 0;
+  color: var(--cui-secondary-color);
+}
+
+.don-arte {
+  flex-shrink: 0;
+  width: 96px;
+  height: auto;
+  filter: drop-shadow(0 6px 10px rgba(16, 24, 40, 0.15));
+}
+
+.don-nota.don-nota {
+  margin-top: 0.4rem;
+  font-size: 0.88rem;
+}
+
+/* Dos columnas: cuentas | destinos. */
+.don-columnas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.don-titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin: 0 0 0.6rem;
+}
+
+.don-titulo::before {
+  content: '';
+  width: 0.35rem;
+  height: 1.1rem;
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    var(--adela-azul),
+    var(--adela-cian),
+    var(--adela-verde),
+    var(--adela-naranja)
+  );
+}
+
+/* Cuentas: una fila por cuenta (ícono · datos · botón). */
+.don-cuentas {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.don-cuenta {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 0.85rem;
+  background: var(--cui-body-bg);
+  border: 1px solid var(--cui-border-color-translucent);
+  border-left: 5px solid var(--don-acento);
+}
+
+.don-cuenta-icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.7rem;
+  background: var(--don-suave);
+  color: var(--don-acento);
+}
+
+.don-cuenta-icono svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.don-cuenta-datos {
+  flex: 1;
+  min-width: 0;
+}
+
+.don-cuenta h3 {
+  font-size: 1rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.don-cuenta-datos p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--cui-secondary-color);
+}
+
+.don-numero {
+  display: inline-block;
+  margin-top: 0.25rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 0.4rem;
+  background: var(--don-suave);
+  color: var(--cui-body-color);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+/* Botón táctil de la cuenta, en su color. */
+.don-boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  min-height: 44px;
+  min-width: 108px;
+  padding: 0.4rem 0.85rem;
+  border: 2px solid var(--don-acento);
+  border-radius: 0.65rem;
+  background: var(--don-suave);
+  color: var(--cui-body-color);
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.don-boton:hover,
+.don-boton:focus-visible {
+  background: var(--don-acento);
+  color: white;
+}
+
+.don-boton svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Destinos: cuadrícula 2×2, ícono al lado del texto. */
+.don-destinos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.don-destino {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 0.85rem;
+  background: var(--cui-body-bg);
+  border: 1px solid var(--cui-border-color-translucent);
+}
+
+.don-destino-icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.7rem;
+  background: var(--don-suave);
+}
+
+.don-destino-icono svg {
+  width: 1.45rem;
+  height: 1.45rem;
+  fill: none;
+  stroke: var(--don-acento);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.don-destino-icono .don-relleno {
+  fill: var(--don-acento);
+  stroke: none;
+}
+
+.don-destino h3 {
+  font-size: 0.95rem;
+  font-weight: 800;
+  margin-bottom: 0.15rem;
+}
+
+.don-destino p {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: var(--cui-secondary-color);
+}
+
+/* Pantallas medianas y celular: se apila. */
+@media (max-width: 991px) {
+  .don-columnas {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 575px) {
+  .don-hero {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .don-arte {
+    width: 80px;
+  }
+
+  .don-destinos {
+    grid-template-columns: 1fr;
+  }
+
+  .don-cuenta {
+    flex-wrap: wrap;
+  }
+
+  .don-boton {
+    width: 100%;
+  }
+}
