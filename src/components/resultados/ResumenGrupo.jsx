@@ -1,16 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { colorCategoria } from '../../util/calificacion/opcionesGrafico'
-import {
-  GENEROS,
-  RANGOS_EDAD,
-  agrupar,
-  categoriasResumen,
-  contar,
-  edad,
-  etiquetaGenero,
-  rangoEdadDe,
-} from '../../util/calificacion/demografia'
+import { categoriasResumen, contar } from '../../util/calificacion/demografia'
 import './resultados.css'
 
 const pct = (k, n) => (n > 0 ? Math.round((k / n) * 100) : 0)
@@ -21,64 +12,10 @@ const masFrecuentes = (conteo) => {
   return max === 0 ? [] : Object.keys(conteo).filter((c) => conteo[c] === max)
 }
 
-const Tendencias = ({ titulo, columna, grupos, criterio }) => (
-  <>
-    <h3 className="adela-panel__titulo mt-4 mb-3">{titulo}</h3>
-    <div className="adela-tabla__scroll">
-      <table className="adela-tabla">
-        <thead>
-          <tr>
-            <th scope="col">{columna}</th>
-            <th scope="col" className="num">
-              Estudiantes
-            </th>
-            {criterio.categorias.map((c) => (
-              <th scope="col" className="num" key={c}>
-                {c}
-              </th>
-            ))}
-            <th scope="col">Más frecuente</th>
-          </tr>
-        </thead>
-        <tbody>
-          {grupos.map(([nombre, filas]) => {
-            const { conteo } = contar(filas, criterio)
-            const top = masFrecuentes(conteo)
-            return (
-              <tr key={nombre}>
-                <td className="adela-tabla__nombre">{nombre}</td>
-                <td className="num">{filas.length}</td>
-                {criterio.categorias.map((c) => (
-                  <td
-                    className={`num${top.includes(c) ? ' fw-bold' : ''}`}
-                    key={c}
-                  >
-                    {conteo[c]}{' '}
-                    <span className="text-body-secondary">
-                      ({pct(conteo[c], filas.length)} %)
-                    </span>
-                  </td>
-                ))}
-                <td>{top.length ? top.join(', ') : '—'}</td>
-              </tr>
-            )
-          })}
-        </tbody>
-      </table>
-    </div>
-  </>
-)
-
-Tendencias.propTypes = {
-  titulo: PropTypes.string.isRequired,
-  columna: PropTypes.string.isRequired,
-  grupos: PropTypes.array.isRequired,
-  criterio: PropTypes.object.isRequired,
-}
-
 /**
  * Lo esencial del grupo sin estadística: cuántos estudiantes tienen cada
- * estilo y cómo se reparte por género y por edad. Respeta el filtro elegido.
+ * estilo. Respeta el filtro elegido; la comparación por género y edad va en
+ * ComparativaDemografica.
  */
 const ResumenGrupo = ({ resueltos, nombresEstilos, filtro }) => {
   const criterio = categoriasResumen(resueltos, nombresEstilos)
@@ -86,20 +23,6 @@ const ResumenGrupo = ({ resueltos, nombresEstilos, filtro }) => {
   const n = resueltos.length
   const top = masFrecuentes(conteo)
   const orden = [...criterio.categorias].sort((a, b) => conteo[b] - conteo[a])
-
-  const porGenero = agrupar(
-    resueltos,
-    (r) => etiquetaGenero(r.estudiante.genero),
-    GENEROS.map((g) => g.etiqueta),
-  )
-  const porEdad = agrupar(
-    resueltos,
-    (r) => rangoEdadDe(edad(r.estudiante.fechaNacimiento)),
-    RANGOS_EDAD.map((r) => r.etiqueta),
-  ).map(([rango, filas]) => [
-    RANGOS_EDAD.some((r) => r.etiqueta === rango) ? `${rango} años` : rango,
-    filas,
-  ])
 
   return (
     <section className="adela-panel adela-aparece">
@@ -188,19 +111,6 @@ const ResumenGrupo = ({ resueltos, nombresEstilos, filtro }) => {
               </li>
             )}
           </ul>
-
-          <Tendencias
-            titulo="Por género"
-            columna="Género"
-            grupos={porGenero}
-            criterio={criterio}
-          />
-          <Tendencias
-            titulo="Por edad"
-            columna="Edad"
-            grupos={porEdad}
-            criterio={criterio}
-          />
         </>
       )}
     </section>

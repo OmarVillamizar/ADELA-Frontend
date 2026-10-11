@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
 import Paginacion from './Paginacion'
-import { edad, etiquetaGenero } from '../../util/calificacion/demografia'
 import './resultados.css'
 
 /**
@@ -43,11 +42,7 @@ const ListadoEstudiantes = ({ filas, filtro, completo = false }) => {
                     #
                   </th>
                   <th scope="col">Nombre</th>
-                  <th scope="col">Género</th>
-                  <th scope="col" className="num">
-                    Edad
-                  </th>
-                  <th scope="col">Perfil</th>
+                  <th scope="col">Estilo</th>
                   <th scope="col">Estado</th>
                   <th scope="col">
                     <span className="visually-hidden">Acciones</span>
@@ -64,10 +59,6 @@ const ListadoEstudiantes = ({ filas, filtro, completo = false }) => {
                       </td>
                       <td className="adela-tabla__nombre">
                         {r.estudiante.nombre}
-                      </td>
-                      <td>{etiquetaGenero(r.estudiante.genero)}</td>
-                      <td className="num">
-                        {edad(r.estudiante.fechaNacimiento) ?? '—'}
                       </td>
                       <td>{r.perfil ?? '—'}</td>
                       <td>

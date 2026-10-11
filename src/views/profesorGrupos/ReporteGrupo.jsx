@@ -24,6 +24,7 @@ import {
   separarPorTipo,
 } from '../../util/calificacion/escala'
 import Cifra from '../../components/resultados/Cifra'
+import ComparativaDemografica from '../../components/resultados/ComparativaDemografica'
 import DistribucionNiveles from '../../components/resultados/DistribucionNiveles'
 import DistribucionPerfiles from '../../components/resultados/DistribucionPerfiles'
 import EncabezadoReporte from '../../components/resultados/EncabezadoReporte'
@@ -47,6 +48,7 @@ import '../../components/resultados/resultados.css'
 
 const SECCIONES_INICIALES = {
   resumen: true,
+  comparativa: true,
   graficas: true,
   estadisticas: true,
   estudiantes: true,
@@ -123,6 +125,7 @@ const ReporteGrupo = () => {
   ]
   const textoFiltro = describirFiltro(filtro)
   const verPromedio = secciones.graficas || secciones.estadisticas
+  const nombresEstilos = separarPorTipo(estilos).primarios.map((e) => e.nombre)
 
   const descargarPDF = async () => {
     try {
@@ -224,6 +227,7 @@ const ReporteGrupo = () => {
         <SelectorSecciones
           secciones={[
             { clave: 'resumen', etiqueta: 'Resumen' },
+            { clave: 'comparativa', etiqueta: 'Por género y edad' },
             { clave: 'graficas', etiqueta: 'Gráficas' },
             { clave: 'estadisticas', etiqueta: 'Estadísticas avanzadas' },
             {
@@ -234,7 +238,9 @@ const ReporteGrupo = () => {
           valor={secciones}
           onChange={setSecciones}
         />
-        {(secciones.resumen || secciones.estudiantes) && (
+        {(secciones.resumen ||
+          secciones.comparativa ||
+          secciones.estudiantes) && (
           <FiltroDemografico valor={filtro} onChange={setFiltro} />
         )}
       </div>
@@ -279,9 +285,14 @@ const ReporteGrupo = () => {
             {secciones.resumen && (
               <ResumenGrupo
                 resueltos={resueltosFiltrados}
-                nombresEstilos={separarPorTipo(estilos).primarios.map(
-                  (e) => e.nombre,
-                )}
+                nombresEstilos={nombresEstilos}
+                filtro={textoFiltro}
+              />
+            )}
+            {secciones.comparativa && (
+              <ComparativaDemografica
+                resueltos={resueltosFiltrados}
+                nombresEstilos={nombresEstilos}
                 filtro={textoFiltro}
               />
             )}
