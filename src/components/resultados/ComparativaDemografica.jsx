@@ -27,9 +27,10 @@ const masFrecuentes = (conteo) => {
 }
 
 /**
- * Columnas agrupadas: una serie por grupo (género o rango de edad) y, en el
- * eje, cada estilo. Se grafica el porcentaje y no el conteo: los grupos rara
- * vez tienen el mismo tamaño y 3 de 4 no es comparable con 3 de 20.
+ * Columnas agrupadas: en el eje, cada grupo (género o rango de edad) y una
+ * serie por estilo, con el mismo color que el estilo tiene en el resto del
+ * reporte. Se grafica el porcentaje y no el conteo: los grupos rara vez tienen
+ * el mismo tamaño y 3 de 4 no es comparable con 3 de 20.
  */
 const GraficaComparativa = ({ grupos, criterio }) => {
   const series = grupos.map(([nombre, filas]) => ({
@@ -47,9 +48,9 @@ const GraficaComparativa = ({ grupos, criterio }) => {
     ...opciones.plugins.tooltip,
     callbacks: {
       label: (ctx) => {
-        const s = series[ctx.datasetIndex]
-        const k = s.conteo[criterio.categorias[ctx.dataIndex]]
-        return ` ${s.nombre}: ${ctx.parsed.y} % (${k} de ${s.n})`
+        const s = series[ctx.dataIndex]
+        const c = criterio.categorias[ctx.datasetIndex]
+        return ` ${c}: ${ctx.parsed.y} % (${s.conteo[c]} de ${s.n})`
       },
     },
   }
@@ -64,10 +65,10 @@ const GraficaComparativa = ({ grupos, criterio }) => {
       <CChartBar
         customTooltips={false}
         data={{
-          labels: criterio.categorias,
-          datasets: series.map((s, i) => ({
-            label: `${s.nombre} (${s.n})`,
-            data: criterio.categorias.map((c) => pct(s.conteo[c], s.n)),
+          labels: series.map((s) => `${s.nombre} (${s.n})`),
+          datasets: criterio.categorias.map((c, i) => ({
+            label: c,
+            data: series.map((s) => pct(s.conteo[c], s.n)),
             ...estiloBarra(colorCategoria(i)),
           })),
         }}
