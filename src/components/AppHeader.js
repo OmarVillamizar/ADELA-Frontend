@@ -7,7 +7,6 @@ import {
   CHeaderToggler,
   CNavLink,
   CNavItem,
-  useColorModes,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
 import { useAuth } from '../util/auth/AuthProvider'
@@ -25,63 +24,56 @@ const AppHeader = () => {
   const sidebarShow = useSelector((state) => state.sidebarShow)
 
   useEffect(() => {
-    document.addEventListener('scroll', () => {
+    const alDesplazar = () => {
       headerRef.current &&
         headerRef.current.classList.toggle(
           'shadow-sm',
           document.documentElement.scrollTop > 0,
         )
-    })
+    }
+    document.addEventListener('scroll', alDesplazar)
+    return () => document.removeEventListener('scroll', alDesplazar)
   }, [])
 
-  const handleLogout = () => {
+  const handleLogout = (e) => {
+    e.preventDefault()
     auth.signout(() => navigate('/login'))
   }
 
   return (
-    <CHeader position="sticky" className="mb-4 p-0" ref={headerRef}>
-      <CContainer className="border-bottom px-4" fluid>
+    <CHeader
+      position="sticky"
+      className="mb-4 p-0 adela-header-franja"
+      ref={headerRef}
+    >
+      <CContainer className="px-4" fluid>
         <CHeaderToggler
+          className="adela-tactil"
           onClick={() => dispatch({ type: 'set', sidebarShow: !sidebarShow })}
           style={{ marginInlineStart: '-14px' }}
+          aria-label="Mostrar u ocultar el menú"
         >
           <CIcon icon={cilMenu} size="lg" />
         </CHeaderToggler>
-        <CHeaderNav>
+        <CHeaderNav className="align-items-center">
           <AppHeaderDropdown />
 
-          <li className="nav-item py-1">
+          <li className="nav-item py-1 align-self-stretch">
             <div className="vr h-100 mx-2 text-body text-opacity-75"></div>
           </li>
           <CNavItem>
-            <CNavLink href="#" onClick={handleLogout}>
-              
-            </CNavLink>
-            
-          </CNavItem>
-          <CNavItem>
-            <CNavLink href="#" onClick={handleLogout}>
+            <CNavLink
+              href="#"
+              onClick={handleLogout}
+              className="adela-tactil adela-header-accion"
+              aria-label="Cerrar sesión"
+              title="Cerrar sesión"
+            >
               <CIcon icon={cilAccountLogout} size="lg" />
-            </CNavLink>
-          </CNavItem>
-           <CNavItem>
-            <CNavLink href="#" onClick={handleLogout}>
-              
-            </CNavLink>
-            </CNavItem>
-           <CNavItem>
-            <CNavLink href="#" onClick={handleLogout}>
-              
-            </CNavLink>
-          </CNavItem>
-           <CNavItem>
-            <CNavLink href="#" onClick={handleLogout}>
-              
             </CNavLink>
           </CNavItem>
         </CHeaderNav>
       </CContainer>
-      <CContainer className="px-4" fluid></CContainer>
     </CHeader>
   )
 }

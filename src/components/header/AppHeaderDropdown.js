@@ -26,8 +26,9 @@ const AppHeaderDropdown = () => {
   return (
     <CDropdown variant="nav-item">
       <CDropdownToggle
+        aria-label="Menú de sesión"
         placement="bottom-end"
-        className="py-0 pe-0"
+        className="py-0 pe-0 adela-tactil"
         caret={false}
       >
         <CAvatar src={avatar8} size="md" />

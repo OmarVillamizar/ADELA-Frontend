@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 
 import { CSpinner, useColorModes } from '@coreui/react'
 import './scss/style.scss'
+import './scss/adela-marca.css'
 import AuthProvider from './util/auth/AuthProvider'
 
 // Containers

@@ -1,0 +1,363 @@
+/*
+ * Identidad visual de ADELA, compartida por el login y las páginas públicas
+ * (cápsulas). Los colores salen del logo: un color por cuadrante más el
+ * morado del nodo superior.
+ */
+:root {
+  --adela-azul: #1a73e8;
+  --adela-cian: #12bfe8;
+  --adela-verde: #6cc93a;
+  --adela-naranja: #f7931e;
+  --adela-morado: #a63ff0;
+  --adela-franja: linear-gradient(
+    90deg,
+    var(--adela-azul) 0 25%,
+    var(--adela-cian) 25% 50%,
+    var(--adela-verde) 50% 75%,
+    var(--adela-naranja) 75% 100%
+  );
+}
+
+/* Fondo: cada esquina toma el color de un cuadrante del logo, muy suave,
+   sobre una trama de puntos que recuerda los brillos del logo. */
+.adela-fondo {
+  background-color: var(--cui-tertiary-bg);
+  background-image:
+    radial-gradient(circle at 0% 0%, rgba(26, 115, 232, 0.16), transparent 45%),
+    radial-gradient(circle at 100% 0%, rgba(18, 191, 232, 0.14), transparent 45%),
+    radial-gradient(circle at 0% 100%, rgba(108, 201, 58, 0.14), transparent 45%),
+    radial-gradient(circle at 100% 100%, rgba(247, 147, 30, 0.16), transparent 45%),
+    radial-gradient(rgba(16, 24, 40, 0.06) 1px, transparent 1.5px);
+  background-size:
+    auto,
+    auto,
+    auto,
+    auto,
+    22px 22px;
+  background-attachment: fixed;
+}
+
+/* Franja de cuatro colores bajo el header. El .header de CoreUI ya está
+   posicionado (relative o sticky), así que no se toca su position. */
+.adela-header-franja::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 4px;
+  background: var(--adela-franja);
+}
+
+/* Cuatro nodos de color, como los del borde del logo. */
+.adela-nodos {
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.adela-nodos i {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9);
+}
+
+.adela-nodos i:nth-child(1) {
+  background: var(--adela-azul);
+}
+
+.adela-nodos i:nth-child(2) {
+  background: var(--adela-cian);
+}
+
+.adela-nodos i:nth-child(3) {
+  background: var(--adela-verde);
+}
+
+.adela-nodos i:nth-child(4) {
+  background: var(--adela-naranja);
+}
+
+/* Footer: translúcido sobre el fondo. */
+.adela-footer.footer {
+  background: color-mix(in srgb, var(--cui-body-bg) 82%, transparent);
+  backdrop-filter: blur(6px);
+  padding-top: 0.9rem;
+  padding-bottom: 0.9rem;
+}
+
+.adela-footer-texto {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--cui-secondary-color);
+}
+
+.adela-footer-texto strong {
+  color: var(--cui-body-color);
+  letter-spacing: 0.05em;
+}
+
+/* Respuesta táctil: se levanta al pasar y se hunde al tocar. */
+.adela-tactil {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.adela-tactil:hover {
+  transform: translateY(-2px);
+}
+
+.adela-tactil:active {
+  transform: scale(0.97);
+}
+
+.adela-tactil:focus-visible {
+  outline: 3px solid rgba(26, 115, 232, 0.4);
+  outline-offset: 2px;
+}
+
+/* Botones de CoreUI táctiles: alto mínimo cómodo para el dedo. */
+.btn.adela-tactil:not(.btn-sm) {
+  min-height: 42px;
+}
+
+/* Botón solo con ícono (eliminar, quitar): cuadrado de 40px. */
+.btn.adela-btn-icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+}
+
+/* Acciones del header (cerrar sesión): círculo de 44px que se tiñe al pasar. */
+.adela-header-accion.nav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.adela-header-accion.nav-link:hover,
+.adela-header-accion.nav-link:focus-visible {
+  background: rgba(247, 147, 30, 0.14);
+  color: var(--adela-naranja);
+}
+
+/* Saludo de bienvenida de las páginas del profesor: gris de siempre. */
+.adela-bienvenida.alert {
+  --cui-alert-bg: #d3d3d3;
+  --cui-alert-color: black;
+  --cui-alert-border-color: #d3d3d3;
+  border-left: 4px solid var(--adela-azul);
+}
+
+/* Texto que explica la sección, debajo del saludo. */
+.adela-descripcion {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0.6rem;
+  background: rgba(18, 191, 232, 0.08);
+  border: 1px solid rgba(18, 191, 232, 0.35);
+  color: var(--cui-body-color);
+  line-height: 1.5;
+}
+
+.adela-descripcion svg {
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  color: #0e94b5;
+}
+
+/* Eliminar: rojo con borde e ícono negros; el ícono se aclara al pasar. */
+.btn.adela-btn-eliminar {
+  --cui-btn-bg: #e55353;
+  --cui-btn-border-color: #111;
+  --cui-btn-color: #111;
+  --cui-btn-hover-bg: #d93737;
+  --cui-btn-hover-border-color: #111;
+  --cui-btn-hover-color: white;
+  --cui-btn-active-bg: #c62f2f;
+  --cui-btn-active-border-color: #111;
+  --cui-btn-active-color: white;
+  --cui-btn-focus-shadow-rgb: 229, 83, 83;
+}
+
+/* Modales: franja de colores arriba, esquinas suaves, pie sin fondo gris. */
+.adela-modal .modal-content {
+  position: relative;
+  overflow: hidden;
+  border: 0;
+  border-radius: 1rem;
+  box-shadow: 0 20px 50px rgba(16, 24, 40, 0.22);
+}
+
+.adela-modal .modal-content::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 5px;
+  background: var(--adela-franja);
+  z-index: 1;
+}
+
+.adela-modal .modal-header {
+  padding-top: 1.25rem;
+  border-bottom-color: var(--cui-border-color-translucent);
+}
+
+.adela-modal .modal-title {
+  font-weight: 700;
+}
+
+.adela-modal .modal-footer {
+  gap: 0.5rem;
+  border-top-color: var(--cui-border-color-translucent);
+}
+
+/* Ficha de datos: etiqueta y valor en filas, legible en celular. */
+.adela-ficha {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.6rem 1rem;
+  margin: 0;
+  padding: 1rem 1.1rem;
+  border-radius: 0.75rem;
+  background: var(--cui-tertiary-bg);
+}
+
+.adela-ficha dt {
+  font-weight: 600;
+  color: var(--cui-secondary-color);
+}
+
+.adela-ficha dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 575px) {
+  .adela-ficha {
+    grid-template-columns: 1fr;
+    gap: 0.15rem;
+  }
+
+  .adela-ficha dd {
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* Título de sección dentro de una tarjeta o modal. */
+.adela-subtitulo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1.25rem 0 0.6rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--adela-azul);
+}
+
+/* Botón secundario suave: azul pastel con texto azul oscuro. */
+.btn.adela-btn-suave {
+  --cui-btn-bg: #e6f0fd;
+  --cui-btn-border-color: #c9ddfb;
+  --cui-btn-color: #134a9c;
+  --cui-btn-hover-bg: #d6e6fc;
+  --cui-btn-hover-border-color: #a9c8f7;
+  --cui-btn-hover-color: #0f3d82;
+  --cui-btn-active-bg: #c6dcfb;
+  --cui-btn-active-border-color: #a9c8f7;
+  --cui-btn-active-color: #0f3d82;
+  font-weight: 600;
+}
+
+/* Lista con scroll de elementos elegidos (p. ej. estudiantes de un grupo). */
+.adela-lista-seleccion {
+  max-height: 180px;
+  overflow-y: auto;
+  padding: 0.6rem;
+  border: 1px solid var(--cui-border-color);
+  border-radius: 0.6rem;
+  background: var(--cui-tertiary-bg);
+}
+
+.adela-lista-seleccion-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+  padding: 0.15rem 0.25rem 0.15rem 0.75rem;
+  border-radius: 0.5rem;
+  background: var(--cui-body-bg);
+}
+
+.adela-lista-seleccion-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Sugerencias de react-autosuggest: sin estilos propios, se veían como una
+   lista con viñetas. */
+.react-autosuggest__container {
+  position: relative;
+}
+
+.react-autosuggest__suggestions-container--open {
+  position: absolute;
+  z-index: 10;
+  inset: calc(100% + 4px) 0 auto 0;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--cui-border-color);
+  border-radius: 0.6rem;
+  background: var(--cui-body-bg);
+  box-shadow: 0 10px 24px rgba(16, 24, 40, 0.14);
+}
+
+.react-autosuggest__suggestions-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.3rem;
+}
+
+.react-autosuggest__suggestion {
+  padding: 0.6rem 0.75rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+}
+
+.react-autosuggest__suggestion--highlighted {
+  background: #e6f0fd;
+  color: #134a9c;
+}
+
+/* Grupo de acciones en una celda: separadas y que bajan de línea si no caben. */
+.adela-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adela-tactil,
+  .adela-tactil:hover,
+  .adela-tactil:active {
+    transition: none;
+    transform: none;
+  }
+}
