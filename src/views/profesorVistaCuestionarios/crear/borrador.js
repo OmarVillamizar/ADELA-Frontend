@@ -48,7 +48,7 @@ export const CORTE = {
   PERSONALIZADO: 'PERSONALIZADO',
 }
 
-const nuevoId = () =>
+export const nuevoId = () =>
   `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`
 
 export const interpretacionVacia = () => ({
@@ -213,6 +213,9 @@ export const borradorVacio = () => ({
   complementaria: null,
   // Lo que el usuario fija en el asistente para la lectura CUADRANTES.
   planoAsistente: null,
+  // Cuestionario importado de una IA (importar/desdeDTO.js): marcas por
+  // revisar, las ya revisadas y el resumen del análisis. aDTO lo ignora.
+  ia: null,
   interpretacion: interpretacionVacia(),
 })
 
