@@ -26,7 +26,14 @@ export const createGrupo = async (grupoDTO) => {
   return response.data
 }
 
-// Añadir estudiantes a un grupo
+// Reemplaza nombre y estudiantes del grupo (PUT)
+export const updateGrupo = async (grupoId, grupoDTO) => {
+  const response = await api.put(`/api/grupos/${grupoId}`, grupoDTO)
+  return response.data
+}
+
+// Añadir estudiantes a un grupo: [{ email, nombre }]. Los correos sin cuenta
+// quedan preinscritos.
 export const addStudentsToGroup = async (grupoId, estudiantes) => {
   const response = await api.post(
     `/api/grupos/${grupoId}/estudiantes`,
@@ -38,7 +45,7 @@ export const addStudentsToGroup = async (grupoId, estudiantes) => {
 // Eliminar un estudiante de un grupo
 export const deleteStudentFromGroup = async (grupoId, estudianteEmail) => {
   const response = await api.delete(
-    `/api/grupos/${grupoId}/estudiantes/${estudianteEmail}`,
+    `/api/grupos/${grupoId}/estudiantes/${encodeURIComponent(estudianteEmail)}`,
   )
   return response.data
 }

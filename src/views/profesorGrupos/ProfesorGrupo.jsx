@@ -3,17 +3,16 @@ import { useNavigate, useParams, useOutletContext } from 'react-router-dom'
 import {
   addStudentsToGroup,
   deleteStudentFromGroup,
-  buscarEstudiantes,
   getGroupById,
+  updateGrupo,
 } from '../../util/services/grupoService'
 import {
+  CBadge,
   CButton,
   CCard,
   CCardBody,
   CCardHeader,
-  CForm,
   CFormInput,
-  CFormLabel,
   CModal,
   CModalBody,
   CModalFooter,
@@ -28,419 +27,332 @@ import {
   CAlert,
   CInputGroup,
   CInputGroupText,
+  CSpinner,
 } from '@coreui/react'
-import Autosuggest from 'react-autosuggest'
 import Swal from 'sweetalert2'
 import CIcon from '@coreui/icons-react'
-import { cilSearch } from '@coreui/icons'
+import {
+  cilArrowLeft,
+  cilPen,
+  cilPlus,
+  cilSearch,
+  cilTrash,
+} from '@coreui/icons'
+import SelectorEstudiantes from './SelectorEstudiantes'
+
+const sinTildes = (texto) =>
+  (texto ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
 
 const ProfesorGrupo = () => {
   const user = useOutletContext()
-
   const { id } = useParams()
-  const [grupo, setGrupo] = useState({ estudiantes: [] })
-  const [modalAddStudentVisible, setModalAddStudentVisible] = useState(false)
-  const currentGrupoId = id
-  const [suggestions, setSuggestions] = useState([])
-
-  const [newStudentEmail, setNewStudentEmail] = useState('')
-  const [search, setSearch] = useState('')
-  const [selectedNewStudents, setSelectedNewStudents] = useState([])
-  const [searchStudentList, setSearchStudentList] = useState([])
   const navigate = useNavigate()
 
+  const [grupo, setGrupo] = useState(null)
+  const [cargaFallida, setCargaFallida] = useState(false)
+  const [search, setSearch] = useState('')
+  const [modalAddStudentVisible, setModalAddStudentVisible] = useState(false)
+  const [selectedNewStudents, setSelectedNewStudents] = useState([])
+  const [agregando, setAgregando] = useState(false)
+
   useEffect(() => {
-    getGroupById(id).then((el) => {
-      setGrupo(el)
-      const bools = el.estudiantes.map(() => true)
-      setSearchStudentList(bools)
-    })
-  }, [])
-
-
-  const getSuggestionValue = (suggestion) => suggestion.email
-
-  const renderSuggestion = (suggestion) => <div>{suggestion.email}</div>
-
-  const onSuggestionsFetchRequested = ({ value }) => {
-    const termino = value.trim()
-    if (termino.length < 2) {
-      setSuggestions([])
-      return
-    }
-    buscarEstudiantes(termino)
-      .then(setSuggestions)
+    getGroupById(id)
+      .then(setGrupo)
       .catch((error) => {
-        console.error('Error buscando estudiantes:', error.code, error.message)
-        setSuggestions([])
+        console.error('Error cargando el grupo:', error)
+        setCargaFallida(true)
       })
-  }
+  }, [id])
 
-  const onSuggestionsClearRequested = () => {
-    setSuggestions([])
-  }
+  // Antes el filtro guardaba un array de booleanos paralelo a la lista que se
+  // desalineaba al borrar (y con la búsqueda vacía ocultaba al último).
+  const termino = sinTildes(search.trim())
+  const visibles = (grupo?.estudiantes ?? []).filter(
+    (e) =>
+      !termino ||
+      sinTildes(e.email).includes(termino) ||
+      sinTildes(e.nombre).includes(termino),
+  )
 
-  const handleDeleteEstudiante = (estudianteEmail, grupoId) => {
-    deleteStudentFromGroup(grupoId, estudianteEmail)
-      .then(() => {
-        setGrupo({
-          ...grupo,
-          estudiantes: grupo.estudiantes.filter(
-            (est) => est.email !== estudianteEmail,
-          ),
+  const handleDeleteEstudiante = (estudiante) => {
+    Swal.fire({
+      title: `¿Quitar a ${estudiante.nombre || estudiante.email} del grupo?`,
+      text: 'Se borrarán sus cuestionarios pendientes en este grupo. Los ya respondidos se conservan.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      confirmButtonText: 'Sí, quitar',
+      cancelButtonText: 'Cancelar',
+    }).then((result) => {
+      if (!result.isConfirmed) return
+      deleteStudentFromGroup(grupo.id, estudiante.email)
+        .then(setGrupo)
+        .catch((error) => {
+          console.error('Error eliminando estudiante:', error)
+          Swal.fire({
+            title: 'Error',
+            text: error.message || 'Hubo un error al quitar al estudiante.',
+            icon: 'error',
+          })
         })
-        setSearchStudentList(new Array(grupo.estudiantes.length - 1).fill(true))
-        setSearch('')
+    })
+  }
+
+  const handleRenombrar = async () => {
+    const { value: nombre } = await Swal.fire({
+      title: 'Renombrar grupo',
+      input: 'text',
+      inputValue: grupo.nombre,
+      inputAttributes: { maxlength: 100 },
+      showCancelButton: true,
+      confirmButtonText: 'Guardar',
+      cancelButtonText: 'Cancelar',
+      inputValidator: (v) => (!v.trim() ? 'Escribe un nombre.' : undefined),
+    })
+    if (!nombre || nombre.trim() === grupo.nombre) return
+    try {
+      const actualizado = await updateGrupo(grupo.id, {
+        nombre: nombre.trim(),
+        estudiantes: grupo.estudiantes.map(({ email, nombre }) => ({
+          email,
+          nombre,
+        })),
+      })
+      setGrupo(actualizado)
+    } catch (error) {
+      console.error('Error renombrando el grupo:', error)
+      Swal.fire({
+        title: 'Error',
+        text: error.message || 'No se pudo renombrar el grupo.',
+        icon: 'error',
+      })
+    }
+  }
+
+  const cerrarModal = () => {
+    setModalAddStudentVisible(false)
+    setSelectedNewStudents([])
+  }
+
+  const handleAddStudentsToGroup = () => {
+    if (selectedNewStudents.length === 0 || agregando) return
+    setAgregando(true)
+    addStudentsToGroup(
+      grupo.id,
+      selectedNewStudents.map(({ email, nombre }) => ({ email, nombre })),
+    )
+      .then((actualizado) => {
+        const n = actualizado.estudiantes.length - grupo.estudiantes.length
+        setGrupo(actualizado)
+        cerrarModal()
         Swal.fire({
-          title: '¡Eliminado!',
-          text: 'El estudiante ha sido eliminado.',
+          title: '¡Añadidos!',
+          text: `${n} estudiante${n !== 1 ? 's' : ''} añadido${n !== 1 ? 's' : ''} al grupo.`,
           icon: 'success',
         })
-      })
-      .catch((error) => {
-        console.error('Error eliminando estudiante:', error)
-        Swal.fire({
-          title: 'Error',
-          text: 'Hubo un error al eliminar el estudiante.',
-          icon: 'error',
-        })
-      })
-  }
-
-  const handleAddStudentsToGroup = (e) => {
-    e.preventDefault()
-
-    if (selectedNewStudents.length === 0) {
-      Swal.fire({
-        title: 'Campos incompletos',
-        text: 'Por favor, ingresa al menos un correo de estudiante.',
-        icon: 'warning',
-      })
-      return
-    }
-
-    addStudentsToGroup(currentGrupoId, selectedNewStudents)
-      .then((response) => {
-        // Hacer una solicitud adicional para obtener la información actualizada del grupo
-        getGroupById(currentGrupoId)
-          .then((updatedGrupo) => {
-            setGrupo(updatedGrupo)
-            setSearchStudentList(
-              new Array(updatedGrupo.estudiantes.length).fill(true),
-            )
-            setSelectedNewStudents([])
-            setModalAddStudentVisible(false)
-            Swal.fire({
-              title: '¡Añadidos!',
-              text: 'Los estudiantes han sido añadidos.',
-              icon: 'success',
-            })
-          })
-          .catch((groupError) => {
-            console.error(
-              'Error al obtener la información del grupo:',
-              groupError,
-            )
-            Swal.fire({
-              title: 'Error',
-              text: 'Hubo un error al obtener la información del grupo.',
-              icon: 'error',
-            })
-          })
       })
       .catch((error) => {
         console.error('Error añadiendo estudiantes:', error)
         Swal.fire({
           title: 'Error',
-          text: 'Hubo un error al añadir los estudiantes.',
+          text: error.message || 'Hubo un error al añadir los estudiantes.',
           icon: 'error',
         })
       })
+      .finally(() => setAgregando(false))
   }
 
-  const filterStudent = (str) => {
-    setSearch(str)
-    if (str === '') {
-      setSearchStudentList(new Array(grupo.estudiantes.length - 1).fill(true))
-    } else {
-      setSearchStudentList(
-        grupo.estudiantes.map((e) => {
-          return (
-            e.email.toLowerCase().includes(str) ||
-            e.nombre.toLowerCase().includes(str)
-          )
-        }),
-      )
-    }
+  if (cargaFallida) {
+    return (
+      <CAlert
+        color="danger"
+        className="d-flex justify-content-between align-items-center"
+      >
+        No se pudo cargar el grupo.
+        <CButton color="secondary" onClick={() => navigate('/grupos/')}>
+          Volver
+        </CButton>
+      </CAlert>
+    )
+  }
+
+  if (!grupo) {
+    return (
+      <div className="text-center py-5">
+        <CSpinner color="primary" />
+      </div>
+    )
   }
 
   return (
     <>
       <CAlert
         color="info"
-        className="mb-2 d-flex justify-content-between align-items-center"
-        style={{
-          backgroundColor: '#d3d3d3',
-          border: '#d3d3d3',
-          color: 'black',
-          padding: '0.5rem',
-          margin: '0',
-        }}
+        className="mb-3 d-flex justify-content-between align-items-center adela-bienvenida"
       >
         <span>
           Profesor <strong>{user.nombre}</strong>
         </span>
         <CButton
           color="secondary"
-          className="ml-auto"
+          variant="outline"
+          className="adela-tactil"
           onClick={() => navigate('/grupos/')}
         >
+          <CIcon icon={cilArrowLeft} className="me-1" />
           Volver
         </CButton>
       </CAlert>
       <CCard>
-        <CCardHeader className="d-flex justify-content-between align-items-center">
-          <span>Lista de Estudiantes Grupo - {grupo.nombre}</span>
-          <div className="d-flex align-items-center gap-3">
-            <CInputGroup style={{ width: '300px' }}>
+        <CCardHeader className="d-flex flex-wrap justify-content-between align-items-center gap-2">
+          <div className="d-flex align-items-center gap-2">
+            <strong>{grupo.nombre}</strong>
+            <CBadge color="primary" shape="rounded-pill">
+              {grupo.estudiantes.length} estudiante
+              {grupo.estudiantes.length !== 1 && 's'}
+            </CBadge>
+            <CButton
+              color="secondary"
+              variant="ghost"
+              size="sm"
+              aria-label="Renombrar grupo"
+              title="Renombrar grupo"
+              onClick={handleRenombrar}
+            >
+              <CIcon icon={cilPen} />
+            </CButton>
+          </div>
+          <div className="d-flex flex-wrap align-items-center gap-2">
+            <CInputGroup style={{ maxWidth: '300px' }}>
               <CFormInput
-                placeholder="Buscar estudiante..."
+                placeholder="Buscar por nombre o correo"
                 aria-label="Buscar estudiante"
                 value={search}
-                onChange={(e) => filterStudent(e.target.value)}
+                onChange={(e) => setSearch(e.target.value)}
               />
               <CInputGroupText>
                 <CIcon icon={cilSearch} />
               </CInputGroupText>
             </CInputGroup>
-
             <CButton
               color="success"
-              size="md"
-              style={{
-                color: 'white',
-              }}
-              onClick={(e) => {
-                e.stopPropagation()
-                setModalAddStudentVisible(true)
-              }}
+              className="text-white adela-tactil"
+              onClick={() => setModalAddStudentVisible(true)}
             >
-              {' '}
-              Añadir Estudiantes{' '}
+              <CIcon icon={cilPlus} className="me-1" />
+              Añadir Estudiantes
             </CButton>
           </div>
         </CCardHeader>
         <CCardBody>
-          <div
-            style={{
-              maxHeight: '400px',
-              overflowY: 'auto',
-              border: '1px solid #d8dbe0',
-            }}
-          >
-            <CTable hover striped>
-              <CTableHead>
-                <CTableRow>
-                  <CTableHeaderCell>Nombre</CTableHeaderCell>
-                  <CTableHeaderCell>Correo</CTableHeaderCell>
-                  <CTableHeaderCell className="text-center">
-                    Eliminar
-                  </CTableHeaderCell>
-                </CTableRow>
-              </CTableHead>
-              <CTableBody>
-                {grupo.estudiantes.map((estudiante, idx) =>
-                  searchStudentList[idx] ? (
+          {grupo.estudiantes.length === 0 ? (
+            <p className="text-body-secondary text-center m-0 py-4">
+              Este grupo aún no tiene estudiantes. Añádelos uno a uno o con una
+              lista CSV.
+            </p>
+          ) : (
+            <div
+              style={{
+                maxHeight: '480px',
+                overflowY: 'auto',
+                border: '1px solid var(--cui-border-color)',
+              }}
+            >
+              <CTable hover striped responsive className="mb-0">
+                <CTableHead>
+                  <CTableRow>
+                    <CTableHeaderCell>Nombre</CTableHeaderCell>
+                    <CTableHeaderCell>Correo</CTableHeaderCell>
+                    <CTableHeaderCell className="text-center">
+                      Quitar
+                    </CTableHeaderCell>
+                  </CTableRow>
+                </CTableHead>
+                <CTableBody>
+                  {visibles.map((estudiante) => (
                     <CTableRow key={estudiante.email}>
-                      <CTableDataCell>{estudiante.nombre}</CTableDataCell>
+                      <CTableDataCell>
+                        {estudiante.nombre || (
+                          <span className="text-body-secondary">
+                            Sin nombre
+                          </span>
+                        )}
+                        {estudiante.estado === 'INCOMPLETA' && (
+                          <CBadge
+                            color="warning"
+                            textColor="dark"
+                            shape="rounded-pill"
+                            className="ms-2"
+                            title="Aún no ha completado su perfil en ADELA."
+                          >
+                            Pendiente
+                          </CBadge>
+                        )}
+                      </CTableDataCell>
                       <CTableDataCell>{estudiante.email}</CTableDataCell>
                       <CTableDataCell className="text-center">
                         <CButton
                           color="danger"
-                          size="sm"
-                          onClick={() =>
-                            handleDeleteEstudiante(estudiante.email, grupo.id)
-                          }
+                          variant="ghost"
+                          className="adela-tactil adela-btn-icono"
+                          aria-label={`Quitar a ${estudiante.nombre || estudiante.email}`}
+                          title="Quitar del grupo"
+                          onClick={() => handleDeleteEstudiante(estudiante)}
                         >
-                          -
+                          <CIcon icon={cilTrash} />
                         </CButton>
                       </CTableDataCell>
                     </CTableRow>
-                  ) : (
-                    <></>
-                  ),
-                )}
-              </CTableBody>
-            </CTable>
-          </div>
+                  ))}
+                  {visibles.length === 0 && (
+                    <CTableRow>
+                      <CTableDataCell
+                        colSpan={3}
+                        className="text-center text-body-secondary"
+                      >
+                        Nadie coincide con «{search}».
+                      </CTableDataCell>
+                    </CTableRow>
+                  )}
+                </CTableBody>
+              </CTable>
+            </div>
+          )}
         </CCardBody>
       </CCard>
       <CModal
         visible={modalAddStudentVisible}
-        onClose={() => {
-          setModalAddStudentVisible(false)
-          setNewStudentEmail('')
-          setSelectedNewStudents([])
-        }}
+        alignment="center"
+        className="adela-modal"
+        onClose={cerrarModal}
       >
-        <CModalHeader onClose={() => setModalAddStudentVisible(false)}>
-          <CModalTitle>Agregar Estudiantes</CModalTitle>
+        <CModalHeader>
+          <CModalTitle>Añadir estudiantes a {grupo.nombre}</CModalTitle>
         </CModalHeader>
         <CModalBody>
-          <CForm
-            onSubmit={(e) => {
-              e.preventDefault()
-              handleAddStudentsToGroup(e)
-            }}
-          >
-            <CFormLabel htmlFor="newStudentEmail">
-              Correo del Estudiante
-            </CFormLabel>
-            <Autosuggest
-              suggestions={suggestions}
-              onSuggestionsFetchRequested={onSuggestionsFetchRequested}
-              onSuggestionsClearRequested={onSuggestionsClearRequested}
-              getSuggestionValue={getSuggestionValue}
-              renderSuggestion={renderSuggestion}
-              inputProps={{
-                id: 'newStudentEmail',
-                placeholder: 'Escribe un correo electrónico',
-                value: newStudentEmail,
-                onChange: (e, { newValue }) => setNewStudentEmail(newValue),
-              }}
-              onSuggestionSelected={(event, { suggestion }) => {
-                if (!selectedNewStudents.includes(suggestion.email)) {
-                  setSelectedNewStudents([
-                    ...selectedNewStudents,
-                    suggestion.email,
-                  ])
-                }
-                setNewStudentEmail('')
-              }}
-            />
-            <CFormLabel htmlFor="file" className="mt-3">
-              Subir archivo CSV (Columnas: correo, nombre)
-            </CFormLabel>
-            <CFormInput
-              type="file"
-              id="file"
-              accept=".csv"
-              onChange={(e) => {
-                const file = e.target.files[0]
-                if (file) {
-                  const reader = new FileReader()
-                  reader.onload = (event) => {
-                    try {
-                      const csvData = event.target.result
-                      const lines = csvData.split('\n')
-
-                      // Skip header row and process the rest
-                      const newStudents = lines
-                        .slice(1)
-                        .map((line) => {
-                          const [email] = line.split(',')
-                          return email.trim()
-                        })
-                        .filter((email) => {
-                          // Validate email format and check for duplicates
-                          const isValidEmail =
-                            email && /\S+@\S+\.\S+/.test(email)
-                          const isDuplicate =
-                            selectedNewStudents.includes(email)
-                          if (!isValidEmail && email !== '') {
-                            console.warn(`Email inválido encontrado: ${email}`)
-                          }
-                          return isValidEmail && !isDuplicate
-                        })
-
-                      if (newStudents.length > 0) {
-                        setSelectedNewStudents((prevStudents) => {
-                          const updatedStudents = [
-                            ...prevStudents,
-                            ...newStudents,
-                          ]
-                          return [...new Set(updatedStudents)] // Remove any duplicates
-                        })
-                        Swal.fire({
-                          title: '¡Archivo procesado!',
-                          text: `Se han añadido ${newStudents.length} correos válidos.`,
-                          icon: 'success',
-                        })
-                      } else {
-                        Swal.fire({
-                          title: 'Archivo vacío',
-                          text: 'No se encontraron correos válidos en el archivo CSV.',
-                          icon: 'warning',
-                        })
-                      }
-                    } catch (error) {
-                      console.error('Error procesando el archivo CSV:', error)
-                      Swal.fire({
-                        title: 'Error',
-                        text: 'Hubo un error al procesar el archivo CSV.',
-                        icon: 'error',
-                      })
-                    }
-                  }
-                  reader.readAsText(file)
-                }
-              }}
-            />
-
-            <CFormLabel className="mt-3">Estudiantes seleccionados</CFormLabel>
-            <div
-              className="border rounded p-3"
-              style={{ maxHeight: '150px', overflowY: 'auto' }}
-            >
-              {selectedNewStudents.length > 0 ? (
-                <ul className="list-unstyled m-0">
-                  {selectedNewStudents.map((email) => (
-                    <li
-                      key={email}
-                      className="d-flex justify-content-between align-items-center mb-2"
-                    >
-                      {email}
-                      <CButton
-                        color="danger"
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => {
-                          setSelectedNewStudents((prevStudents) =>
-                            prevStudents.filter((e) => e !== email),
-                          )
-                        }}
-                      >
-                        ×
-                      </CButton>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-muted m-0">
-                  No hay estudiantes seleccionados
-                </p>
-              )}
-            </div>
-          </CForm>
+          <SelectorEstudiantes
+            seleccionados={selectedNewStudents}
+            onChange={setSelectedNewStudents}
+            enGrupo={grupo.estudiantes.map((e) => e.email)}
+          />
         </CModalBody>
-        <CModalFooter>
+        <CModalFooter className="justify-content-between">
           <CButton
             color="secondary"
-            onClick={() => {
-              setModalAddStudentVisible(false)
-              setNewStudentEmail('')
-              setSelectedNewStudents([])
-            }}
+            variant="outline"
+            className="adela-tactil"
+            onClick={cerrarModal}
           >
             Cancelar
           </CButton>
           <CButton
             color="success"
-            onClick={(e) => handleAddStudentsToGroup(e)}
-            disabled={selectedNewStudents.length === 0}
-            style={{ color: 'white' }}
+            className="text-white adela-tactil"
+            onClick={handleAddStudentsToGroup}
+            disabled={selectedNewStudents.length === 0 || agregando}
           >
-            Agregar Estudiantes
+            {agregando && <CSpinner size="sm" className="me-2" />}
+            Añadir ({selectedNewStudents.length})
           </CButton>
         </CModalFooter>
       </CModal>
