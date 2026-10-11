@@ -11,7 +11,17 @@ import {
   CTableHeaderCell,
   CTableRow,
   CSpinner,
+  CBadge,
 } from '@coreui/react'
+import CIcon from '@coreui/icons-react'
+import {
+  cilArrowBottom,
+  cilArrowTop,
+  cilCheckAlt,
+  cilPeople,
+  cilUserFollow,
+  cilX,
+} from '@coreui/icons'
 import Swal from 'sweetalert2'
 import {
   listarProfesores,
@@ -93,7 +103,7 @@ const AsignarRoles = () => {
 
   const handleBajar = async (email, rol) => {
     if (rol === 'PROFESOR') {
-      Swal.fire('Advertencia', 'Este profesor ya es administrador.', 'info')
+      Swal.fire('Advertencia', 'Este profesor no es administrador.', 'info')
       return
     }
     try {
@@ -105,9 +115,7 @@ const AsignarRoles = () => {
       )
       // Actualizar la lista de profesores activos si es necesario
       const nuevosActivos = profesoresActivos.map((profesor) =>
-        profesor.email === email
-          ? { ...profesor, rol: 'PROFESOR' }
-          : profesor,
+        profesor.email === email ? { ...profesor, rol: 'PROFESOR' } : profesor,
       )
       setProfesoresActivos(nuevosActivos)
     } catch (error) {
@@ -131,115 +139,139 @@ const AsignarRoles = () => {
     }
   }
 
+  // Estado de carga y error comunes a las dos tablas.
+  const contenido = (tabla, vacio) => {
+    if (loading)
+      return (
+        <div className="text-center py-3">
+          <CSpinner color="primary" />
+        </div>
+      )
+    if (error) return <p className="text-danger mb-0">{error}</p>
+    return tabla.length === 0 ? (
+      <p className="text-body-secondary mb-0">{vacio}</p>
+    ) : null
+  }
+
   return (
-    <CCard>
-      <CCardHeader>Asignar Roles</CCardHeader>
-      <CCardBody>
-        <h5>Profesores Activos</h5>
-        {loading ? (
-          <CSpinner color="primary" />
-        ) : error ? (
-          <p>{error}</p>
-        ) : (
-          <CTable hover responsive>
-            <CTableHead>
-              <CTableRow>
-                <CTableHeaderCell>Nombre</CTableHeaderCell>
-                <CTableHeaderCell>Email</CTableHeaderCell>
-                <CTableHeaderCell>Acciones</CTableHeaderCell>
-              </CTableRow>
-            </CTableHead>
-            <CTableBody>
-              {profesoresActivos.map((profesor) => (
-                <CTableRow key={profesor.email}>
-                  <CTableDataCell>{profesor.nombre}</CTableDataCell>
-                  <CTableDataCell>{profesor.email}</CTableDataCell>
-
-                  <CTableDataCell>
-                    {profesor.rol !== 'ADMINISTRADOR' ? (
-                      <CButton
-                        color="warning"
-                        size="sm"
-                        onClick={() =>
-                          handleElevar(profesor.email, profesor.rol)
-                        }
-                        style={{ marginRight: '10px' }}
-                      >
-                        Elevar a Admin
-                      </CButton>
-                    ) : profesor.email !== user.email ? (
-                      <CButton
-                        color="warning"
-                        size="sm"
-                        onClick={() =>
-                          handleBajar(profesor.email, profesor.rol)
-                        }
-                        style={{ marginRight: '10px' }}
-                      >
-                        Quitar Admin
-                      </CButton>
-                    ) : (
-                      <CButton
-                        color="success"
-                        disabled
-                        size="sm"
-                        style={{ marginRight: '10px' }}
-                      >
-                        Administrador (tú)
-                      </CButton>
-                    )}
-                  </CTableDataCell>
+    <>
+      <CCard className="mb-4">
+        <CCardHeader className="d-flex align-items-center gap-2">
+          <CIcon icon={cilPeople} />
+          <span className="fw-semibold">Profesores activos</span>
+          {!loading && (
+            <CBadge color="success" shape="rounded-pill">
+              {profesoresActivos.length}
+            </CBadge>
+          )}
+        </CCardHeader>
+        <CCardBody>
+          {contenido(profesoresActivos, 'No hay profesores activos.') ?? (
+            <CTable hover responsive align="middle">
+              <CTableHead>
+                <CTableRow>
+                  <CTableHeaderCell>Nombre</CTableHeaderCell>
+                  <CTableHeaderCell>Email</CTableHeaderCell>
+                  <CTableHeaderCell>Acciones</CTableHeaderCell>
                 </CTableRow>
-              ))}
-            </CTableBody>
-          </CTable>
-        )}
+              </CTableHead>
+              <CTableBody>
+                {profesoresActivos.map((profesor) => (
+                  <CTableRow key={profesor.email}>
+                    <CTableDataCell>{profesor.nombre}</CTableDataCell>
+                    <CTableDataCell>{profesor.email}</CTableDataCell>
+                    <CTableDataCell>
+                      {profesor.rol !== 'ADMINISTRADOR' ? (
+                        <CButton
+                          color="warning"
+                          className="adela-tactil"
+                          onClick={() =>
+                            handleElevar(profesor.email, profesor.rol)
+                          }
+                        >
+                          <CIcon icon={cilArrowTop} className="me-1" />
+                          Elevar a Admin
+                        </CButton>
+                      ) : profesor.email !== user.email ? (
+                        <CButton
+                          color="warning"
+                          variant="outline"
+                          className="adela-tactil"
+                          onClick={() =>
+                            handleBajar(profesor.email, profesor.rol)
+                          }
+                        >
+                          <CIcon icon={cilArrowBottom} className="me-1" />
+                          Quitar Admin
+                        </CButton>
+                      ) : (
+                        <CBadge color="success" className="px-3 py-2">
+                          Administrador (tú)
+                        </CBadge>
+                      )}
+                    </CTableDataCell>
+                  </CTableRow>
+                ))}
+              </CTableBody>
+            </CTable>
+          )}
+        </CCardBody>
+      </CCard>
 
-        <hr />
-
-        <h5>Profesores Inactivos</h5>
-        {loading ? (
-          <CSpinner color="primary" />
-        ) : error ? (
-          <p>{error}</p>
-        ) : (
-          <CTable hover responsive>
-            <CTableHead>
-              <CTableRow>
-                <CTableHeaderCell>Nombre</CTableHeaderCell>
-                <CTableHeaderCell>Email</CTableHeaderCell>
-                <CTableHeaderCell>Acciones</CTableHeaderCell>
-              </CTableRow>
-            </CTableHead>
-            <CTableBody>
-              {profesoresInactivos.map((profesor) => (
-                <CTableRow key={profesor.email}>
-                  <CTableDataCell>{profesor.nombre}</CTableDataCell>
-                  <CTableDataCell>{profesor.email}</CTableDataCell>
-                  <CTableDataCell>
-                    <CButton
-                      color="success"
-                      size="sm"
-                      onClick={() => handleActivar(profesor.email)}
-                      style={{ marginRight: '10px' }}
-                    >
-                      Activar
-                    </CButton>
-                    <CButton
-                      color="danger"
-                      size="sm"
-                      onClick={() => handleRechazar(profesor.email)}
-                    >
-                      Rechazar
-                    </CButton>
-                  </CTableDataCell>
+      <CCard className="mb-4">
+        <CCardHeader className="d-flex align-items-center gap-2">
+          <CIcon icon={cilUserFollow} />
+          <span className="fw-semibold">Solicitudes de profesor</span>
+          {!loading && (
+            <CBadge color="warning" shape="rounded-pill">
+              {profesoresInactivos.length}
+            </CBadge>
+          )}
+        </CCardHeader>
+        <CCardBody>
+          {contenido(profesoresInactivos, 'No hay solicitudes pendientes.') ?? (
+            <CTable hover responsive align="middle">
+              <CTableHead>
+                <CTableRow>
+                  <CTableHeaderCell>Nombre</CTableHeaderCell>
+                  <CTableHeaderCell>Email</CTableHeaderCell>
+                  <CTableHeaderCell>Acciones</CTableHeaderCell>
                 </CTableRow>
-              ))}
-            </CTableBody>
-          </CTable>
-        )}
-      </CCardBody>
-    </CCard>
+              </CTableHead>
+              <CTableBody>
+                {profesoresInactivos.map((profesor) => (
+                  <CTableRow key={profesor.email}>
+                    <CTableDataCell>{profesor.nombre}</CTableDataCell>
+                    <CTableDataCell>{profesor.email}</CTableDataCell>
+                    <CTableDataCell>
+                      <div className="adela-acciones">
+                        <CButton
+                          color="success"
+                          className="text-white adela-tactil"
+                          onClick={() => handleActivar(profesor.email)}
+                        >
+                          <CIcon icon={cilCheckAlt} className="me-1" />
+                          Activar
+                        </CButton>
+                        <CButton
+                          color="danger"
+                          variant="outline"
+                          className="adela-tactil"
+                          onClick={() => handleRechazar(profesor.email)}
+                        >
+                          <CIcon icon={cilX} className="me-1" />
+                          Rechazar
+                        </CButton>
+                      </div>
+                    </CTableDataCell>
+                  </CTableRow>
+                ))}
+              </CTableBody>
+            </CTable>
+          )}
+        </CCardBody>
+      </CCard>
+    </>
   )
 }
 

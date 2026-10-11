@@ -93,16 +93,8 @@ const ActualizarCuentaProfesor = () => {
 
   return (
     <>
-      <CAlert
-        color="info"
-        className="d-flex justify-content-between align-items-center"
-        style={{
-          backgroundColor: '#d3d3d3',
-          border: '#d3d3d3',
-          color: 'black',
-        }}
-      >
-        Bienvenid@ Profesor {user.nombre}
+      <CAlert color="info" className="adela-bienvenida">
+        Bienvenid@ Profesor <strong>{user.nombre}</strong>
       </CAlert>
       <CCard className="mb-4">
         <CCardBody>
@@ -144,7 +136,7 @@ const ActualizarCuentaProfesor = () => {
                     value={formData.carrera}
                     onChange={handleChange}
                   >
-                    <option value="">Choose...</option>
+                    <option value="">Elige tu carrera</option>
                     <option value="109">
                       109 - Ingeniería Electromecánica
                     </option>
@@ -166,8 +158,7 @@ const ActualizarCuentaProfesor = () => {
                 <CButton
                   color="primary"
                   type="submit"
-                  className="custom-warning-button"
-                  style={{ fontSize: 'bold' }}
+                  className="custom-warning-button adela-tactil px-4"
                 >
                   Actualizar cuenta
                 </CButton>
@@ -180,8 +171,8 @@ const ActualizarCuentaProfesor = () => {
         <CAlert color="info" className="p-4">
           <h4 className="alert-heading">Completa tus datos</h4>
           <p className="mb-0">
-            Completa y guarda tu perfil para enviar tu solicitud como profesor a
-            los administradores de ADELA.
+            Completa y guarda tu perfil para enviar tu solicitud como profesor
+            a los administradores de ADELA.
           </p>
         </CAlert>
       )}
@@ -191,9 +182,9 @@ const ActualizarCuentaProfesor = () => {
             Tu solicitud como profesor fue enviada
           </h4>
           <p>
-            Tu solicitud se envió a los administradores de ADELA. Ellos deciden
-            si la aprueban; hasta entonces no tendrás acceso a las funciones de
-            profesor, pero puedes actualizar tus datos aquí.
+            Tu solicitud se envió a los administradores de ADELA. Ellos
+            deciden si la aprueban; hasta entonces no tendrás acceso a las
+            funciones de profesor, pero puedes actualizar tus datos aquí.
           </p>
           <hr />
           <p className="mb-0">

@@ -187,7 +187,9 @@ const ProfesorGrupo = () => {
           margin: '0',
         }}
       >
-        <span>Profesor {user.nombre}</span>
+        <span>
+          Profesor <strong>{user.nombre}</strong>
+        </span>
         <CButton
           color="secondary"
           className="ml-auto"

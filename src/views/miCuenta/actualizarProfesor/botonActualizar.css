@@ -1,15 +1,13 @@
+/* Solo colores: el movimiento al pasar y al tocar lo da .adela-tactil. */
 .custom-warning-button {
   background-color: #f9b115;
   border-color: #f9b115;
   color: black;
-  transition:
-    transform 0.2s,
-    background-color 0.2s;
+  font-weight: 600;
 }
 
 .custom-warning-button:hover {
-  transform: scale(1.05);
   background-color: #e0a10d;
-  cursor: pointer;
+  border-color: #e0a10d;
   color: black;
 }

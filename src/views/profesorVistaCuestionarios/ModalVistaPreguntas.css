@@ -1,164 +1,96 @@
-/* Estilos base para todos los modales */
-.modal-dialog {
-  margin: 2rem auto;
-  max-width: 80% !important; /* Reducir ancho máximo */
-}
-
-/* Estilos específicos para el modal de detalles */
-.details-modal {
-  max-width: 500px !important; /* Reducir ancho */
-  margin: 2rem auto;
-}
-
-.details-modal .modal-body {
-  padding: 2rem;
-}
-
-/* Estilos para el modal de preguntas */
-.questions-modal {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
+/*
+ * Modal "Preguntas del cuestionario". Todo va bajo .questions-modal: Vite carga
+ * este CSS de forma global y, sin ese prefijo, alteraba cualquier modal de la
+ * app (ancho, cabecera, pie) en cuanto se visitaba una de estas páginas.
+ */
 .questions-modal .modal-content {
   max-height: 90vh;
-  width: 100%; /* Ajustar ancho */
-  margin: 0 auto;
-  border-radius: 8px;
-  overflow: hidden; /* Importante para evitar el doble scroll */
 }
 
-.modal-header {
-  background-color: #f8f9fa;
-  border-bottom: 2px solid #dee2e6;
+.questions-modal .modal-body {
   padding: 1.5rem;
+  overflow-y: auto; /* Un solo scroll, el del cuerpo */
+  max-height: calc(90vh - 140px);
 }
 
-.modal-title {
-  color: #2c3e50;
-  font-weight: 600;
-  font-size: 1.5rem;
+.questions-modal .questions-container {
+  padding-right: 0.5rem;
 }
 
-.modal-body {
-  padding: 2rem;
-  overflow-y: auto; /* Solo un scroll en el body */
-  max-height: calc(
-    90vh - 140px
-  ); /* Ajusta según el tamaño del header y footer */
-}
-
-/* Contenedor de preguntas */
-.questions-container {
-  padding-right: 1rem; /* Evita el espacio en blanco a la derecha */
-}
-
-.question-item {
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Ajustes para el scroll */
-.modal-body::-webkit-scrollbar {
-  width: 8px;
-}
-
-.modal-body::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-.modal-body::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
-}
-
-.modal-body::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
-
-/* Resto de los estilos anteriores... */
-.question-text {
-  font-size: 1.1rem;
-  color: #2c3e50;
+.questions-modal .question-item {
   margin-bottom: 1rem;
+  padding: 1.25rem;
+  background-color: var(--cui-body-bg);
+  border: 1px solid var(--cui-border-color-translucent);
+  border-left: 4px solid var(--adela-azul);
+  border-radius: 0.75rem;
 }
 
-.question-number {
-  font-weight: bold;
-  color: #3498db;
+.questions-modal .question-text {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.questions-modal .question-number {
+  font-weight: 800;
+  color: var(--adela-azul);
   margin-right: 0.5rem;
 }
 
-.options-list {
+.questions-modal .options-list {
   list-style-type: none;
   padding-left: 1.5rem;
   margin: 0;
 }
 
-.option-item {
-  padding: 0.5rem 0;
-  color: #576574;
+.questions-modal .option-item {
+  padding: 0.35rem 0;
+  color: var(--cui-secondary-color);
   position: relative;
 }
 
-.option-item::before {
-  content: '•';
-  color: #3498db;
+.questions-modal .option-item::before {
+  content: '';
   position: absolute;
   left: -1rem;
+  top: 0.85rem;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--adela-cian);
 }
 
-.learning-styles-section {
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 2px solid #dee2e6;
+.questions-modal .learning-styles-section {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--cui-border-color);
 }
 
-.modal-footer {
-  background-color: #f8f9fa;
-  border-top: 2px solid #dee2e6;
-  padding: 1.5rem;
+.questions-modal .categories-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
-.close-button {
-  padding: 0.5rem 2rem;
-  border-radius: 4px;
-  transition: all 0.3s ease;
+.questions-modal .category-item {
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(108, 201, 58, 0.14);
+  border: 1px solid rgba(108, 201, 58, 0.45);
+  font-weight: 600;
+  font-size: 0.9rem;
 }
 
-.close-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Estilos para botones específicos */
-.btn-info {
-  background-color: #17a2b8;
-  border-color: #17a2b8;
-  color: white;
-}
-
-.btn-info:hover {
-  background-color: #138496;
-  border-color: #117a8b;
-}
-
-/* Ajustes para dispositivos móviles */
 @media (max-width: 768px) {
-  .modal-dialog {
-    margin: 1rem;
-  }
-
-  .modal-body {
+  .questions-modal .modal-body {
     padding: 1rem;
   }
 
-  .question-item {
+  .questions-modal .question-item {
     padding: 1rem;
   }
 }

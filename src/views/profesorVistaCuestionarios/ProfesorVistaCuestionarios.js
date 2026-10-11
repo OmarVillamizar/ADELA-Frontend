@@ -13,7 +13,6 @@ import {
   CButton,
   CCol,
   CRow,
-  CButtonGroup,
   CSpinner,
   CModal,
   CModalHeader,
@@ -21,6 +20,8 @@ import {
   CModalBody,
   CModalFooter,
 } from '@coreui/react'
+import CIcon from '@coreui/icons-react'
+import { cilInfo, cilList, cilPlus, cilTrash } from '@coreui/icons'
 import {
   listarCuestionarios,
   obtenerCuestionario,
@@ -112,15 +113,14 @@ const ProfesorVistaCuestionarios = () => {
           <CCard className="mb-4">
             <CCardHeader className="d-flex justify-content-between align-items-center">
               <span>Lista de Cuestionarios Creados</span>
-              <CButtonGroup
-                role="group"
-                aria-label="Basic mixed styles example"
+              <CButton
+                color="success"
+                className="text-white adela-tactil"
+                onClick={handleCreateCuestionario}
               >
-                <CButton color="success" onClick={handleCreateCuestionario}>
-                  {' '}
-                  +{' '}
-                </CButton>
-              </CButtonGroup>
+                <CIcon icon={cilPlus} className="me-1" />
+                Crear cuestionario
+              </CButton>
             </CCardHeader>
             <CCardBody>
               {loading ? (
@@ -150,45 +150,42 @@ const ProfesorVistaCuestionarios = () => {
                           {cuestionario.numPreguntas || 0} preguntas
                         </CTableDataCell>
                         <CTableDataCell>
-                          <CButton
-                            color="primary"
-                            size="sm"
-                            onClick={() => handleViewDetails(cuestionario.id)}
-                            style={{
-                              marginRight: '10px',
-                              backgroundColor: '#d3d3d3',
-                              borderColor: '#d3d3d3',
-                              color: 'black',
-                            }}
-                          >
-                            Ver Detalles
-                          </CButton>
-                          <CButton
-                            color="secondary"
-                            size="sm"
-                            variant="outline"
-                            className="me-2"
-                            onClick={() =>
-                              navigate(
-                                `/administrar-cuestionarios/${cuestionario.id}/interpretacion`,
-                              )
-                            }
-                          >
-                            Lectura de resultados
-                          </CButton>
-                          <CButton
-                            color="danger"
-                            size="sm"
-                            onClick={() =>
-                              handleDeleteCuestionario(
-                                cuestionario.id,
-                                cuestionario.nombre,
-                                cuestionario.numPreguntas,
-                              )
-                            }
-                          >
-                            X
-                          </CButton>
+                          <div className="adela-acciones">
+                            <CButton
+                              className="adela-tactil adela-btn-suave"
+                              onClick={() => handleViewDetails(cuestionario.id)}
+                            >
+                              <CIcon icon={cilInfo} className="me-1" />
+                              Ver Detalles
+                            </CButton>
+                            <CButton
+                              color="secondary"
+                              variant="outline"
+                              className="adela-tactil"
+                              onClick={() =>
+                                navigate(
+                                  `/administrar-cuestionarios/${cuestionario.id}/interpretacion`,
+                                )
+                              }
+                            >
+                              Lectura de resultados
+                            </CButton>
+                            <CButton
+                              color="danger"
+                              className="adela-tactil adela-btn-icono adela-btn-eliminar"
+                              aria-label={`Eliminar el cuestionario ${cuestionario.nombre}`}
+                              title="Eliminar cuestionario"
+                              onClick={() =>
+                                handleDeleteCuestionario(
+                                  cuestionario.id,
+                                  cuestionario.nombre,
+                                  cuestionario.numPreguntas,
+                                )
+                              }
+                            >
+                              <CIcon icon={cilTrash} />
+                            </CButton>
+                          </div>
                         </CTableDataCell>
                       </CTableRow>
                     ))}
@@ -203,50 +200,42 @@ const ProfesorVistaCuestionarios = () => {
       <CModal
         visible={detailsModalVisible}
         onClose={() => setDetailsModalVisible(false)}
+        alignment="center"
+        className="adela-modal"
       >
-        <CModalHeader onClose={() => setDetailsModalVisible(false)}>
+        <CModalHeader>
           <CModalTitle>Detalles del Cuestionario</CModalTitle>
         </CModalHeader>
         <CModalBody>
           {selectedCuestionario && (
-            <div>
-              <p>
-                <strong>Título:</strong> {selectedCuestionario.nombre}
-              </p>
-              <p>
-                <strong>Autor:</strong> {selectedCuestionario.autor}
-              </p>
-              <p>
-                <strong>Versión:</strong> {selectedCuestionario.version}
-              </p>
-              <p>
-                <strong>Número de Preguntas:</strong>{' '}
-                {selectedCuestionario.preguntas?.length || 0}
-              </p>
-              <p>
-                <strong>Descripción:</strong> {selectedCuestionario.descripcion}
-              </p>
+            <>
+              <dl className="adela-ficha">
+                <dt>Título</dt>
+                <dd>{selectedCuestionario.nombre}</dd>
+                <dt>Autor</dt>
+                <dd>{selectedCuestionario.autor}</dd>
+                <dt>Versión</dt>
+                <dd>{selectedCuestionario.version}</dd>
+                <dt>Preguntas</dt>
+                <dd>{selectedCuestionario.preguntas?.length || 0}</dd>
+              </dl>
+              <h6 className="adela-subtitulo">Descripción</h6>
+              <p className="mb-3">{selectedCuestionario.descripcion}</p>
               <CButton
-                color="info"
-                size="sm"
+                className="w-100 adela-tactil adela-btn-suave"
                 onClick={handleViewQuestions}
-                style={{
-                  marginTop: '10px',
-                  backgroundColor: '#d3d3d3',
-                  borderColor: '#d3d3d3',
-                  color: 'black',
-                }}
               >
+                <CIcon icon={cilList} className="me-2" />
                 Ver Preguntas
               </CButton>
-              {/* Si la fecha de creación estuviera disponible en el backend */}
-              {/* <p><strong>Fecha de Creación:</strong> {selectedCuestionario.fechaCreacion}</p> */}
-            </div>
+            </>
           )}
         </CModalBody>
         <CModalFooter>
           <CButton
             color="secondary"
+            variant="outline"
+            className="adela-tactil"
             onClick={() => setDetailsModalVisible(false)}
           >
             Cerrar
@@ -258,18 +247,14 @@ const ProfesorVistaCuestionarios = () => {
         visible={questionsModalVisible}
         onClose={() => setQuestionsModalVisible(false)}
         size="xl"
-        className="questions-modal"
+        alignment="center"
+        className="questions-modal adela-modal"
         portal={true}
       >
-        <CModalHeader
-          onClose={() => setQuestionsModalVisible(false)}
-          className="modal-header"
-        >
-          <CModalTitle className="modal-title">
-            Preguntas del Cuestionario
-          </CModalTitle>
+        <CModalHeader>
+          <CModalTitle>Preguntas del Cuestionario</CModalTitle>
         </CModalHeader>
-        <CModalBody className="modal-body">
+        <CModalBody>
           {selectedCuestionario && (
             <div className="questions-container">
               {selectedCuestionario.preguntas.map((pregunta, index) => (
@@ -301,11 +286,12 @@ const ProfesorVistaCuestionarios = () => {
             </div>
           )}
         </CModalBody>
-        <CModalFooter className="modal-footer">
+        <CModalFooter>
           <CButton
             color="secondary"
+            variant="outline"
+            className="adela-tactil"
             onClick={() => setQuestionsModalVisible(false)}
-            className="close-button"
           >
             Cerrar
           </CButton>

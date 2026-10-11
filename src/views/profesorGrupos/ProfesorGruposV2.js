@@ -13,7 +13,6 @@ import {
   CFormLabel,
   CFormInput,
   CButton,
-  CButtonGroup,
   CModal,
   CModalBody,
   CModalFooter,
@@ -27,6 +26,8 @@ import {
   CTableDataCell,
   CAlert,
 } from '@coreui/react'
+import CIcon from '@coreui/icons-react'
+import { cilPlus, cilTrash, cilX } from '@coreui/icons'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import {
   getGroups,
@@ -57,7 +58,6 @@ const ProfesorGrupos = () => {
         console.error('Error fetching grupos:', error)
       })
   }, [])
-
 
   const handleDelete = (grupo) => {
     Swal.fire({
@@ -202,7 +202,6 @@ const ProfesorGrupos = () => {
       })
   }
 
-
   const getSuggestionValue = (suggestion) => suggestion.email
 
   const renderSuggestion = (suggestion) => <div>{suggestion.email}</div>
@@ -247,36 +246,20 @@ const ProfesorGrupos = () => {
     <>
       <CRow>
         <CCol xs={12}>
-          <CAlert
-            color="info"
-            className="mb-4 d-flex justify-content-between align-items-center"
-            style={{
-              backgroundColor: '#d3d3d3',
-              border: '#d3d3d3',
-              color: 'black',
-            }}
-          >
-            Bienvenid@ Profesor {user.nombre}
+          <CAlert color="info" className="mb-4 adela-bienvenida">
+            Bienvenid@ Profesor <strong>{user.nombre}</strong>
           </CAlert>
           <CCard className="mb-4">
             <CCardHeader className="d-flex justify-content-between align-items-center">
               <span>Listado de Grupos</span>
-              <CButtonGroup
-                role="group"
-                aria-label="Basic mixed styles example"
+              <CButton
+                color="success"
+                className="text-white adela-tactil"
+                onClick={() => setModalVisible(true)}
               >
-                <CButton
-                  color="success"
-                  onClick={() => setModalVisible(true)}
-                  size="md"
-                  style={{
-                    color: 'white',
-                  }}
-                >
-                  {' '}
-                  Añadir Grupo{' '}
-                </CButton>
-              </CButtonGroup>
+                <CIcon icon={cilPlus} className="me-1" />
+                Añadir Grupo
+              </CButton>
             </CCardHeader>
             <CCardBody>
               {grupos.length === 0 ? (
@@ -307,6 +290,7 @@ const ProfesorGrupos = () => {
                           <CTableDataCell className="text-left">
                             <CButton
                               color="warning"
+                              className="adela-tactil"
                               onClick={(e) => {
                                 e.stopPropagation()
                                 navigate(`/resultado/${grupo.id}`)
@@ -318,14 +302,15 @@ const ProfesorGrupos = () => {
                           <CTableDataCell>
                             <CButton
                               color="danger"
-                              size="sm"
+                              className="adela-tactil adela-btn-icono adela-btn-eliminar"
+                              aria-label={`Eliminar el grupo ${grupo.nombre}`}
+                              title="Eliminar grupo"
                               onClick={(e) => {
                                 e.stopPropagation()
                                 handleDelete(grupo)
                               }}
                             >
-                              {' '}
-                              -{' '}
+                              <CIcon icon={cilTrash} />
                             </CButton>
                           </CTableDataCell>
                         </CTableRow>
@@ -340,12 +325,14 @@ const ProfesorGrupos = () => {
       </CRow>
       <CModal
         visible={modalVisible}
+        alignment="center"
+        className="adela-modal"
         onClose={() => {
           setModalVisible(false)
           clearForm()
         }}
       >
-        <CModalHeader onClose={() => setModalVisible(false)}>
+        <CModalHeader>
           <CModalTitle>Crear Nuevo Grupo</CModalTitle>
         </CModalHeader>
         <CModalBody>
@@ -373,6 +360,8 @@ const ProfesorGrupos = () => {
                 getSuggestionValue={getSuggestionValue}
                 renderSuggestion={renderSuggestion}
                 inputProps={{
+                  id: 'buscarEstudiantes',
+                  className: 'form-control',
                   placeholder: 'Escribe un correo electrónico',
                   value: emails,
                   onChange: (e, { newValue }) => setEmails(newValue),
@@ -395,37 +384,30 @@ const ProfesorGrupos = () => {
 
             <div className="mt-4">
               <CFormLabel>Estudiantes seleccionados</CFormLabel>
-              <div
-                className="border rounded p-3"
-                style={{
-                  maxHeight: '150px',
-                  overflowY: 'auto',
-                  backgroundColor: '#f8f9fa',
-                }}
-              >
+              <div className="adela-lista-seleccion">
                 {selectedStudents.length > 0 ? (
                   <ul className="list-unstyled m-0">
                     {selectedStudents.map((student) => (
                       <li
                         key={student.email}
-                        className="d-flex justify-content-between align-items-center mb-2 px-2 py-1 bg-white rounded"
+                        className="adela-lista-seleccion-item"
                       >
                         <span className="text-truncate pe-2">
                           {student.email}
                         </span>
                         <CButton
                           color="danger"
-                          size="sm"
                           variant="ghost"
+                          aria-label={`Quitar a ${student.email}`}
                           onClick={() => {
                             const updatedStudents = selectedStudents.filter(
                               (s) => s.email !== student.email,
                             )
                             setSelectedStudents(updatedStudents)
                           }}
-                          className="ms-2"
+                          className="ms-2 adela-tactil adela-btn-icono"
                         >
-                          ×
+                          <CIcon icon={cilX} />
                         </CButton>
                       </li>
                     ))}
@@ -445,15 +427,20 @@ const ProfesorGrupos = () => {
             </div>
           </CForm>
         </CModalBody>
-        <CModalFooter className="d-flex justify-content-between">
-          <CButton color="secondary" onClick={() => setModalVisible(false)}>
+        <CModalFooter className="justify-content-between">
+          <CButton
+            color="secondary"
+            variant="outline"
+            className="adela-tactil"
+            onClick={() => setModalVisible(false)}
+          >
             Cancelar
           </CButton>
           <CButton
             type="submit"
             color="success"
+            className="text-white adela-tactil"
             onClick={handleCreateGroup}
-            style={{ color: 'white' }}
             disabled={!nombre.trim() || selectedStudents.length === 0}
           >
             Crear Grupo

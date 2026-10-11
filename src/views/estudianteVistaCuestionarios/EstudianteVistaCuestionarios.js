@@ -84,7 +84,7 @@ const EstudianteVistaCuestionario = () => {
           height={24}
         />
         <div className="fw-semibold text-black" style={{}}>
-          Bienvenid@ Estudiante {user.nombre}
+          Bienvenid@ Estudiante <strong>{user.nombre}</strong>
         </div>
       </CAlert>
 
