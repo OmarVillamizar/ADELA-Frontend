@@ -18,7 +18,7 @@ import { useAuth } from '../util/auth/AuthProvider'
 import { getRole } from '../util/userUtils'
 import { useInsignias } from '../util/insignias/InsigniasProvider'
 import { CATALOGO_INSIGNIAS } from '../views/insignias/catalogo'
-import CHAEA_BAR from 'src/assets/images/chaea_bar.png'
+import ADELA_BAR from 'src/assets/images/adela_bar.png'
 const AppSidebar = () => {
   const dispatch = useDispatch()
   // El usuario llega del contexto: antes esta vista repetia /api/user/info en
@@ -73,10 +73,11 @@ const AppSidebar = () => {
       <CSidebarHeader className="border-bottom">
         <CSidebarBrand to="/">
           <img
-            src={CHAEA_BAR}
-            alt="CHAEA Logo"
+            src={ADELA_BAR}
+            alt="ADELA Logo"
             className="img-fluid"
-            style={{ height: '8vh', width: '100vw' }}
+            // Alto automático: respeta la proporción de la imagen sin achatarla.
+            style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
           />
         </CSidebarBrand>
         <CCloseButton

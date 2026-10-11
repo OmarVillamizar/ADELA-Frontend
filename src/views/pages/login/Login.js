@@ -11,10 +11,9 @@ import {
   CHeaderBrand,
   CFooter,
 } from '@coreui/react'
-import googleIcon from 'src/assets/images/google.png'
 import logoUfps from 'src/assets/images/logo_ufps.png'
 import ingSistemas from 'src/assets/images/ingSistemas.png'
-import chaealogo from 'src/assets/images/chaealogo.png'
+import adelalogo from 'src/assets/images/adelalogo.png'
 import AdelaTitle from 'src/assets/images/ADELA.png'
 import Swal from 'sweetalert2'
 import { decodeJwt } from 'jose'
@@ -23,6 +22,28 @@ import { useAuth } from '../../../util/auth/AuthProvider'
 import './login.css'
 
 const HOST = import.meta.env.VITE_BACKEND_URL
+
+// "G" oficial de Google en sus cuatro colores; nítida a cualquier tamaño.
+const GoogleG = () => (
+  <svg viewBox="0 0 48 48" className="login-btn-google" aria-hidden="true">
+    <path
+      fill="#EA4335"
+      d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+    />
+    <path
+      fill="#4285F4"
+      d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
+    />
+    <path
+      fill="#FBBC05"
+      d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
+    />
+    <path
+      fill="#34A853"
+      d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+    />
+  </svg>
+)
 
 const Login = () => {
   const [baseurl, setBaseurl] = useState('')
@@ -47,39 +68,26 @@ const Login = () => {
     )
   }, [searchParams, navigate])
 
+  // Cada rol toma un color del logo: verde el estudiante, azul el profesor.
   const LoginButton = ({ userType, title, description }) => (
-    <CCard
-      className={`h-100 ${userType === 'estudiante' ? 'p-4' : 'text-white bg-primary p-4'} login-card`}
-    >
-      <CCardBody className="d-flex align-items-center justify-content-center">
-        <div className="d-flex flex-column align-items-center justify-content-center text-center login-card-content">
+    <CCard className={`login-card login-card-${userType}`}>
+      <CCardBody className="d-flex">
+        <div className="d-flex flex-column align-items-center text-center login-card-content">
           <div className="mb-3">
             <h2 className="login-card-title">{title}</h2>
-            <p
-              className={`login-card-description ${userType === 'estudiante' ? 'text-body-secondary' : 'text-white'}`}
-            >
-              {description}
-            </p>
+            <p className="login-card-description">{description}</p>
           </div>
           <div className="mt-auto w-100">
             <CRow>
               <CCol xs={12} className="text-center">
                 <a
                   href={`${HOST}/oauth2/authorization/google?userType=${userType}&redirect_to=${baseurl}`}
-                  className="btn btn-light px-4 login-btn"
-                  style={{
-                    color: '#DB4437',
-                    backgroundColor: 'white',
-                    border: '1px solid #DB4437',
-                  }}
+                  className="login-btn adela-tactil"
                 >
-                  <img
-                    src={googleIcon}
-                    alt="Google Logo"
-                    className="me-2"
-                    style={{ width: '20px' }}
-                  />
-                  <span className="login-btn-text">Iniciar Sesión como {title}</span>
+                  <GoogleG />
+                  <span className="login-btn-text">
+                    Iniciar Sesión como {title}
+                  </span>
                 </a>
               </CCol>
             </CRow>
@@ -90,8 +98,8 @@ const Login = () => {
   )
 
   return (
-    <div className="bg-body-tertiary min-vh-100 d-flex flex-column">
-      <CHeader className="login-header">
+    <div className="adela-fondo min-vh-100 d-flex flex-column">
+      <CHeader className="login-header adela-header-franja">
         <CContainer fluid>
           <CHeaderBrand className="header-brand d-flex align-items-center justify-content-between w-100">
             {/* Desktop layout - logos on sides, title in center */}
@@ -116,16 +124,23 @@ const Login = () => {
                 src={AdelaTitle}
                 alt="Adela Title"
                 className="img-fluid adela-logo"
-                style={{ width: '120px', height: 'auto', objectFit: 'contain', display: 'block' }}
+                style={{
+                  width: '120px',
+                  height: 'auto',
+                  objectFit: 'contain',
+                  display: 'block',
+                }}
               />
-              <h2 className="mt-1 app-title">Aplicativo para la Detección de Estilo del Aprendizaje</h2>
+              <h2 className="mt-1 app-title">
+                Aplicativo para la Detección de Estilo del Aprendizaje
+              </h2>
             </div>
 
             {/* Desktop right logo */}
             <div className="d-none d-lg-block header-side header-side-end">
               <img
-                src={chaealogo}
-                alt="CHAEA Logo"
+                src={adelalogo}
+                alt="ADELA Logo"
                 className="img-fluid"
                 style={{ width: '96px', height: '96px', objectFit: 'contain' }}
               />
@@ -145,8 +160,8 @@ const Login = () => {
                   className="img-fluid mobile-logo"
                 />
                 <img
-                  src={chaealogo}
-                  alt="CHAEA Logo"
+                  src={adelalogo}
+                  alt="ADELA Logo"
                   className="img-fluid mobile-logo-large"
                 />
               </div>
@@ -157,8 +172,8 @@ const Login = () => {
 
       <CContainer className="flex-grow-1 d-flex align-items-center login-container">
         <CRow className="flex-grow-1 justify-content-center">
-          <CCol md={10} lg={8}>
-            <CCardGroup className="h-100 card-group login-card-group">
+          <CCol md={10} lg={9} xl={8}>
+            <CCardGroup className="card-group login-card-group">
               <LoginButton
                 userType="estudiante"
                 title="Estudiante"
@@ -172,7 +187,7 @@ const Login = () => {
             </CCardGroup>
             {/* Cápsulas: se responden sin cuenta, con el código del expositor. */}
             <div className="text-center mt-3">
-              <Link to="/c" className="capsula-acceso">
+              <Link to="/c" className="capsula-acceso adela-tactil">
                 ¿Tienes el código de una cápsula? Haz clic aquí para ingresar
               </Link>
             </div>
@@ -180,12 +195,13 @@ const Login = () => {
         </CRow>
       </CContainer>
 
-      <CFooter className="bg-light p-3 login-footer">
+      <CFooter className="adela-footer login-footer">
         <CContainer fluid>
           <CRow>
             <CCol className="text-center">
-              <p className="text-muted mb-0 footer-text">
-                © {new Date().getFullYear()} ADELA - Aplicativo para la Detección de Estilo del Aprendizaje
+              <p className="adela-footer-texto footer-text">
+                © {new Date().getFullYear()} <strong>ADELA</strong> ·
+                Aplicativo para la Detección de Estilo del Aprendizaje
               </p>
             </CCol>
           </CRow>
