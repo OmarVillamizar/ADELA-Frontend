@@ -11,6 +11,9 @@ import {
   CRow,
 } from '@coreui/react'
 import adelalogo from 'src/assets/images/adelalogo.png'
+import nelsePensando from 'src/assets/nelse_mascot/web/nelse_thinkglasses_right.webp'
+import nelseFeliz from 'src/assets/nelse_mascot/web/nelse_happy_left.webp'
+import NelseLados from 'src/components/NelseLados'
 import { normalizarCodigo } from '../../util/capsulas/capsulaUtils'
 
 /**
@@ -51,45 +54,51 @@ const IngresarCodigo = ({
       />
       <CRow className="justify-content-center flex-grow-1">
         <CCol xs={12} sm={10} md={7} lg={5} xl={4}>
-          <CCard className="ingreso-card">
-            <CCardBody>
-              <div className="adela-nodos" aria-hidden="true">
-                <i />
-                <i />
-                <i />
-                <i />
-              </div>
-              <h1 className="ingreso-titulo">{titulo}</h1>
-              <p className="ingreso-ayuda">{ayuda}</p>
-              <CForm onSubmit={enviar}>
-                <CFormInput
-                  className="text-center codigo-resultado ingreso-input mb-3"
-                  placeholder={ejemplo}
-                  aria-label={titulo}
-                  autoCapitalize="characters"
-                  autoComplete="off"
-                  autoFocus
-                  maxLength={longitud + 4}
-                  value={codigo}
-                  invalid={!!error}
-                  feedbackInvalid={error}
-                  onChange={(e) => setCodigo(e.target.value)}
-                />
-                <CButton
-                  type="submit"
-                  color="primary"
-                  className="ingreso-boton adela-tactil"
-                >
-                  {boton}
-                </CButton>
-              </CForm>
-              {otro && (
-                <Link to={otro.to} className="ingreso-otro adela-tactil">
-                  {otro.texto}
-                </Link>
-              )}
-            </CCardBody>
-          </CCard>
+          <NelseLados
+            izquierda={nelsePensando}
+            derecha={nelseFeliz}
+            tamano="grande"
+          >
+            <CCard className="ingreso-card">
+              <CCardBody>
+                <div className="adela-nodos" aria-hidden="true">
+                  <i />
+                  <i />
+                  <i />
+                  <i />
+                </div>
+                <h1 className="ingreso-titulo">{titulo}</h1>
+                <p className="ingreso-ayuda">{ayuda}</p>
+                <CForm onSubmit={enviar}>
+                  <CFormInput
+                    className="text-center codigo-resultado ingreso-input mb-3"
+                    placeholder={ejemplo}
+                    aria-label={titulo}
+                    autoCapitalize="characters"
+                    autoComplete="off"
+                    autoFocus
+                    maxLength={longitud + 4}
+                    value={codigo}
+                    invalid={!!error}
+                    feedbackInvalid={error}
+                    onChange={(e) => setCodigo(e.target.value)}
+                  />
+                  <CButton
+                    type="submit"
+                    color="primary"
+                    className="ingreso-boton adela-tactil"
+                  >
+                    {boton}
+                  </CButton>
+                </CForm>
+                {otro && (
+                  <Link to={otro.to} className="ingreso-otro adela-tactil">
+                    {otro.texto}
+                  </Link>
+                )}
+              </CCardBody>
+            </CCard>
+          </NelseLados>
         </CCol>
       </CRow>
     </section>

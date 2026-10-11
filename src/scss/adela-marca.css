@@ -353,11 +353,163 @@
   gap: 0.5rem;
 }
 
+/* Nelse a los lados del contenido (NelseLados): fuera de la columna, centrado
+   en alto, entra con un fundido y luego flota suave. Cada lado a su ritmo.
+   Las imágenes son las web/*.webp, recortadas al dibujo: se fija el alto
+   (--nelse-tamano) y el ancho sale de la pose. */
+.nelse-escena {
+  position: relative;
+  --nelse-tamano: clamp(140px, 14vw, 230px);
+}
+
+.nelse-escena-grande {
+  --nelse-tamano: clamp(180px, 18vw, 300px);
+}
+
+.nelse {
+  position: absolute;
+  top: 50%;
+  height: var(--nelse-tamano);
+  width: auto;
+  max-width: none;
+  transform: translateY(-50%);
+  filter: drop-shadow(0 12px 14px rgba(16, 24, 40, 0.18));
+  pointer-events: none;
+  animation:
+    nelse-entra 0.7s ease-out both,
+    nelse-flota 4.5s ease-in-out 0.7s infinite;
+}
+
+.nelse-izq {
+  right: calc(100% + 1.25rem);
+}
+
+.nelse-der {
+  left: calc(100% + 1.25rem);
+  animation-delay: 0.15s, 1.6s;
+}
+
+/* Nelse junto a un mensaje (NelseMensaje): texto a la izquierda, Nelse a la
+   derecha mirándolo. En celular se apila: el texto necesita todo el ancho. */
+.nelse-mensaje {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.nelse-mensaje-texto {
+  flex: 1;
+  min-width: 0;
+}
+
+.nelse-mensaje-texto > .alert {
+  margin-bottom: 0;
+}
+
+.nelse-mensaje-img {
+  flex-shrink: 0;
+  height: clamp(110px, 16vw, 190px);
+  width: auto;
+  filter: drop-shadow(0 10px 12px rgba(16, 24, 40, 0.16));
+  animation:
+    nelse-entra 0.7s ease-out both,
+    nelse-flota 4.5s ease-in-out 0.7s infinite;
+}
+
+/* Burbuja de diálogo con la colita apuntando a Nelse. Se ajusta al texto y
+   se pega a Nelse en vez de cruzar toda la pantalla. */
+.nelse-burbuja {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  margin-left: auto;
+  padding: 1rem 1.25rem;
+  border-radius: 1.25rem;
+  background: var(--cui-body-bg);
+  border: 2px solid var(--nelse-burbuja-borde, var(--adela-cian));
+  box-shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
+  font-size: 1.05rem;
+}
+
+.nelse-burbuja::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -11px;
+  width: 18px;
+  height: 18px;
+  background: inherit;
+  border: inherit;
+  border-left: 0;
+  border-bottom: 0;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.nelse-burbuja-exito {
+  --nelse-burbuja-borde: var(--adela-verde);
+}
+
+.nelse-burbuja strong {
+  display: block;
+  font-size: 1.15rem;
+  margin-bottom: 0.15rem;
+}
+
+/* Celular: mensaje a todo el ancho y Nelse debajo, a la derecha; la colita
+   de la burbuja apunta hacia abajo, a él. */
+@media (max-width: 575.98px) {
+  .nelse-mensaje {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.75rem;
+  }
+
+  .nelse-mensaje-texto {
+    width: 100%;
+  }
+
+  .nelse-mensaje-img {
+    height: 120px;
+    margin-right: 1rem;
+  }
+
+  .nelse-burbuja {
+    width: auto;
+    margin-left: 0;
+  }
+
+  .nelse-burbuja::after {
+    top: auto;
+    bottom: -11px;
+    right: 4.25rem;
+    transform: rotate(135deg);
+  }
+}
+
+@keyframes nelse-entra {
+  from {
+    opacity: 0;
+    scale: 0.85;
+  }
+}
+
+@keyframes nelse-flota {
+  50% {
+    translate: 0 -10px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .adela-tactil,
   .adela-tactil:hover,
   .adela-tactil:active {
     transition: none;
     transform: none;
+  }
+
+  .nelse,
+  .nelse-mensaje-img {
+    animation: none;
   }
 }

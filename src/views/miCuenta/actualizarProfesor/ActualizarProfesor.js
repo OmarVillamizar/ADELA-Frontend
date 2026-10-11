@@ -14,6 +14,10 @@ import Swal from 'sweetalert2'
 import './botonActualizar.css'
 import { updateUserInfo } from '../../../util/services/userService'
 import { useNavigate, useOutletContext } from 'react-router-dom'
+import NelseMensaje from 'src/components/NelseMensaje'
+import nelsePrincipal from 'src/assets/nelse_mascot/web/nelse_primary_left.webp'
+import nelsePensando from 'src/assets/nelse_mascot/web/nelse_think_left.webp'
+import nelseFeliz from 'src/assets/nelse_mascot/web/nelse_happy_left.webp'
 
 const ActualizarCuentaProfesor = () => {
   const user = useOutletContext()
@@ -168,30 +172,43 @@ const ActualizarCuentaProfesor = () => {
         </CCardBody>
       </CCard>
       {primeraVez && (
-        <CAlert color="info" className="p-4">
-          <h4 className="alert-heading">Completa tus datos</h4>
-          <p className="mb-0">
-            Completa y guarda tu perfil para enviar tu solicitud como profesor
-            a los administradores de ADELA.
-          </p>
-        </CAlert>
+        <NelseMensaje imagen={nelsePrincipal}>
+          <CAlert color="info" className="p-4">
+            <h4 className="alert-heading">Completa tus datos</h4>
+            <p className="mb-0">
+              Completa y guarda tu perfil para enviar tu solicitud como profesor
+              a los administradores de ADELA.
+            </p>
+          </CAlert>
+        </NelseMensaje>
       )}
       {pendiente && !primeraVez && (
-        <CAlert color="warning" className="p-4">
-          <h4 className="alert-heading">
-            Tu solicitud como profesor fue enviada
-          </h4>
-          <p>
-            Tu solicitud se envió a los administradores de ADELA. Ellos
-            deciden si la aprueban; hasta entonces no tendrás acceso a las
-            funciones de profesor, pero puedes actualizar tus datos aquí.
-          </p>
-          <hr />
-          <p className="mb-0">
-            Te recomendamos contactar a un administrador para agilizar la
-            revisión de tu solicitud.
-          </p>
-        </CAlert>
+        <NelseMensaje imagen={nelsePensando}>
+          <CAlert color="warning" className="p-4">
+            <h4 className="alert-heading">
+              Tu solicitud como profesor fue enviada
+            </h4>
+            <p>
+              Tu solicitud se envió a los administradores de ADELA. Ellos
+              deciden si la aprueban; hasta entonces no tendrás acceso a las
+              funciones de profesor, pero puedes actualizar tus datos aquí.
+            </p>
+            <hr />
+            <p className="mb-0">
+              Te recomendamos contactar a un administrador para agilizar la
+              revisión de tu solicitud.
+            </p>
+          </CAlert>
+        </NelseMensaje>
+      )}
+      {!pendiente && (
+        <NelseMensaje imagen={nelseFeliz}>
+          <div className="nelse-burbuja nelse-burbuja-exito">
+            <strong>¡Tu cuenta de profesor está aprobada!</strong>
+            Ya puedes crear grupos, asignarles cuestionarios y ver sus
+            resultados.
+          </div>
+        </NelseMensaje>
       )}
     </>
   )

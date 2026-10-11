@@ -15,6 +15,9 @@ import logoUfps from 'src/assets/images/logo_ufps.png'
 import ingSistemas from 'src/assets/images/ingSistemas.png'
 import adelalogo from 'src/assets/images/adelalogo.png'
 import AdelaTitle from 'src/assets/images/ADELA.png'
+import nelseLeyendo from 'src/assets/nelse_mascot/web/nelse_readingbookglasses_right.webp'
+import nelsePrincipal from 'src/assets/nelse_mascot/web/nelse_primary_left.webp'
+import NelseLados from 'src/components/NelseLados'
 import Swal from 'sweetalert2'
 import { decodeJwt } from 'jose'
 import { useLocalStorage } from '../../../util/hooks/useLocalStorage'
@@ -98,7 +101,7 @@ const Login = () => {
   )
 
   return (
-    <div className="adela-fondo min-vh-100 d-flex flex-column">
+    <div className="adela-fondo min-vh-100 d-flex flex-column login-pagina">
       <CHeader className="login-header adela-header-franja">
         <CContainer fluid>
           <CHeaderBrand className="header-brand d-flex align-items-center justify-content-between w-100">
@@ -173,18 +176,20 @@ const Login = () => {
       <CContainer className="flex-grow-1 d-flex align-items-center login-container">
         <CRow className="flex-grow-1 justify-content-center">
           <CCol md={10} lg={9} xl={8}>
-            <CCardGroup className="card-group login-card-group">
-              <LoginButton
-                userType="estudiante"
-                title="Estudiante"
-                description="Entra y resuelve los cuestionarios de perfiles de aprendizaje asignados por tu profesor"
-              />
-              <LoginButton
-                userType="profesor"
-                title="Profesor"
-                description="Entra y crea grupos, asígnales cuestionarios y analiza sus resultados"
-              />
-            </CCardGroup>
+            <NelseLados izquierda={nelseLeyendo} derecha={nelsePrincipal}>
+              <CCardGroup className="card-group login-card-group">
+                <LoginButton
+                  userType="estudiante"
+                  title="Estudiante"
+                  description="Entra y resuelve los cuestionarios de perfiles de aprendizaje asignados por tu profesor"
+                />
+                <LoginButton
+                  userType="profesor"
+                  title="Profesor"
+                  description="Entra y crea grupos, asígnales cuestionarios y analiza sus resultados"
+                />
+              </CCardGroup>
+            </NelseLados>
             {/* Cápsulas: se responden sin cuenta, con el código del expositor. */}
             <div className="text-center mt-3">
               <Link to="/c" className="capsula-acceso adela-tactil">

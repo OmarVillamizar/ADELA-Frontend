@@ -37,6 +37,11 @@ img {
   min-height: 220px;
 }
 
+/* Nelse sobresale a los lados: en pantallas justas no debe abrir scroll lateral. */
+.login-pagina {
+  overflow-x: clip;
+}
+
 /* Tarjetas separadas en vez de pegadas: cada rol con su color del logo.
    Grid con filas 1fr: las dos miden lo mismo, lado a lado o apiladas, aunque
    la descripción del estudiante sea más larga. */
@@ -216,8 +221,15 @@ img {
   }
 }
 
+/* Laptop angosta: Nelse un poco más chico para que quepa junto a las tarjetas. */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+  .login-container .nelse-escena {
+    --nelse-tamano: 12vw;
+  }
+}
+
 /* Menos de 992px: tarjetas apiladas (lado a lado no cabe el botón) y del
-   mismo alto gracias a grid-auto-rows. */
+   mismo alto gracias a grid-auto-rows. Nelse ya no se muestra. */
 @media (max-width: 991.98px) {
   .login-card-group.card-group {
     grid-template-columns: minmax(0, 1fr);

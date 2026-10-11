@@ -15,6 +15,9 @@ import './botonActualizar.css'
 import { useNavigate, useOutletContext } from 'react-router-dom'
 import { dateFromMsToString } from '../../../util/dateUtils'
 import { updateUserInfo } from '../../../util/services/userService'
+import NelseMensaje from 'src/components/NelseMensaje'
+import nelsePensando from 'src/assets/nelse_mascot/web/nelse_think_left.webp'
+import nelseFeliz from 'src/assets/nelse_mascot/web/nelse_happy_left.webp'
 
 const ActualizarEstudiante = () => {
   // Estado y funciones de manejadores
@@ -84,87 +87,111 @@ const ActualizarEstudiante = () => {
     // cargar datos iniciales si es necesario
   }, [])
 
+  // INCOMPLETA hasta que guarda sus datos por primera vez.
+  const incompleto = user.estado === 'INCOMPLETA'
+
   return (
-    <CCard className="mb-4 shadow-sm">
-      <CCardHeader className="bg-light">
-        <h4 className="mb-0">Actualizar Información de Estudiante</h4>
-      </CCardHeader>
-      <CCardBody>
-        <CForm className="row g-4" onSubmit={handleSubmit}>
-          {user.requiereCodigo && (
+    <>
+      <CCard className="mb-4 shadow-sm">
+        <CCardHeader className="bg-light">
+          <h4 className="mb-0">Actualizar Información de Estudiante</h4>
+        </CCardHeader>
+        <CCardBody>
+          <CForm className="row g-4" onSubmit={handleSubmit}>
+            {user.requiereCodigo && (
+              <CCol md={6}>
+                <CFormFloating>
+                  {/* type="number" ignora maxLength, asi que el campo es de texto con
+                    teclado numerico. El limite son los 12 caracteres de la columna. */}
+                  <CFormInput
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={12}
+                    id="inputCodigoNumber"
+                    placeholder="Ingrese código"
+                    name="codigo"
+                    value={formData.codigo}
+                    onChange={handleChange}
+                  />
+                  <label htmlFor="inputCodigoNumber">
+                    Código de Estudiante
+                  </label>
+                </CFormFloating>
+              </CCol>
+            )}
+
             <CCol md={6}>
               <CFormFloating>
-                {/* type="number" ignora maxLength, asi que el campo es de texto con
-                    teclado numerico. El limite son los 12 caracteres de la columna. */}
                 <CFormInput
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={12}
-                  id="inputCodigoNumber"
-                  placeholder="Ingrese código"
-                  name="codigo"
-                  value={formData.codigo}
+                  type="date"
+                  id="inputFechaNacimiento"
+                  placeholder="Seleccione fecha"
+                  name="fechaNacimiento"
+                  value={formData.fechaNacimiento}
                   onChange={handleChange}
                 />
-                <label htmlFor="inputCodigoNumber">Código de Estudiante</label>
+                <label htmlFor="inputFechaNacimiento">
+                  Fecha de Nacimiento
+                </label>
               </CFormFloating>
             </CCol>
-          )}
 
-          <CCol md={6}>
-            <CFormFloating>
-              <CFormInput
-                type="date"
-                id="inputFechaNacimiento"
-                placeholder="Seleccione fecha"
-                name="fechaNacimiento"
-                value={formData.fechaNacimiento}
-                onChange={handleChange}
-              />
-              <label htmlFor="inputFechaNacimiento">Fecha de Nacimiento</label>
-            </CFormFloating>
-          </CCol>
+            <CCol md={6}>
+              <CFormFloating>
+                <CFormSelect
+                  id="inputGenero"
+                  name="genero"
+                  value={formData.genero}
+                  onChange={handleChange}
+                  aria-label="Seleccione género"
+                >
+                  <option value="">Seleccione...</option>
+                  <option value="MASCULINO">Masculino</option>
+                  <option value="FEMENINO">Femenino</option>
+                  <option value="NO_DECIR">Prefiero no decirlo</option>
+                </CFormSelect>
+                <label htmlFor="inputGenero">Género</label>
+              </CFormFloating>
+            </CCol>
 
-          <CCol md={6}>
-            <CFormFloating>
-              <CFormSelect
-                id="inputGenero"
-                name="genero"
-                value={formData.genero}
-                onChange={handleChange}
-                aria-label="Seleccione género"
-              >
-                <option value="">Seleccione...</option>
-                <option value="MASCULINO">Masculino</option>
-                <option value="FEMENINO">Femenino</option>
-                <option value="NO_DECIR">Prefiero no decirlo</option>
-              </CFormSelect>
-              <label htmlFor="inputGenero">Género</label>
-            </CFormFloating>
-          </CCol>
-
-          <CCol
-            xs={12}
-            className="d-grid gap-2 d-md-flex justify-content-md-end"
-          >
-            <CButton
-              color="primary"
-              type="submit"
-              className="px-4"
-              style={{
-                '--cui-btn-color': '#000000', // Changed to black
-                '--cui-btn-bg': '#ffc107',
-                '--cui-btn-border-color': '#ffc107',
-                '--cui-btn-hover-bg': '#ffca2c',
-                '--cui-btn-hover-border-color': '#ffc720',
-              }}
+            <CCol
+              xs={12}
+              className="d-grid gap-2 d-md-flex justify-content-md-end"
             >
-              Actualizar cuenta
-            </CButton>
-          </CCol>
-        </CForm>
-      </CCardBody>
-    </CCard>
+              <CButton
+                color="primary"
+                type="submit"
+                className="px-4"
+                style={{
+                  '--cui-btn-color': '#000000', // Changed to black
+                  '--cui-btn-bg': '#ffc107',
+                  '--cui-btn-border-color': '#ffc107',
+                  '--cui-btn-hover-bg': '#ffca2c',
+                  '--cui-btn-hover-border-color': '#ffc720',
+                }}
+              >
+                Actualizar cuenta
+              </CButton>
+            </CCol>
+          </CForm>
+        </CCardBody>
+      </CCard>
+      {incompleto ? (
+        <NelseMensaje imagen={nelsePensando}>
+          <div className="nelse-burbuja">
+            <strong>¡Completa tus datos!</strong>
+            Llénalos y pulsa «Actualizar cuenta» para empezar a usar ADELA.
+          </div>
+        </NelseMensaje>
+      ) : (
+        <NelseMensaje imagen={nelseFeliz}>
+          <div className="nelse-burbuja nelse-burbuja-exito">
+            <strong>¡Tus datos están al día!</strong>
+            Si algo cambia, puedes actualizarlos aquí cuando quieras.
+          </div>
+        </NelseMensaje>
+      )}
+    </>
   )
 }
 
