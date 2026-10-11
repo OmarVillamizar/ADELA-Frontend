@@ -2,8 +2,8 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { CChartBar } from '@coreui/react-chartjs'
 import {
-  COLOR_DATO,
   barraConteo,
+  colorCategoria,
   estiloBarra,
 } from '../../util/calificacion/opcionesGrafico'
 import './resultados.css'
@@ -40,7 +40,7 @@ const DistribucionPerfiles = ({ distribucion, destacado = false }) => {
               {
                 label: 'Personas',
                 data: perfiles.map(([, n]) => n),
-                ...estiloBarra(COLOR_DATO),
+                ...estiloBarra(perfiles.map((_, i) => colorCategoria(i))),
               },
             ],
           }}

@@ -2,19 +2,34 @@ import { ESCALA, formatoNumero, formatoPct, limitesEje } from './escala'
 
 /**
  * Colores y opciones de Chart.js para los reportes. Un solo tono para una
- * serie (el título dice qué se grafica, no hace falta leyenda) y una rampa
- * ordinal de un solo tono para los niveles, de claro a oscuro. La rampa está
- * validada: monótona en luminosidad y el paso más claro supera 2:1 sobre blanco.
+ * serie continua (radar, dispersión) y una paleta categórica para distinguir
+ * estilos o perfiles entre sí. Los niveles, de Muy bajo a Muy alto, van en una
+ * rampa divergente naranja → gris → azul: el extremo se lee de un vistazo.
  */
 export const COLOR_DATO = '#2a78d6'
 export const COLOR_DATO_SUAVE = 'rgba(42, 120, 214, 0.10)'
-export const RAMPA_NIVELES = [
-  '#86b6ef',
-  '#5598e7',
-  '#2a78d6',
-  '#1c5cab',
-  '#104281',
+// Tonos del logo oscurecidos para barras sobre blanco. Orden fijo validado
+// (luminosidad, croma y separación para daltonismo entre vecinos): no reordenar.
+export const PALETA_CATEGORICA = [
+  '#1a73e8',
+  '#e8820c',
+  '#8e3fd6',
+  '#3d9a26',
+  '#0e9fc4',
+  '#d6336c',
 ]
+// Más categorías que tonos: el resto va en gris en vez de repetir colores.
+const COLOR_RESTO = '#9aa0aa'
+export const RAMPA_NIVELES = [
+  '#c25e00',
+  '#f0a95b',
+  '#b8bcc4',
+  '#6aa3e8',
+  '#1a5bb8',
+]
+
+/** Color de la categoría i; fuera de la paleta, gris. */
+export const colorCategoria = (i) => PALETA_CATEGORICA[i] ?? COLOR_RESTO
 
 const TINTA = '#16181d'
 const TINTA_SUAVE = '#636874'
@@ -22,7 +37,7 @@ const REJILLA = '#eceef1'
 
 /** Toma pasos repartidos de la rampa para n niveles, de claro a oscuro. */
 export const coloresNiveles = (n) => {
-  if (n <= 1) return [RAMPA_NIVELES[2]]
+  if (n <= 1) return [COLOR_DATO]
   return Array.from(
     { length: n },
     (_, i) =>

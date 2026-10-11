@@ -6,6 +6,7 @@ import {
   COLOR_DATO,
   COLOR_DATO_SUAVE,
   barraEstilos,
+  colorCategoria,
   estiloBarra,
   radarEstilos,
 } from '../../util/calificacion/opcionesGrafico'
@@ -27,7 +28,11 @@ const GraficasResultado = ({ estilos, escala, etiqueta }) => {
           data={{
             labels,
             datasets: [
-              { label: etiqueta, data: datos, ...estiloBarra(COLOR_DATO) },
+              {
+                label: etiqueta,
+                data: datos,
+                ...estiloBarra(estilos.map((_, i) => colorCategoria(i))),
+              },
             ],
           }}
           options={barraEstilos(estilos, escala)}
@@ -47,7 +52,8 @@ const GraficasResultado = ({ estilos, escala, etiqueta }) => {
                 borderWidth: 2,
                 pointRadius: 4,
                 pointHoverRadius: 6,
-                pointBackgroundColor: COLOR_DATO,
+                // Cada vértice con el color de su estilo, como en las barras.
+                pointBackgroundColor: estilos.map((_, i) => colorCategoria(i)),
                 pointBorderColor: '#ffffff',
                 pointBorderWidth: 2,
               },
