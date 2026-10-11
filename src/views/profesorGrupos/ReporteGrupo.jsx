@@ -20,6 +20,7 @@ import { useEscala } from '../../util/calificacion/useEscala'
 import {
   AVISO_IPSATIVO,
   AYUDA_POMP,
+  AYUDA_PROMEDIO,
   ESCALA,
   separarPorTipo,
 } from '../../util/calificacion/escala'
@@ -300,6 +301,7 @@ const ReporteGrupo = () => {
             {secciones.graficas && ipsativo && (
               <DistribucionPerfiles
                 distribucion={calificacion?.distribucionPerfiles}
+                esquinas={Boolean(calificacion?.plano)}
                 destacado
               />
             )}
@@ -310,12 +312,13 @@ const ReporteGrupo = () => {
                   <div>
                     <h2 className="adela-panel__titulo">
                       {secciones.graficas
-                        ? 'Promedio por estilo de aprendizaje'
+                        ? 'Puntaje promedio por estilo'
                         : 'Estadísticas avanzadas'}
                     </h2>
-                    {escala === ESCALA.POMP && (
-                      <p className="adela-panel__nota">{AYUDA_POMP}</p>
-                    )}
+                    <p className="adela-panel__nota">
+                      {secciones.graficas && `${AYUDA_PROMEDIO} `}
+                      {escala === ESCALA.POMP && AYUDA_POMP}
+                    </p>
                   </div>
                   <SelectorEscala
                     disponibles={disponibles}
@@ -361,6 +364,7 @@ const ReporteGrupo = () => {
                 {!ipsativo && (
                   <DistribucionPerfiles
                     distribucion={calificacion?.distribucionPerfiles}
+                    esquinas={Boolean(calificacion?.plano)}
                   />
                 )}
                 <ConteoComplementaria conteo={reporte.complementaria} />

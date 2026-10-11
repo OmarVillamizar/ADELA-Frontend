@@ -21,6 +21,7 @@ import { useEscala } from '../../util/calificacion/useEscala'
 import {
   AVISO_IPSATIVO,
   AYUDA_POMP,
+  AYUDA_PROMEDIO,
   ESCALA,
   separarPorTipo,
 } from '../../util/calificacion/escala'
@@ -130,6 +131,7 @@ const ReporteCapsula = () => {
             {ipsativo && (
               <DistribucionPerfiles
                 distribucion={calificacion?.distribucionPerfiles}
+                esquinas={Boolean(calificacion?.plano)}
                 destacado
               />
             )}
@@ -138,11 +140,11 @@ const ReporteCapsula = () => {
               <div className="adela-panel__cabeza">
                 <div>
                   <h2 className="adela-panel__titulo">
-                    Promedio por estilo de aprendizaje
+                    Puntaje promedio por estilo
                   </h2>
-                  {escala === ESCALA.POMP && (
-                    <p className="adela-panel__nota">{AYUDA_POMP}</p>
-                  )}
+                  <p className="adela-panel__nota">
+                    {AYUDA_PROMEDIO} {escala === ESCALA.POMP && AYUDA_POMP}
+                  </p>
                 </div>
                 <SelectorEscala
                   disponibles={disponibles}
@@ -175,6 +177,7 @@ const ReporteCapsula = () => {
             {!ipsativo && (
               <DistribucionPerfiles
                 distribucion={calificacion?.distribucionPerfiles}
+                esquinas={Boolean(calificacion?.plano)}
               />
             )}
             <ConteoComplementaria conteo={reporte.complementaria} />

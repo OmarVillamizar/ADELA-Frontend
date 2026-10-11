@@ -8,11 +8,14 @@ export const ESCALA = Object.freeze({ BRUTO: 'BRUTO', POMP: 'POMP' })
 
 export const etiquetaEscala = {
   [ESCALA.BRUTO]: 'Puntaje directo',
-  [ESCALA.POMP]: '% del máximo',
+  [ESCALA.POMP]: '% del máximo posible',
 }
 
 export const AYUDA_POMP =
-  '% del máximo posible: posición del puntaje dentro de su rango teórico. 0 % es el mínimo y 100 % el máximo que permite el cuestionario.'
+  'Qué tan cerca está el puntaje del más alto que permite el cuestionario: 0 % es el mínimo posible y 100 % el máximo. No es el porcentaje de estudiantes.'
+
+export const AYUDA_PROMEDIO =
+  'Qué tan alto puntuó el grupo, en promedio, en cada estilo. No cuenta personas.'
 
 export const AVISO_IPSATIVO =
   'Este cuestionario usa respuestas de jerarquización o reparto de puntos. Los puntajes de un estudiante dependen entre sí, por lo que la distribución de perfiles es más informativa que el promedio por estilo de aprendizaje.'

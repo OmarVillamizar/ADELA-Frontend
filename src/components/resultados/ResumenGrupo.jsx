@@ -28,12 +28,14 @@ const ResumenGrupo = ({ resueltos, nombresEstilos, filtro }) => {
     <section className="adela-panel adela-aparece">
       <div className="adela-panel__cabeza">
         <div>
-          <h2 className="adela-panel__titulo">Resumen del grupo</h2>
+          <h2 className="adela-panel__titulo">
+            {criterio.porEstilo ? 'Estilos dominantes' : 'Perfiles del grupo'}
+          </h2>
           <p className="adela-panel__nota">
             {filtro ? `Filtro: ${filtro}. ` : ''}
             {criterio.porEstilo
-              ? 'Cuántos estudiantes tienen cada estilo como dominante. Quien tiene varios cuenta en cada uno.'
-              : 'Cuántos estudiantes hay en cada perfil.'}
+              ? 'Cuántos estudiantes tienen cada estilo como fuerte. Quien tiene varios cuenta en cada uno, por eso los porcentajes pueden sumar más de 100 %.'
+              : 'Cuántos estudiantes hay en cada perfil. Cada uno cuenta una sola vez.'}
           </p>
         </div>
       </div>
