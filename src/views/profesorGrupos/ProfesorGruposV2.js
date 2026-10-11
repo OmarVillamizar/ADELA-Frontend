@@ -267,8 +267,10 @@ const ProfesorGrupos = () => {
                   <CTableHead>
                     <CTableRow>
                       <CTableHeaderCell>Nombre</CTableHeaderCell>
-                      <CTableHeaderCell>Número de Estudiantes</CTableHeaderCell>
-                      <CTableHeaderCell>
+                      <CTableHeaderCell className="text-center">
+                        Número de Estudiantes
+                      </CTableHeaderCell>
+                      <CTableHeaderCell className="text-center">
                         Administrar Cuestionarios
                       </CTableHeaderCell>
                       <CTableHeaderCell></CTableHeaderCell>
@@ -282,10 +284,10 @@ const ProfesorGrupos = () => {
                           style={{ cursor: 'pointer' }}
                         >
                           <CTableDataCell>{grupo.nombre}</CTableDataCell>
-                          <CTableDataCell>
+                          <CTableDataCell className="text-center">
                             {grupo.numEstudiantes}
                           </CTableDataCell>
-                          <CTableDataCell className="text-left">
+                          <CTableDataCell className="text-center">
                             <CButton
                               color="warning"
                               className="adela-tactil"
