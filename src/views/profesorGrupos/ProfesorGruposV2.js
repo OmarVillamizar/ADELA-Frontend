@@ -34,8 +34,6 @@ import {
   buscarEstudiantes,
   deleteGrupo,
   createGrupo,
-  addStudentsToGroup,
-  getGroupById,
 } from '../../util/services/grupoService'
 
 const ProfesorGrupos = () => {

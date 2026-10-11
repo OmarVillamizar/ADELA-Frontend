@@ -20,7 +20,6 @@ import nelsePrincipal from 'src/assets/nelse_mascot/web/nelse_primary_left.webp'
 import NelseLados from 'src/components/NelseLados'
 import Swal from 'sweetalert2'
 import { decodeJwt } from 'jose'
-import { useLocalStorage } from '../../../util/hooks/useLocalStorage'
 import { useAuth } from '../../../util/auth/AuthProvider'
 import './login.css'
 

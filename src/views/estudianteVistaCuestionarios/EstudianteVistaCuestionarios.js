@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { Link, useOutletContext, useSearchParams } from 'react-router-dom'
+import { Link, useOutletContext } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import {
   CAlert,
   CCard,
   CCardBody,
-  CCardTitle,
   CCol,
   CNav,
   CNavItem,
