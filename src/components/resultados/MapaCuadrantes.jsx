@@ -12,6 +12,22 @@ import './resultados.css'
 
 const EPS = 1e-9
 
+/**
+ * Aclara de qué lado cuenta un punto que cae justo sobre una línea de corte:
+ * el lado bajo, que con un eje invertido se dibuja a la derecha o arriba.
+ */
+const sobreCorte = ({ x, y }, { corteX, corteY, invertirX, invertirY }) => {
+  const enX = Math.abs(x - corteX) <= EPS
+  const enY = Math.abs(y - corteY) <= EPS
+  const h = invertirX ? 'a la derecha' : 'a la izquierda'
+  const v = invertirY ? 'arriba' : 'abajo'
+  if (enX && enY)
+    return `; cae justo en el cruce de los cortes, así que cuenta ${v} ${h}`
+  if (enY) return `; cae justo sobre la línea horizontal, así que cuenta ${v}`
+  if (enX) return `; cae justo sobre la línea vertical, así que cuenta ${h}`
+  return ''
+}
+
 /** "← bajo · alto →", o al revés si el eje se dibuja invertido. */
 const titulo = (nombre, invertido) => {
   const polos = polosDe(nombre)
@@ -90,18 +106,15 @@ const MapaCuadrantes = ({ plano, estilos, puntos, grupal }) => {
               : 'Mapa de cuatro estilos'}
           </h2>
           <p className="adela-panel__nota">
-            Las líneas punteadas son los cortes (horizontal en{' '}
-            {formatoNumero(plano.corteX)}, vertical en{' '}
-            {formatoNumero(plano.corteY)}); un puntaje igual al corte cuenta
-            como lado bajo.
+            Las líneas punteadas son los cortes: la vertical marca{' '}
+            {formatoNumero(plano.corteX)} en el eje horizontal y la horizontal
+            marca {formatoNumero(plano.corteY)} en el eje vertical. Un puntaje
+            igual al corte cuenta como lado bajo.
             {grupal
               ? ' Cada punto es un resultado, sin nombre.'
               : !punto && ' No se pudo ubicar este resultado en el mapa.'}
             {punto &&
-              ` Tu punto: horizontal ${formatoNumero(punto.x)}, vertical ${formatoNumero(punto.y)}.`}
-            {punto &&
-              (punto.x === plano.corteX || punto.y === plano.corteY) &&
-              ' Cae justo sobre un corte, así que cuenta del lado bajo de esa línea.'}
+              ` Tu punto: horizontal ${formatoNumero(punto.x)}, vertical ${formatoNumero(punto.y)}${sobreCorte(punto, plano)}.`}
           </p>
         </div>
       </div>
