@@ -12,7 +12,7 @@ import {
  * Estilos simples (los que suman puntos) y compuestos (combinación lineal de
  * simples, p. ej. un polo "A − B"). Un compuesto no tiene opciones propias.
  */
-const EditorEstilos = ({ borrador, actualizar, marcados }) => {
+const EditorEstilos = ({ borrador, actualizar, marcados, marcasIA }) => {
   const [nombre, setNombre] = useState('')
   const prim = primarios(borrador)
 
@@ -69,8 +69,15 @@ const EditorEstilos = ({ borrador, actualizar, marcados }) => {
       {borrador.estilos.map((e) => (
         <div
           key={e.id}
-          className={`adela-item ${marcados.has(e.id) ? 'adela-item--error' : ''}`}
+          className={`adela-item ${marcasIA?.has(e.id) ? 'adela-item--ia' : ''} ${marcados.has(e.id) ? 'adela-item--error' : ''}`}
         >
+          {marcasIA?.has(e.id) && (
+            <p className="adela-nota-ia">
+              Revisar: {marcasIA.get(e.id)[0].mensaje}
+              {marcasIA.get(e.id).length > 1 &&
+                ` (y ${marcasIA.get(e.id).length - 1} más)`}
+            </p>
+          )}
           <div className="adela-fila">
             <span className="adela-chip">
               {e.tipo === TIPO.PRIMARIO ? 'Simple' : 'Compuesto'}
@@ -193,6 +200,7 @@ EditorEstilos.propTypes = {
   borrador: PropTypes.object.isRequired,
   actualizar: PropTypes.func.isRequired,
   marcados: PropTypes.instanceOf(Set).isRequired,
+  marcasIA: PropTypes.instanceOf(Map),
 }
 
 export default EditorEstilos

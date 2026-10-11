@@ -21,6 +21,7 @@ const EditorPregunta = ({
   onMover,
   onDuplicar,
   marcada,
+  marcasIA,
 }) => {
   const p = pregunta
   const cambiarOpcion = (id, cambios) =>
@@ -37,7 +38,15 @@ const EditorPregunta = ({
     })
 
   return (
-    <div className={`adela-item ${marcada ? 'adela-item--error' : ''}`}>
+    <div
+      className={`adela-item ${marcasIA ? 'adela-item--ia' : ''} ${marcada ? 'adela-item--error' : ''}`}
+    >
+      {marcasIA && (
+        <p className="adela-nota-ia">
+          Revisar: {marcasIA[0].mensaje}
+          {marcasIA.length > 1 && ` (y ${marcasIA.length - 1} más)`}
+        </p>
+      )}
       <div className="adela-item__cabeza">
         <span className="adela-item__num">{numero}</span>
         <input
@@ -202,6 +211,7 @@ EditorPregunta.propTypes = {
   onMover: PropTypes.func.isRequired,
   onDuplicar: PropTypes.func.isRequired,
   marcada: PropTypes.bool,
+  marcasIA: PropTypes.arrayOf(PropTypes.object),
 }
 
 export default EditorPregunta

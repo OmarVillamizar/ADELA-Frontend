@@ -261,6 +261,20 @@ textarea.adela-input {
   margin-top: 0.75rem;
 }
 
+/* Señalado por la revisión de un cuestionario importado con IA. Va antes de
+   --error: si además tiene un error, gana el rojo. */
+.adela-item--ia {
+  border-color: #e1b95a;
+  background: var(--warn-soft);
+}
+
+.adela-nota-ia {
+  margin: 0 0 0.65rem;
+  color: var(--warn);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
 .adela-item--error {
   border-color: var(--accent);
 }
@@ -657,6 +671,112 @@ textarea.adela-input {
 
 .adela-calculo__scroll {
   overflow-x: auto;
+}
+
+/* ---------- Importar con tu propia IA ---------- */
+
+.adela-json {
+  min-height: 12rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+/* El selector de archivo: el input va oculto a la vista pero alcanzable con
+   teclado, y el botón se resalta cuando lo enfoca. */
+.adela-archivo {
+  position: relative;
+}
+
+.adela-archivo input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.adela-archivo:focus-within {
+  outline: 3px solid rgba(200, 16, 46, 0.35);
+  outline-offset: 2px;
+}
+
+.adela-lista {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: var(--ink-2);
+  font-size: 0.9rem;
+}
+
+.adela-lista li + li {
+  margin-top: 0.25rem;
+}
+
+.adela-marcas {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.adela-marca {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--line);
+  border-left-width: 4px;
+  border-radius: var(--radius-ctl);
+  background: var(--surface);
+}
+
+.adela-marca--alto {
+  border-left-color: var(--accent);
+}
+
+.adela-marca--medio {
+  border-left-color: #e1b95a;
+}
+
+.adela-marca--bajo {
+  border-left-color: var(--line);
+}
+
+.adela-marca--hecha {
+  background: var(--surface-2);
+}
+
+.adela-marca--hecha .adela-marca__mensaje {
+  color: var(--ink-3);
+}
+
+.adela-marca__cuerpo {
+  flex: 1 1 18rem;
+  min-width: 0;
+}
+
+.adela-marca__seccion {
+  color: var(--ink-3);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.adela-marca__mensaje {
+  margin: 0.4rem 0 0;
+  font-size: 0.92rem;
+}
+
+.adela-marca__revisado {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 @media (prefers-reduced-motion: reduce) {

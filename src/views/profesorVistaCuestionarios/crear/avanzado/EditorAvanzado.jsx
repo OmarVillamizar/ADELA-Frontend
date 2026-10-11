@@ -6,6 +6,8 @@ import EditorPregunta from './EditorPregunta'
 import EditorInterpretacion from '../EditorInterpretacion'
 import ListaErrores from '../ListaErrores'
 import VistaPrevia from '../VistaPrevia'
+import FilaMarca from '../importar/FilaMarca'
+import { pendientesDe, seccionDelEditor } from '../importar/marcas'
 import {
   FORMATO,
   actualizarPregunta,
@@ -42,6 +44,35 @@ const EditorAvanzado = ({
     el.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
+  // Cuestionario importado con IA: lo que aún no se revisó, por sección y por
+  // pregunta o estilo señalado.
+  const marcasIA = borrador.ia?.marcas ?? []
+  const revisadas = new Set(borrador.ia?.revisadas ?? [])
+  const pendientes = pendientesDe(borrador)
+  const porSeccion = {}
+  pendientes.forEach((m) => {
+    const s = seccionDelEditor(m)
+    porSeccion[s] = (porSeccion[s] ?? 0) + 1
+  })
+  const marcasPor = (campo) => {
+    const mapa = new Map()
+    pendientes.forEach((m) =>
+      (m[campo] ?? []).forEach((id) =>
+        mapa.set(id, [...(mapa.get(id) ?? []), m]),
+      ),
+    )
+    return mapa
+  }
+  const iaPreguntas = marcasPor('preguntaIds')
+  const iaEstilos = marcasPor('estiloIds')
+  const revisar = (id, valor) =>
+    actualizar((b) => {
+      const hechas = new Set(b.ia?.revisadas ?? [])
+      if (valor) hechas.add(id)
+      else hechas.delete(id)
+      return { ...b, ia: { ...b.ia, revisadas: [...hechas] } }
+    })
+
   const seccion = (clave, titulo, nota, contenido, abierta = true) => (
     <details
       className="adela-panel adela-seccion"
@@ -52,7 +83,14 @@ const EditorAvanzado = ({
     >
       <summary>
         <div>
-          <h3 className="adela-panel__titulo">{titulo}</h3>
+          <h3 className="adela-panel__titulo">
+            {titulo}
+            {porSeccion[clave] > 0 && (
+              <span className="adela-chip adela-chip--aviso ms-2">
+                {porSeccion[clave]} por revisar
+              </span>
+            )}
+          </h3>
           {nota && <p className="adela-panel__nota">{nota}</p>}
         </div>
       </summary>
@@ -62,6 +100,27 @@ const EditorAvanzado = ({
 
   return (
     <>
+      {marcasIA.length > 0 &&
+        seccion(
+          'ia',
+          'Puntos a revisar',
+          pendientes.length > 0
+            ? `Quedan ${pendientes.length} de ${marcasIA.length}. Los de riesgo alto deben revisarse para poder crear el cuestionario.`
+            : 'Todo quedó revisado.',
+          <ul className="adela-marcas">
+            {marcasIA.map((m) => (
+              <FilaMarca
+                key={m.id}
+                marca={m}
+                hecha={revisadas.has(m.id)}
+                onCambiar={(valor) => revisar(m.id, valor)}
+                onIr={(marca) => ir(seccionDelEditor(marca))}
+              />
+            ))}
+          </ul>,
+          pendientes.length > 0,
+        )}
+
       {seccion(
         'datos',
         'Datos',
@@ -80,6 +139,7 @@ const EditorAvanzado = ({
           borrador={borrador}
           actualizar={actualizar}
           marcados={marcados}
+          marcasIA={iaEstilos}
         />,
       )}
 
@@ -96,6 +156,7 @@ const EditorAvanzado = ({
               total={borrador.preguntas.length}
               estilos={prim}
               marcada={marcados.has(p.id)}
+              marcasIA={iaPreguntas.get(p.id)}
               onChange={(cambios) =>
                 actualizar((b) => actualizarPregunta(b, p.id, cambios))
               }
