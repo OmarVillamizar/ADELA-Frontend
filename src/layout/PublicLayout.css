@@ -1,6 +1,24 @@
 .publico-header {
-  background: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: color-mix(in srgb, var(--cui-body-bg) 90%, transparent);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 10px rgba(16, 24, 40, 0.08);
+}
+
+/* Lados de igual ancho (1fr): el centro queda en el centro de la pantalla.
+   El selector repite .publico-header para ganarle a `.header > .container`
+   de CoreUI, que impone flex con space-between. */
+.publico-header.header > .publico-header-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.publico-centro {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 .publico-logo {
@@ -10,6 +28,7 @@
 }
 
 .publico-logo-ufps {
+  justify-self: end;
   height: 44px;
   width: auto;
   object-fit: contain;
@@ -17,9 +36,40 @@
 
 .publico-titulo {
   font-weight: 600;
-  color: #333;
-  text-align: center;
-  padding: 0 1rem;
+  color: var(--cui-body-color);
+  font-size: 0.95rem;
+  margin-top: 0.15rem;
+}
+
+/* Inicio: naranja del logo, texto e ícono negros, objetivo táctil ≥ 44px. */
+.publico-inicio {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 46px;
+  min-width: 46px;
+  justify-content: center;
+  padding: 0 1.1rem;
+  border-radius: 999px;
+  border: 0;
+  background: var(--adela-naranja);
+  color: #111;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(247, 147, 30, 0.35);
+}
+
+.publico-inicio:hover,
+.publico-inicio:focus-visible {
+  background: #f9a443;
+  color: #111;
+  box-shadow: 0 6px 18px rgba(247, 147, 30, 0.45);
+}
+
+.publico-inicio svg {
+  width: 1.2rem;
+  height: 1.2rem;
 }
 
 .codigo-resultado {
@@ -28,4 +78,143 @@
   letter-spacing: 0.15em;
   font-weight: 700;
   word-break: break-all;
+}
+
+/* Ingreso de código (/c y /r): logo grande de fondo y tarjeta translúcida. */
+.ingreso-hero {
+  position: relative;
+  /* Llena el espacio libre entre header y footer: todo en una sola vista. */
+  flex: 1;
+  /* Recupera el padding vertical del contenedor: más alto para el logo. */
+  margin-block: -1rem;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.ingreso-hero-logo {
+  position: absolute;
+  inset: 0;
+  /* Ocupa todo el hero; contain lo ajusta al lado menor sin cortar puntas:
+     en escritorio llena el alto, en celular el ancho. */
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: contain;
+  opacity: 0.28;
+  filter: saturate(1.15);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.ingreso-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 1.25rem;
+  background: color-mix(in srgb, var(--cui-body-bg) 80%, transparent);
+  backdrop-filter: blur(6px);
+  box-shadow:
+    0 1px 2px rgba(16, 24, 40, 0.06),
+    0 16px 40px rgba(26, 115, 232, 0.14);
+}
+
+/* Franja superior con los cuatro colores del logo. */
+.ingreso-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 6px;
+  background: var(--adela-franja);
+}
+
+.ingreso-card .card-body {
+  padding: 2rem 1.5rem 1.5rem;
+}
+
+.ingreso-titulo {
+  font-size: clamp(1.5rem, 5vw, 1.9rem);
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 0.4rem;
+}
+
+.ingreso-ayuda {
+  text-align: center;
+  color: var(--cui-secondary-color);
+  margin-bottom: 1.25rem;
+}
+
+.ingreso-input {
+  min-height: 60px;
+  border-radius: 0.85rem;
+  border-width: 2px;
+  border-color: rgba(26, 115, 232, 0.25);
+  background: color-mix(in srgb, var(--cui-body-bg) 92%, transparent);
+}
+
+.ingreso-input::placeholder {
+  color: rgba(26, 115, 232, 0.35);
+}
+
+/* El ícono de error agrega padding a la derecha; el mismo a la izquierda
+   mantiene el texto centrado aunque aparezca. */
+.ingreso-input.form-control.is-invalid {
+  padding-inline-start: calc(1.5em + 0.75rem);
+}
+
+.ingreso-input:focus {
+  border-color: var(--adela-azul);
+  box-shadow: 0 0 0 0.25rem rgba(26, 115, 232, 0.2);
+}
+
+.ingreso-boton.btn {
+  display: block;
+  width: 100%;
+  min-height: 56px;
+  border-radius: 0.85rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  /* Verde del logo, sólido con degradado leve, contorno y texto negro. Se
+     pisan las variables de CButton para que hover y active no vuelvan al
+     primary. */
+  --cui-btn-color: #111;
+  --cui-btn-hover-color: #111;
+  --cui-btn-active-color: #111;
+  --cui-btn-border-width: 2px;
+  --cui-btn-border-color: #57b02a;
+  --cui-btn-hover-border-color: #4a9e22;
+  --cui-btn-active-border-color: #4a9e22;
+  background: linear-gradient(180deg, #8fd862, var(--adela-verde));
+  box-shadow: 0 4px 12px rgba(108, 201, 58, 0.35);
+}
+
+.ingreso-boton.btn:hover,
+.ingreso-boton.btn:focus-visible,
+.ingreso-boton.btn:active {
+  background: linear-gradient(180deg, #7fcf4e, #5cb82e);
+  box-shadow: 0 6px 16px rgba(108, 201, 58, 0.45);
+}
+
+/* Enlace a la otra opción: cian del logo, punteado, se rellena al pasar. */
+.ingreso-otro {
+  display: block;
+  margin-top: 1rem;
+  min-height: 52px;
+  padding: 0.85rem;
+  font-weight: 600;
+  background: rgba(18, 191, 232, 0.06);
+  border: 2px dashed rgba(18, 191, 232, 0.6);
+  border-radius: 0.85rem;
+  text-align: center;
+  color: var(--cui-body-color);
+  text-decoration: none;
+}
+
+.ingreso-otro:hover,
+.ingreso-otro:focus-visible {
+  background: rgba(18, 191, 232, 0.14);
+  border-color: var(--adela-cian);
+  color: var(--cui-body-color);
 }

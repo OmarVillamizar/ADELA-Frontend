@@ -28,6 +28,8 @@ import {
   CTableHeaderCell,
   CTableRow,
 } from '@coreui/react'
+import CIcon from '@coreui/icons-react'
+import { cilInfo, cilPlus, cilTrash } from '@coreui/icons'
 import {
   actualizarCapsula,
   crearCapsula,
@@ -131,27 +133,25 @@ const Capsulas = () => {
     <>
       <CRow>
         <CCol xs={12}>
-          <CAlert
-            color="info"
-            className="mb-4"
-            style={{
-              backgroundColor: '#d3d3d3',
-              border: '#d3d3d3',
-              color: 'black',
-            }}
-          >
-            Bienvenid@ Profesor {user.nombre}. Una cápsula comparte un
-            cuestionario por enlace o QR: cualquiera lo responde sin cuenta y ve
-            su resultado al terminar.
+          <CAlert color="info" className="mb-3 adela-bienvenida">
+            Bienvenid@ Profesor <strong>{user.nombre}</strong>
           </CAlert>
+          <div className="adela-descripcion">
+            <CIcon icon={cilInfo} />
+            <span>
+              Una cápsula comparte un cuestionario por enlace o QR: cualquiera
+              lo responde sin cuenta y ve su resultado al terminar.
+            </span>
+          </div>
           <CCard className="mb-4">
             <CCardHeader className="d-flex justify-content-between align-items-center">
               <span>Listado de Cápsulas</span>
               <CButton
                 color="success"
+                className="text-white adela-tactil"
                 onClick={abrirModal}
-                style={{ color: 'white' }}
               >
+                <CIcon icon={cilPlus} className="me-1" />
                 Añadir Cápsula
               </CButton>
             </CCardHeader>
@@ -199,14 +199,15 @@ const Capsulas = () => {
                         <CTableDataCell>
                           <CButton
                             color="danger"
-                            size="sm"
+                            className="adela-tactil adela-btn-icono adela-btn-eliminar"
+                            aria-label={`Eliminar la cápsula ${capsula.nombre}`}
+                            title="Eliminar cápsula"
                             onClick={(e) => {
                               e.stopPropagation()
                               eliminar(capsula)
                             }}
                           >
-                            {' '}
-                            -{' '}
+                            <CIcon icon={cilTrash} />
                           </CButton>
                         </CTableDataCell>
                       </CTableRow>
@@ -287,12 +288,17 @@ const Capsulas = () => {
           </CForm>
         </CModalBody>
         <CModalFooter>
-          <CButton color="secondary" onClick={() => setModalVisible(false)}>
+          <CButton
+            color="secondary"
+            variant="outline"
+            className="adela-tactil"
+            onClick={() => setModalVisible(false)}
+          >
             Cancelar
           </CButton>
           <CButton
             color="success"
-            style={{ color: 'white' }}
+            className="text-white adela-tactil"
             disabled={guardando}
             onClick={crear}
           >

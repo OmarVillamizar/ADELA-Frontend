@@ -5,12 +5,12 @@ import {
   CButton,
   CCard,
   CCardBody,
-  CCardHeader,
   CCol,
   CForm,
   CFormInput,
   CRow,
 } from '@coreui/react'
+import adelalogo from 'src/assets/images/adelalogo.png'
 import { normalizarCodigo } from '../../util/capsulas/capsulaUtils'
 
 /**
@@ -19,6 +19,7 @@ import { normalizarCodigo } from '../../util/capsulas/capsulaUtils'
  */
 const IngresarCodigo = ({
   titulo,
+  ayuda,
   longitud,
   ejemplo,
   destino,
@@ -40,49 +41,64 @@ const IngresarCodigo = ({
   }
 
   return (
-    <CRow className="justify-content-center">
-      <CCol md={8} lg={5}>
-        <CCard className="shadow-sm">
-          <CCardHeader className="text-center">
-            <h5 className="mb-0">{titulo}</h5>
-          </CCardHeader>
-          <CCardBody>
-            <CForm onSubmit={enviar}>
-              <CFormInput
-                className="text-center codigo-resultado mb-3"
-                style={{ fontSize: '1.3rem' }}
-                placeholder={ejemplo}
-                autoCapitalize="characters"
-                autoComplete="off"
-                autoFocus
-                maxLength={longitud + 4}
-                value={codigo}
-                invalid={!!error}
-                feedbackInvalid={error}
-                onChange={(e) => setCodigo(e.target.value)}
-              />
-              <div className="text-center">
-                <CButton type="submit" color="primary" className="px-5">
+    <section className="ingreso-hero">
+      {/* Logo de fondo, decorativo: el lector de pantalla no lo anuncia. */}
+      <img
+        src={adelalogo}
+        alt=""
+        aria-hidden="true"
+        className="ingreso-hero-logo"
+      />
+      <CRow className="justify-content-center flex-grow-1">
+        <CCol xs={12} sm={10} md={7} lg={5} xl={4}>
+          <CCard className="ingreso-card">
+            <CCardBody>
+              <div className="adela-nodos" aria-hidden="true">
+                <i />
+                <i />
+                <i />
+                <i />
+              </div>
+              <h1 className="ingreso-titulo">{titulo}</h1>
+              <p className="ingreso-ayuda">{ayuda}</p>
+              <CForm onSubmit={enviar}>
+                <CFormInput
+                  className="text-center codigo-resultado ingreso-input mb-3"
+                  placeholder={ejemplo}
+                  aria-label={titulo}
+                  autoCapitalize="characters"
+                  autoComplete="off"
+                  autoFocus
+                  maxLength={longitud + 4}
+                  value={codigo}
+                  invalid={!!error}
+                  feedbackInvalid={error}
+                  onChange={(e) => setCodigo(e.target.value)}
+                />
+                <CButton
+                  type="submit"
+                  color="primary"
+                  className="ingreso-boton adela-tactil"
+                >
                   {boton}
                 </CButton>
-              </div>
-            </CForm>
-            {otro && (
-              <div className="text-center mt-3">
-                <Link to={otro.to} className="small">
+              </CForm>
+              {otro && (
+                <Link to={otro.to} className="ingreso-otro adela-tactil">
                   {otro.texto}
                 </Link>
-              </div>
-            )}
-          </CCardBody>
-        </CCard>
-      </CCol>
-    </CRow>
+              )}
+            </CCardBody>
+          </CCard>
+        </CCol>
+      </CRow>
+    </section>
   )
 }
 
 IngresarCodigo.propTypes = {
   titulo: PropTypes.string.isRequired,
+  ayuda: PropTypes.string.isRequired,
   longitud: PropTypes.number.isRequired,
   ejemplo: PropTypes.string.isRequired,
   destino: PropTypes.string.isRequired,
@@ -94,6 +110,7 @@ IngresarCodigo.propTypes = {
 export const EntrarCapsula = () => (
   <IngresarCodigo
     titulo="Ingresar a una cápsula"
+    ayuda="Escribe el código que te dio el expositor o que aparece junto al QR."
     longitud={6}
     ejemplo="K7Q-M2X"
     destino="/c"
@@ -106,6 +123,7 @@ export const EntrarCapsula = () => (
 export const ConsultarResultado = () => (
   <IngresarCodigo
     titulo="Consultar mi resultado"
+    ayuda="Escribe el código que recibiste al terminar la cápsula."
     longitud={12}
     ejemplo="K7QM-2XPA-9DTR"
     destino="/r"
