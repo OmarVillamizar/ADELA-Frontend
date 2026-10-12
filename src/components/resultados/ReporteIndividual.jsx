@@ -99,7 +99,9 @@ const ReporteIndividual = ({ resultado, titulo, onVolver, onResponder }) => {
             ))}
           </dl>
           {cuestionario.descripcion && (
-            <p className="adela-descripcion">{cuestionario.descripcion}</p>
+            <p className="adela-reporte-descripcion">
+              {cuestionario.descripcion}
+            </p>
           )}
         </section>
 
