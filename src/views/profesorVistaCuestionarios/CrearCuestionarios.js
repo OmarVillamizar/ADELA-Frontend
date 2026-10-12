@@ -1,13 +1,15 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Swal from 'sweetalert2'
 import { crearCuestionario } from '../../util/services/cuestionarioService'
+import { estadoIa } from '../../util/services/iaService'
 import { useAuth } from '../../util/auth/AuthProvider'
 import { Roles, getRole } from '../../util/userUtils'
 import useBorrador from './crear/useBorrador'
 import EditorAvanzado from './crear/avanzado/EditorAvanzado'
 import Asistente from './crear/asistente/Asistente'
 import ImportarConIA from './crear/importar/ImportarConIA'
+import AsistenteIA from './crear/ia/AsistenteIA'
 import { altasPendientes } from './crear/importar/marcas'
 import ListaErrores from './crear/ListaErrores'
 import Nelse from './crear/Nelse'
@@ -44,6 +46,15 @@ const CrearCuestionarios = () => {
   const [creando, setCreando] = useState(false)
   const [erroresServidor, setErroresServidor] = useState([])
   const errores = useMemo(() => validarBorrador(borrador), [borrador])
+  // Nelse solo se ofrece si el servidor tiene la IA encendida y con llave.
+  const [nelse, setNelse] = useState(false)
+
+  useEffect(() => {
+    if (!esAdmin) return
+    estadoIa()
+      .then((e) => setNelse(Boolean(e.habilitada)))
+      .catch(() => setNelse(false))
+  }, [esAdmin])
 
   const empezar = (modo) => actualizar((b) => ({ ...b, modo }))
 
@@ -114,7 +125,9 @@ const CrearCuestionarios = () => {
           <p className="adela-r__subtitulo m-0">
             {borrador.modo === 'IMPORTAR'
               ? 'Con tu propia IA'
-              : `Modo ${borrador.modo === 'ASISTIDO' ? 'asistido' : 'avanzado'}`}{' '}
+              : borrador.modo === 'NELSE'
+                ? 'Con Nelse'
+                : `Modo ${borrador.modo === 'ASISTIDO' ? 'asistido' : 'avanzado'}`}{' '}
             · el borrador se guarda solo
           </p>
         )}
@@ -216,6 +229,20 @@ const CrearCuestionarios = () => {
               </p>
             </button>
           )}
+          {esAdmin && nelse && (
+            <button
+              type="button"
+              className="adela-tarjeta"
+              onClick={() => empezar('NELSE')}
+            >
+              <p className="adela-tarjeta__titulo">Con Nelse</p>
+              <p className="adela-tarjeta__texto">
+                Sube el PDF del cuestionario (aunque esté escaneado) o
+                descríbelo: lo armo yo y te muestro qué revisar antes de
+                crearlo.
+              </p>
+            </button>
+          )}
         </div>
       </>
     )
@@ -224,6 +251,17 @@ const CrearCuestionarios = () => {
       <ImportarConIA
         onListo={(importado) => actualizar(() => importado)}
         onVolver={() => actualizar((b) => ({ ...b, modo: null }))}
+      />
+    )
+  } else if (borrador.modo === 'NELSE') {
+    contenido = (
+      <AsistenteIA
+        trabajoId={borrador.trabajoIa ?? null}
+        onTrabajo={(id) => actualizar((b) => ({ ...b, trabajoIa: id }))}
+        onListo={(generado) => actualizar(() => generado)}
+        onVolver={() =>
+          actualizar((b) => ({ ...b, modo: null, trabajoIa: null }))
+        }
       />
     )
   } else if (borrador.modo === 'ASISTIDO') {

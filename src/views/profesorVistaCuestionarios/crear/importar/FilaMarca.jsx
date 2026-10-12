@@ -26,7 +26,7 @@ const FilaMarca = ({ marca, hecha, onCambiar, onIr }) => (
         <span className="adela-marca__seccion">
           {ETIQUETA_SECCION[marca.seccion] ?? marca.seccion}
           {' · '}
-          {marca.origen === 'MODELO' ? 'lo señaló tu IA' : 'lo detectó ADELA'}
+          {marca.origen === 'MODELO' ? 'lo señaló la IA' : 'lo detectó ADELA'}
         </span>
         {onIr && (
           <button
