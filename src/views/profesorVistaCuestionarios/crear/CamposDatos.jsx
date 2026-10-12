@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 
 const CAMPOS = [
-  ['nombre', 'Nombre', 'Ej.: Cómo prefiero aprender'],
+  ['nombre', 'Nombre del cuestionario', 'Ej.: Diamond ABCD'],
   ['siglas', 'Siglas', 'Ej.: CPA'],
   ['autor', 'Autor', 'Quién diseñó el instrumento'],
   ['version', 'Versión', 'Ej.: 1.0'],
