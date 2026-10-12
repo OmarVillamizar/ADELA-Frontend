@@ -110,17 +110,14 @@ const ProfesorVistaCuestionarios = () => {
 
   return (
     <>
-      <NelseMensaje imagen={nelseFeliz}>
+      <NelseMensaje imagen={nelseFeliz} compacto>
         <div className="nelse-burbuja">
           <strong>¿Creamos un cuestionario juntos?</strong>
-          <p className="mb-3">
-            Te guío paso a paso: eliges cómo responden tus estudiantes, partes
-            de un modelo si quieres y te muestro cómo se calculará cada
-            resultado antes de crearlo.
+          <p className="mb-2">
+            Te guío paso a paso y te muestro cómo se calculará cada resultado.
           </p>
           <CButton
             color="success"
-            size="lg"
             className="text-white adela-tactil"
             onClick={handleCreateCuestionario}
           >

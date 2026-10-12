@@ -500,6 +500,25 @@
   transform: translateY(-50%) rotate(45deg);
 }
 
+/* Compacto: burbuja angosta y Nelse pequeño, juntos en la esquina derecha. */
+.nelse-mensaje-compacto {
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.nelse-mensaje-compacto .nelse-mensaje-texto {
+  flex: 0 1 26rem;
+}
+
+.nelse-mensaje-compacto .nelse-mensaje-img {
+  height: clamp(90px, 9vw, 120px);
+}
+
+.nelse-mensaje-compacto .nelse-burbuja {
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+}
+
 .nelse-burbuja-exito {
   --nelse-burbuja-borde: var(--adela-verde);
 }
@@ -519,7 +538,9 @@
     gap: 0.75rem;
   }
 
-  .nelse-mensaje-texto {
+  .nelse-mensaje-texto,
+  .nelse-mensaje-compacto .nelse-mensaje-texto {
+    flex: none;
     width: 100%;
   }
 
