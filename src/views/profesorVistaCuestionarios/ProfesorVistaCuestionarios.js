@@ -30,6 +30,8 @@ import {
 import Swal from 'sweetalert2'
 import { ETIQUETA_FORMATO } from '../../util/cuestionario/validarRespuesta'
 import './ModalVistaPreguntas.css'
+import NelseMensaje from 'src/components/NelseMensaje'
+import nelseFeliz from 'src/assets/nelse_mascot/web/nelse_happy_left.webp'
 
 const ProfesorVistaCuestionarios = () => {
   const navigate = useNavigate()
@@ -108,20 +110,29 @@ const ProfesorVistaCuestionarios = () => {
 
   return (
     <>
+      <NelseMensaje imagen={nelseFeliz}>
+        <div className="nelse-burbuja">
+          <strong>¿Creamos un cuestionario juntos?</strong>
+          <p className="mb-3">
+            Te guío paso a paso: eliges cómo responden tus estudiantes, partes
+            de un modelo si quieres y te muestro cómo se calculará cada
+            resultado antes de crearlo.
+          </p>
+          <CButton
+            color="success"
+            size="lg"
+            className="text-white adela-tactil"
+            onClick={handleCreateCuestionario}
+          >
+            <CIcon icon={cilPlus} className="me-1" />
+            Crear cuestionario
+          </CButton>
+        </div>
+      </NelseMensaje>
       <CRow>
         <CCol xs={12}>
           <CCard className="mb-4">
-            <CCardHeader className="d-flex justify-content-between align-items-center">
-              <span>Lista de Cuestionarios Creados</span>
-              <CButton
-                color="success"
-                className="text-white adela-tactil"
-                onClick={handleCreateCuestionario}
-              >
-                <CIcon icon={cilPlus} className="me-1" />
-                Crear cuestionario
-              </CButton>
-            </CCardHeader>
+            <CCardHeader>Lista de Cuestionarios Creados</CCardHeader>
             <CCardBody>
               {loading ? (
                 <div className="d-flex justify-content-center">
