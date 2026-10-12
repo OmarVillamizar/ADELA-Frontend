@@ -49,9 +49,9 @@ import '../../components/resultados/resultados.css'
 
 const SECCIONES_INICIALES = {
   resumen: true,
-  comparativa: true,
+  comparativa: false,
   graficas: true,
-  estadisticas: true,
+  estadisticas: false,
   estudiantes: true,
 }
 
