@@ -206,11 +206,14 @@ const ProfesorGrupo = () => {
       <CCard>
         <CCardHeader className="d-flex flex-wrap justify-content-between align-items-center gap-2">
           <div className="d-flex align-items-center gap-2">
-            <strong>{grupo.nombre}</strong>
-            <CBadge color="primary" shape="rounded-pill">
-              {grupo.estudiantes.length} estudiante
-              {grupo.estudiantes.length !== 1 && 's'}
-            </CBadge>
+            <span>
+              <strong>{grupo.nombre}</strong>
+              <span className="text-body-secondary">
+                {' | '}
+                {grupo.estudiantes.length} estudiante
+                {grupo.estudiantes.length !== 1 && 's'}
+              </span>
+            </span>
             <CButton
               color="secondary"
               variant="ghost"
@@ -223,7 +226,7 @@ const ProfesorGrupo = () => {
             </CButton>
           </div>
           <div className="d-flex flex-wrap align-items-center gap-2">
-            <CInputGroup style={{ maxWidth: '300px' }}>
+            <CInputGroup className="flex-nowrap" style={{ width: '280px' }}>
               <CFormInput
                 placeholder="Buscar por nombre o correo"
                 aria-label="Buscar estudiante"
