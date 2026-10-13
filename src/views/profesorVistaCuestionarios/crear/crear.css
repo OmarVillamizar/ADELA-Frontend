@@ -85,6 +85,41 @@
   font-size: 0.9rem;
 }
 
+/* Las formas de crear llevan un color del logo de ADELA según su posición:
+   azul, verde, naranja y cian. */
+.adela-tarjetas--crear > .adela-tarjeta:nth-child(1) {
+  --tarjeta-color: #1a73e8;
+}
+
+.adela-tarjetas--crear > .adela-tarjeta:nth-child(2) {
+  --tarjeta-color: #6cc93a;
+}
+
+.adela-tarjetas--crear > .adela-tarjeta:nth-child(3) {
+  --tarjeta-color: #f7931e;
+}
+
+.adela-tarjetas--crear > .adela-tarjeta:nth-child(4) {
+  --tarjeta-color: #12bfe8;
+}
+
+.adela-tarjetas--crear > .adela-tarjeta {
+  border-color: color-mix(in srgb, var(--tarjeta-color) 55%, var(--line));
+}
+
+.adela-tarjetas--crear > .adela-tarjeta:hover {
+  box-shadow: 0 4px 0
+    color-mix(in srgb, var(--tarjeta-color) 35%, transparent);
+}
+
+/* Al pie de la tarjeta, centrada, aunque el texto sea más corto que el de las vecinas. */
+.adela-tarjeta__insignia {
+  align-self: center;
+  width: auto;
+  height: 22px;
+  margin-top: auto;
+}
+
 .adela-tarjeta__ejemplo {
   margin: 0.25rem 0 0;
   padding: 0.5rem 0.65rem;

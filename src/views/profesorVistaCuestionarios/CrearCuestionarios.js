@@ -13,6 +13,7 @@ import AsistenteIA from './crear/ia/AsistenteIA'
 import { altasPendientes } from './crear/importar/marcas'
 import ListaErrores from './crear/ListaErrores'
 import Nelse from './crear/Nelse'
+import insigniaIa from '../../assets/images/adela_ia_badge.svg'
 import { aDTO, tieneContenido, validarBorrador } from './crear/borrador'
 import '../../components/resultados/resultados.css'
 import './crear/crear.css'
@@ -124,10 +125,12 @@ const CrearCuestionarios = () => {
         {borrador.modo && (
           <p className="adela-r__subtitulo m-0">
             {borrador.modo === 'IMPORTAR'
-              ? 'Con tu propia IA'
+              ? 'Con tu propia I.A'
               : borrador.modo === 'NELSE'
-                ? 'Con Nelse'
-                : `Modo ${borrador.modo === 'ASISTIDO' ? 'asistido' : 'avanzado'}`}{' '}
+                ? 'Nelse: I.A ADELA'
+                : borrador.modo === 'ASISTIDO'
+                  ? 'Preguntas asistidas'
+                  : 'Modo avanzado'}{' '}
             · el borrador se guarda solo
           </p>
         )}
@@ -183,45 +186,54 @@ const CrearCuestionarios = () => {
     contenido = (
       <>
         <Nelse pose="feliz" titulo="¡Hola! Soy Nelse, tu guía de cuestionarios">
+          {/* Los caminos con IA son solo del administrador: al profesor no se le ofrecen. */}
           <p>
-            En el modo asistido te acompaño paso a paso: eliges cómo responden
-            tus estudiantes, puedes partir de un modelo conocido y te muestro
-            con números cómo se calculará cada resultado antes de crearlo.
+            {esAdmin
+              ? 'Puedo guiarte con preguntas paso a paso, convertir tu material académico en un cuestionario con inteligencia artificial o, si prefieres control total, dejarte en el modo avanzado. Tú eliges.'
+              : 'Puedo guiarte con preguntas paso a paso y mostrarte con números cómo se calculará cada resultado antes de crearlo. Si prefieres control total, elige el modo avanzado.'}
           </p>
         </Nelse>
         <p className="adela-crear__lema">¿Cómo quieres crearlo?</p>
-        <div className="adela-tarjetas">
+        <div className="adela-tarjetas adela-tarjetas--crear">
           <button
             type="button"
             className="adela-tarjeta"
             onClick={() => empezar('ASISTIDO')}
           >
-            <span className="adela-tarjeta__marca">Recomendado</span>
-            <p className="adela-tarjeta__titulo">Asistido</p>
+            <p className="adela-tarjeta__titulo">Preguntas asistidas</p>
             <p className="adela-tarjeta__texto">
               Elige cómo responden, parte de un modelo si quieres y escribe solo
               el contenido: el asistente arma los estilos, los cortes y la
               lectura de resultados.
             </p>
           </button>
-          <button
-            type="button"
-            className="adela-tarjeta"
-            onClick={() => empezar('AVANZADO')}
-          >
-            <p className="adela-tarjeta__titulo">Avanzado</p>
-            <p className="adela-tarjeta__texto">
-              Control total: formato por pregunta, opciones que suman a varios
-              estilos, estilos compuestos y niveles a medida.
-            </p>
-          </button>
+          {esAdmin && nelse && (
+            <button
+              type="button"
+              className="adela-tarjeta"
+              onClick={() => empezar('NELSE')}
+            >
+              <p className="adela-tarjeta__titulo">Nelse: I.A ADELA</p>
+              <p className="adela-tarjeta__texto">
+                Sube tu material académico con las indicaciones del
+                cuestionario: preguntas, opciones y cómo se califica. Con
+                inteligencia artificial lo armo dentro de ADELA y te señalo qué
+                revisar antes de publicarlo.
+              </p>
+              <img
+                className="adela-tarjeta__insignia"
+                src={insigniaIa}
+                alt="Impulsado por inteligencia artificial"
+              />
+            </button>
+          )}
           {esAdmin && (
             <button
               type="button"
               className="adela-tarjeta"
               onClick={() => empezar('IMPORTAR')}
             >
-              <p className="adela-tarjeta__titulo">Con tu propia IA</p>
+              <p className="adela-tarjeta__titulo">Con tu propia I.A</p>
               <p className="adela-tarjeta__texto">
                 Dale nuestras instrucciones a ChatGPT, Claude, Gemini u otra IA
                 junto con tu documento: te devuelve el cuestionario y aquí lo
@@ -229,20 +241,17 @@ const CrearCuestionarios = () => {
               </p>
             </button>
           )}
-          {esAdmin && nelse && (
-            <button
-              type="button"
-              className="adela-tarjeta"
-              onClick={() => empezar('NELSE')}
-            >
-              <p className="adela-tarjeta__titulo">Con Nelse</p>
-              <p className="adela-tarjeta__texto">
-                Sube el PDF del cuestionario (aunque esté escaneado) o
-                descríbelo: lo armo yo y te muestro qué revisar antes de
-                crearlo.
-              </p>
-            </button>
-          )}
+          <button
+            type="button"
+            className="adela-tarjeta"
+            onClick={() => empezar('AVANZADO')}
+          >
+            <p className="adela-tarjeta__titulo">Modo avanzado</p>
+            <p className="adela-tarjeta__texto">
+              Control total: formato por pregunta, opciones que suman a varios
+              estilos, estilos compuestos y niveles a medida.
+            </p>
+          </button>
         </div>
       </>
     )
