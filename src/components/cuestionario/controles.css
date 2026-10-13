@@ -1,5 +1,5 @@
 /*
- * Controles de respuesta de jerarquía y reparto. Usan los tokens de
+ * Control de respuesta de reparto. Usa los tokens de
  * resultados.css (.adela-r): mismo lenguaje que los reportes.
  */
 
@@ -23,16 +23,6 @@
   flex: 1 1 14rem;
   min-width: 0;
   color: var(--ink);
-}
-
-.adela-orden__op {
-  min-width: 2.4rem;
-}
-
-.adela-orden__op[aria-pressed='true'] {
-  background: var(--accent);
-  color: #ffffff;
-  box-shadow: 0 1px 0 var(--accent-press);
 }
 
 .adela-reparto__restante {

@@ -1,0 +1,738 @@
+/*
+ * Responder un cuestionario una pregunta por pantalla. Usa los tokens de
+ * resultados.css (.adela-r) y los colores del logo para distinguir opciones.
+ * Solo se animan transform, opacity y clip-path: fluido también en celulares
+ * modestos.
+ */
+
+.adela-resp {
+  --c: var(--data);
+  --c-tinta: #1d4f91;
+  --c-sobre: #ffffff;
+  position: relative;
+}
+
+/* ---------- Cabecera: contador, barra, guardado ---------- */
+
+/* Celular: contador y Ver todas arriba, barra y guardado abajo. Desde
+   tableta, todo en una fila para dejarle el alto a la pregunta. */
+.adela-resp__cabeza {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    'contador ver'
+    'barra estado';
+  align-items: center;
+  gap: 0.4rem 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.adela-resp__contador {
+  grid-area: contador;
+}
+
+.adela-resp__barra {
+  grid-area: barra;
+}
+
+.adela-resp__estado {
+  grid-area: estado;
+}
+
+.adela-resp__ver {
+  grid-area: ver;
+}
+
+@media (min-width: 768px) {
+  .adela-resp__cabeza {
+    grid-template-columns: auto 1fr auto auto;
+    grid-template-areas: 'contador barra estado ver';
+    gap: 1rem;
+  }
+}
+
+.adela-resp__contador {
+  color: var(--ink-2);
+  font-weight: 600;
+}
+
+.adela-resp__contador b {
+  color: var(--ink);
+  font-size: 1.15em;
+}
+
+.adela-resp__barra {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  box-shadow: inset 0 1px 2px rgba(22, 24, 29, 0.08);
+}
+
+.adela-resp__relleno {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: var(
+    --adela-franja,
+    linear-gradient(
+      90deg,
+      #1a73e8 0 25%,
+      #12bfe8 25% 50%,
+      #6cc93a 50% 75%,
+      #f7931e 75% 100%
+    )
+  );
+  transition: clip-path 360ms var(--ease);
+}
+
+.adela-resp__estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--ink-3);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.adela-resp__guardado::before,
+.adela-resp__sin-guardar::before {
+  content: '';
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-right: 0.4rem;
+  border-radius: 50%;
+  background: var(--ok);
+}
+
+.adela-resp__sin-guardar {
+  color: var(--warn);
+  font-weight: 600;
+}
+
+.adela-resp__sin-guardar::before {
+  background: var(--warn);
+}
+
+.adela-resp__aviso {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  margin: 0 0 1rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: var(--radius-ctl);
+  background: var(--warn-soft);
+  color: var(--warn);
+  font-size: 0.925rem;
+}
+
+.adela-resp__enlace {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ---------- Escena: una pregunta a la vez ---------- */
+
+.adela-resp__escena {
+  overflow-x: clip;
+  touch-action: pan-y;
+}
+
+.adela-resp__paso {
+  padding-bottom: 0.25rem;
+}
+
+.adela-resp__paso--sig {
+  animation: adela-resp-sig 220ms var(--ease) backwards;
+}
+
+.adela-resp__paso--ant {
+  animation: adela-resp-ant 220ms var(--ease) backwards;
+}
+
+@keyframes adela-resp-sig {
+  from {
+    opacity: 0;
+    transform: translate3d(32px, 0, 0);
+  }
+}
+
+@keyframes adela-resp-ant {
+  from {
+    opacity: 0;
+    transform: translate3d(-32px, 0, 0);
+  }
+}
+
+.adela-resp__enunciado {
+  margin: 0 0 0.6rem;
+  color: var(--ink);
+  font-size: clamp(1.2rem, 1rem + 1.1vw, 1.55rem);
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  text-wrap: pretty;
+}
+
+.adela-resp__enunciado--largo {
+  font-size: clamp(1.1rem, 0.95rem + 0.7vw, 1.3rem);
+}
+
+.adela-resp__enunciado:focus {
+  outline: none;
+}
+
+.adela-resp__ayuda {
+  margin: 0 0 0.5rem;
+  color: var(--ink-2);
+}
+
+.adela-resp__leyenda {
+  margin: 0.25rem 0 0;
+  color: var(--ink-3);
+  font-size: 0.85rem;
+}
+
+/* ---------- Opciones ---------- */
+
+.adela-resp__ops {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 0.85rem;
+}
+
+@media (min-width: 992px) {
+  .adela-resp__ops--2col {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.adela-resp__op--c0 {
+  --c: #1a73e8;
+  --c-tinta: #1557b0;
+  --c-sobre: #ffffff;
+}
+
+.adela-resp__op--c1 {
+  --c: #f7931e;
+  --c-tinta: #a35400;
+  --c-sobre: #16181d;
+}
+
+.adela-resp__op--c2 {
+  --c: #6cc93a;
+  --c-tinta: #3a7a17;
+  --c-sobre: #16181d;
+}
+
+.adela-resp__op--c3 {
+  --c: #a63ff0;
+  --c-tinta: #7a22b8;
+  --c-sobre: #ffffff;
+}
+
+.adela-resp__op--c4 {
+  --c: #12bfe8;
+  --c-tinta: #0a6f88;
+  --c-sobre: #16181d;
+}
+
+.adela-resp__op {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  width: 100%;
+  min-height: 3.25rem;
+  padding: 0.7rem 0.95rem;
+  border: 2px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 1rem;
+  line-height: 1.35;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  box-shadow: 0 2px 0 var(--line);
+  transition:
+    border-color 140ms var(--ease),
+    background-color 140ms var(--ease),
+    box-shadow 140ms var(--ease),
+    transform 100ms var(--ease);
+}
+
+@media (hover: hover) {
+  .adela-resp__op:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--c) 55%, var(--line));
+  }
+}
+
+.adela-resp__op:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 var(--line);
+}
+
+.adela-resp__op[aria-checked='true'],
+.adela-resp__op[aria-pressed='true'] {
+  border-color: var(--c);
+  background: color-mix(in srgb, var(--c) 13%, var(--surface));
+  box-shadow: 0 2px 0 var(--c);
+}
+
+.adela-resp__op:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.adela-resp__op:focus-visible {
+  outline: 3px solid rgba(26, 115, 232, 0.4);
+  outline-offset: 2px;
+}
+
+.adela-resp__marca {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 2px solid var(--c);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--c-tinta);
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition:
+    background-color 140ms var(--ease),
+    color 140ms var(--ease),
+    transform 160ms var(--ease);
+}
+
+.adela-resp__op[aria-checked='true'] .adela-resp__marca,
+.adela-resp__op[aria-pressed='true'] .adela-resp__marca {
+  background: var(--c);
+  color: var(--c-sobre);
+  transform: scale(1.08);
+}
+
+.adela-resp__texto {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Ordenar: el puesto aparece en un círculo punteado mientras está vacío. */
+.adela-resp__op--orden .adela-resp__marca {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-style: dashed;
+  border-radius: 50%;
+}
+
+.adela-resp__op--orden[aria-pressed='true'] .adela-resp__marca {
+  border-style: solid;
+}
+
+/* Dos opciones: tarjetas grandes lado a lado. */
+.adela-resp__ops--dos {
+  grid-template-columns: 1fr 1fr;
+}
+
+.adela-resp__ops--dos .adela-resp__op {
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.6rem;
+  min-height: 6.5rem;
+  padding: 0.9rem 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.adela-resp__ops--dos .adela-resp__texto {
+  flex: none;
+}
+
+/* Escala: lista en celular, fila de tarjetas desde tableta. */
+.adela-resp__op--escala .adela-resp__marca {
+  border-radius: 50%;
+}
+
+@media (min-width: 768px) {
+  .adela-resp__ops--escala {
+    grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+  }
+
+  .adela-resp__ops--escala .adela-resp__op {
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 0.6rem;
+    min-height: 6.5rem;
+    padding: 0.85rem 0.5rem;
+    font-size: 0.925rem;
+    text-align: center;
+  }
+
+  .adela-resp__ops--escala .adela-resp__texto {
+    flex: none;
+  }
+}
+
+/* ---------- Pie: navegación al alcance del pulgar ---------- */
+
+.adela-resp__pie {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding: 0.6rem 0 calc(0.6rem + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--line-soft);
+  background: var(--surface);
+}
+
+.adela-resp__nav {
+  justify-content: center;
+  min-height: 3rem;
+  padding-inline: 1.1rem;
+  font-size: 1rem;
+  touch-action: manipulation;
+}
+
+.adela-resp__nav--principal {
+  flex: 0 1 18rem;
+}
+
+.adela-resp__centro {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+/* Avanzar: azul pastel de la marca, amable. Enviar: verde de logro. */
+.adela-resp__btn-avanzar {
+  --btn-bg: #dcebfd;
+  --btn-fg: #134a9c;
+  --btn-border: #c3dbfa;
+  --btn-lip: #a9c9f2;
+  font-weight: 700;
+}
+
+.adela-resp__btn-avanzar:hover:not(:disabled) {
+  background: #cfe3fc;
+}
+
+.adela-resp__btn-enviar {
+  --btn-bg: #2e9e5b;
+  --btn-fg: #ffffff;
+  --btn-border: #2e9e5b;
+  --btn-lip: #1f7a44;
+  font-weight: 700;
+}
+
+.adela-resp__btn-enviar:hover:not(:disabled) {
+  background: #278a4f;
+}
+
+.adela-resp .adela-btn:focus-visible {
+  outline-color: rgba(26, 115, 232, 0.4);
+}
+
+.adela-resp__pista {
+  color: var(--ink-3);
+  font-weight: 600;
+}
+
+.adela-resp__teclas {
+  color: var(--ink-3);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.adela-resp__teclas kbd {
+  padding: 0 0.3rem;
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 0.75rem;
+}
+
+@media (hover: none), (max-width: 1099.98px) {
+  .adela-resp__teclas {
+    display: none;
+  }
+}
+
+/* ---------- Portada y revisión ---------- */
+
+.adela-resp__portada {
+  display: grid;
+  gap: 1rem;
+  justify-items: center;
+  text-align: center;
+}
+
+.adela-resp__descripcion {
+  max-width: 62ch;
+  margin: 0;
+  color: var(--ink-2);
+}
+
+.adela-resp__meta {
+  margin: 0;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.adela-resp__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.adela-resp__grande {
+  min-height: 3.25rem;
+  padding-inline: 1.5rem;
+  font-size: 1.05rem;
+  touch-action: manipulation;
+}
+
+.adela-resp__nota {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--ink-3);
+  font-size: 0.875rem;
+}
+
+.adela-resp__revision {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+}
+
+.adela-resp__nelse {
+  height: 140px;
+  width: auto;
+  margin-bottom: 0.5rem;
+}
+
+.adela-resp__pendientes,
+.adela-resp__mapa {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(2.9rem, 1fr));
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.adela-resp__pendientes {
+  max-width: 32rem;
+  margin-bottom: 1rem;
+}
+
+.adela-resp__num {
+  min-height: 2.9rem;
+  border: 2px solid var(--line);
+  border-radius: var(--radius-ctl);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 100ms var(--ease);
+}
+
+.adela-resp__num:active {
+  transform: scale(0.95);
+}
+
+.adela-resp__num--falta {
+  border-color: #f7931e;
+  background: var(--warn-soft);
+  color: var(--warn);
+}
+
+.adela-resp__num--hecha {
+  border-color: transparent;
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+
+.adela-resp__num--omitida {
+  border-style: dashed;
+  border-color: var(--ok);
+  color: var(--ink-3);
+}
+
+.adela-resp__num--actual {
+  border-color: #1a73e8;
+}
+
+.adela-resp__leyenda-mapa {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-top: 1rem;
+  color: var(--ink-3);
+  font-size: 0.85rem;
+}
+
+.adela-resp__ley::before {
+  content: '';
+  display: inline-block;
+  width: 0.8rem;
+  height: 0.8rem;
+  margin-right: 0.35rem;
+  border: 2px solid #e4e6ea;
+  border-radius: 4px;
+  vertical-align: -0.1rem;
+}
+
+.adela-resp__ley--hecha::before {
+  border-color: transparent;
+  background: #e5f4ec;
+}
+
+.adela-resp__ley--omitida::before {
+  border-style: dashed;
+  border-color: #1d7a46;
+}
+
+.adela-resp__ley--actual::before {
+  border-color: #1a73e8;
+}
+
+/* ---------- Hito a mitad de camino ---------- */
+
+.adela-resp__hito {
+  position: fixed;
+  left: 50%;
+  bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.35rem 1.1rem 0.35rem 0.4rem;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #ffffff;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: var(--shadow-card);
+  pointer-events: none;
+  animation: adela-resp-hito 2.4s var(--ease) forwards;
+}
+
+.adela-resp__hito img {
+  height: 2.75rem;
+  width: auto;
+}
+
+@keyframes adela-resp-hito {
+  0% {
+    opacity: 0;
+    transform: translate3d(-50%, 12px, 0);
+  }
+  12%,
+  82% {
+    opacity: 1;
+    transform: translate3d(-50%, 0, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-50%, 6px, 0);
+  }
+}
+
+/* ---------- Repartir puntos: controles más grandes para el dedo ---------- */
+
+.adela-resp .adela-stepper .adela-btn {
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  font-size: 1.2rem;
+  touch-action: manipulation;
+}
+
+.adela-resp .adela-stepper__valor {
+  min-height: 2.75rem;
+  font-size: 1.1rem;
+}
+
+.adela-resp .adela-reparto {
+  margin-top: 1rem;
+}
+
+@media (max-width: 575.98px) {
+  .adela-resp__nav {
+    padding-inline: 0.85rem;
+  }
+
+  .adela-resp__ops--dos .adela-resp__op {
+    min-height: 6.5rem;
+    font-size: 1rem;
+  }
+}
+
+/* Laptops bajas: menos aire para que la pregunta quepa sin scroll. */
+@media (min-width: 768px) and (max-height: 700px) {
+  .adela-resp__cabeza {
+    margin-bottom: 0.6rem;
+  }
+
+  .adela-resp__enunciado {
+    font-size: 1.2rem;
+  }
+
+  .adela-resp__enunciado--largo {
+    font-size: 1.05rem;
+  }
+
+  .adela-resp__op {
+    min-height: 2.85rem;
+    padding-block: 0.5rem;
+  }
+
+  .adela-resp__ops--dos .adela-resp__op,
+  .adela-resp__ops--escala .adela-resp__op {
+    min-height: 5.25rem;
+  }
+
+  .adela-resp__pie {
+    margin-top: 0.6rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adela-resp__paso--sig,
+  .adela-resp__paso--ant,
+  .adela-resp__hito {
+    animation: none;
+  }
+
+  .adela-resp__hito {
+    transform: translate3d(-50%, 0, 0);
+  }
+
+  .adela-resp__relleno,
+  .adela-resp__op,
+  .adela-resp__marca {
+    transition: none;
+  }
+}

@@ -16,6 +16,7 @@ import {
   responderCuestionario,
 } from '../../util/services/cuestionarioService'
 import { useInsignias } from '../../util/insignias/InsigniasProvider'
+import { useAuth } from '../../util/auth/AuthProvider'
 import PreguntasCuestionario from '../../components/cuestionario/PreguntasCuestionario'
 import { detalleError } from '../../util/cuestionario/validarRespuesta'
 
@@ -26,6 +27,9 @@ const ResponderCuestionario = () => {
   const asignacionId = searchParams.get('asignacion')
   const navigate = useNavigate()
   const { verificar } = useInsignias()
+  const { user } = useAuth()
+  // Borrador por estudiante: en un computador compartido nadie retoma el ajeno.
+  const claveBorrador = `cuestionario:${id}:${asignacionId ?? '-'}:${user?.email ?? '-'}`
   const [cuestionario, setCuestionario] = useState(null)
   const [loading, setLoading] = useState(true)
   const [enviando, setEnviando] = useState(false)
@@ -62,6 +66,7 @@ const ResponderCuestionario = () => {
         navigate('/cuestionarios')
         verificar('PRIMER_CUESTIONARIO')
       })
+      return true
     } catch (error) {
       Swal.fire(
         'Error',
@@ -70,6 +75,7 @@ const ResponderCuestionario = () => {
           : 'Hubo un problema al enviar el cuestionario.',
         'error',
       )
+      return false
     } finally {
       setEnviando(false)
     }
@@ -97,7 +103,7 @@ const ResponderCuestionario = () => {
             </CButton>
           </CCardHeader>
 
-          <CCardBody className="p-4">
+          <CCardBody className="p-3 p-md-4">
             {loading ? (
               <div className="text-center py-5">
                 <CSpinner color="primary" />
@@ -108,6 +114,8 @@ const ResponderCuestionario = () => {
                 cuestionario={cuestionario}
                 onEnviar={handleSubmit}
                 enviando={enviando}
+                claveBorrador={claveBorrador}
+                portada
               />
             ) : (
               <CAlert color="danger" className="m-4">

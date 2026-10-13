@@ -79,6 +79,7 @@ const ResolverCapsula = () => {
       })
       recordarResultado(codigo, resultado.codigo)
       navigate(`/r/${resultado.codigo}`, { state: { resultado } })
+      return true
     } catch (e) {
       if (e.fields?.nombre) {
         setErrorNombre(e.fields.nombre)
@@ -88,6 +89,7 @@ const ResolverCapsula = () => {
       } else {
         Swal.fire('No se pudo enviar', detalleError(e), 'error')
       }
+      return false
     } finally {
       setEnviando(false)
     }
@@ -202,6 +204,7 @@ const ResolverCapsula = () => {
                 cuestionario={cuestionario}
                 onEnviar={enviar}
                 enviando={enviando}
+                claveBorrador={`capsula:${codigo}`}
               />
             )}
           </CCardBody>
