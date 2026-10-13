@@ -7,6 +7,8 @@ import 'simplebar-react/dist/simplebar.min.css'
 
 import { CBadge, CNavLink, CSidebarNav } from '@coreui/react'
 
+import { tieneRol } from '../util/userUtils'
+
 export const AppSidebarNav = ({ items, rol }) => {
   const navLink = (name, icon, badge, indent = false) => {
     return (
@@ -69,7 +71,7 @@ export const AppSidebarNav = ({ items, rol }) => {
     <CSidebarNav as={SimpleBar}>
       {items &&
         items.map((item, index) => {
-          if (!item.roles || item.roles.includes(rol)) {
+          if (!item.roles || tieneRol(rol, item.roles)) {
             if (item.items) {
               return navGroup(item, index)
             } else {

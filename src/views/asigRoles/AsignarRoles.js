@@ -181,7 +181,14 @@ const AsignarRoles = () => {
                     <CTableDataCell>{profesor.nombre}</CTableDataCell>
                     <CTableDataCell>{profesor.email}</CTableDataCell>
                     <CTableDataCell>
-                      {profesor.rol !== 'ADMINISTRADOR' ? (
+                      {/* El superadmin solo se gestiona desde la base de datos: el servidor rechaza cualquier cambio. */}
+                      {profesor.rol === 'SUPERADMIN' ? (
+                        <CBadge color="primary" className="px-3 py-2">
+                          {profesor.email === user.email
+                            ? 'Superadministrador (tú)'
+                            : 'Superadministrador'}
+                        </CBadge>
+                      ) : profesor.rol !== 'ADMINISTRADOR' ? (
                         <CButton
                           color="warning"
                           className="adela-tactil"

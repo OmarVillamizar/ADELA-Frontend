@@ -21,6 +21,7 @@ const Dashboard = () => {
             break
           case Roles.PROFESOR_ACTIVO:
           case Roles.ADMINISTRADOR:
+          case Roles.SUPERADMIN:
             navigate('/grupos')
             break
           case Roles.ESTUDIANTE_ACTIVO:

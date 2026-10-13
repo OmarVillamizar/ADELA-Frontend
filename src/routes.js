@@ -115,7 +115,7 @@ const protectedRoutes = [
     path: '/administrar-cuestionarios/',
     name: 'Administrar Cuestionarios',
     element: ProfesorVistaCuestionarios,
-    roles: [Roles.ADMINISTRADOR, Roles.PROFESOR_ACTIVO],
+    roles: [Roles.ADMINISTRADOR],
   },
   {
     path: '/administrar-cuestionarios/:id/interpretacion',
@@ -128,7 +128,7 @@ const protectedRoutes = [
     path: '/crear-cuestionarios/',
     name: 'Crear Cuestionarios',
     element: CrearCuestionarios,
-    roles: [Roles.ADMINISTRADOR, Roles.PROFESOR_ACTIVO],
+    roles: [Roles.ADMINISTRADOR],
   },
   //ASIGNAR CUESTIONARIOS
   {

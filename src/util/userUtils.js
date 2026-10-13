@@ -7,7 +7,15 @@ export const Roles = Object.freeze({
   PROFESOR_NO_APROBADO: 5,
   PROFESOR_ACTIVO: 6,
   ADMINISTRADOR: 7,
+  SUPERADMIN: 8,
 })
+
+/**
+ * SUPERADMIN hereda todo lo de ADMINISTRADOR, igual que en el backend: así las
+ * listas de roles de rutas y menú no tienen que nombrarlo en cada entrada.
+ */
+export const tieneRol = (rol, roles) =>
+  roles.includes(rol) || (rol === Roles.SUPERADMIN && roles.includes(Roles.ADMINISTRADOR))
 
 export function getRoleKey(value) {
   return Object.keys(Roles).find((key) => Roles[key] === value)
@@ -31,6 +39,7 @@ export const getRole = (user) => {
       if (user.estadoProfesor === 'ACTIVA') {
         if (user.rol === 'PROFESOR') return Roles.PROFESOR_ACTIVO
         if (user.rol === 'ADMINISTRADOR') return Roles.ADMINISTRADOR
+        if (user.rol === 'SUPERADMIN') return Roles.SUPERADMIN
         throw new Error(`Error: rol de profesor inválido (${user.rol})`)
       }
       throw new Error(`Error: estado de profesor activo inválido (${user.estadoProfesor})`)

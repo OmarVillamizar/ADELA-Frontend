@@ -2,7 +2,7 @@ import { Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from './AuthProvider'
 import { useEffect } from 'react'
 import { CSpinner } from '@coreui/react'
-import { getRole } from '../userUtils'
+import { getRole, tieneRol } from '../userUtils'
 
 function RequireAuth({ roles }) {
   const { user, cargando } = useAuth()
@@ -17,7 +17,7 @@ function RequireAuth({ roles }) {
     // Un usuario en un estado que getRole no sabe clasificar no debe quedarse en
     // una pantalla a la que quiza no tiene acceso: se trata como sesion invalida.
     try {
-      if (!roles.includes(getRole(user))) {
+      if (!tieneRol(getRole(user), roles)) {
         navigate('/')
       }
     } catch (error) {

@@ -4,7 +4,7 @@ import Swal from 'sweetalert2'
 import { crearCuestionario } from '../../util/services/cuestionarioService'
 import { estadoIa } from '../../util/services/iaService'
 import { useAuth } from '../../util/auth/AuthProvider'
-import { Roles, getRole } from '../../util/userUtils'
+import { Roles, getRole, tieneRol } from '../../util/userUtils'
 import useBorrador from './crear/useBorrador'
 import EditorAvanzado from './crear/avanzado/EditorAvanzado'
 import Asistente from './crear/asistente/Asistente'
@@ -37,7 +37,7 @@ const CrearCuestionarios = () => {
   // Importar con IA exige el mismo rol que el servidor pide para sus rutas.
   let esAdmin = false
   try {
-    esAdmin = Boolean(user) && getRole(user) === Roles.ADMINISTRADOR
+    esAdmin = Boolean(user) && tieneRol(getRole(user), [Roles.ADMINISTRADOR])
   } catch {
     esAdmin = false
   }
