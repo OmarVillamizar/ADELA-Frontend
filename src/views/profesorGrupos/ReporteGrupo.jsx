@@ -35,6 +35,7 @@ import EscalasCompuestas from '../../components/resultados/EscalasCompuestas'
 import FiltroDemografico from '../../components/resultados/FiltroDemografico'
 import ListadoEstudiantes from '../../components/resultados/ListadoEstudiantes'
 import MapaCuadrantes from '../../components/resultados/MapaCuadrantes'
+import NivelesGrupo from '../../components/resultados/NivelesGrupo'
 import { ConteoComplementaria } from '../../components/resultados/PreguntaComplementaria'
 import ResumenGrupo from '../../components/resultados/ResumenGrupo'
 import SelectorEscala from '../../components/resultados/SelectorEscala'
@@ -43,6 +44,7 @@ import TablaEstadisticos from '../../components/resultados/TablaEstadisticos'
 import {
   FILTRO_INICIAL,
   describirFiltro,
+  destacaEstilos,
   filtrar,
 } from '../../util/calificacion/demografia'
 import '../../components/resultados/resultados.css'
@@ -127,6 +129,7 @@ const ReporteGrupo = () => {
   const textoFiltro = describirFiltro(filtro)
   const verPromedio = secciones.graficas || secciones.estadisticas
   const nombresEstilos = separarPorTipo(estilos).primarios.map((e) => e.nombre)
+  const destaca = destacaEstilos(calificacion?.esquema)
 
   const descargarPDF = async () => {
     try {
@@ -283,18 +286,29 @@ const ReporteGrupo = () => {
                 <span>{AVISO_IPSATIVO}</span>
               </div>
             )}
-            {secciones.resumen && (
-              <ResumenGrupo
-                resueltos={resueltosFiltrados}
-                nombresEstilos={nombresEstilos}
-                filtro={textoFiltro}
-              />
-            )}
+            {secciones.resumen &&
+              (destaca ? (
+                <ResumenGrupo
+                  resueltos={resueltosFiltrados}
+                  nombresEstilos={nombresEstilos}
+                  filtro={textoFiltro}
+                />
+              ) : (
+                <NivelesGrupo
+                  resueltos={resueltosFiltrados}
+                  estilos={separarPorTipo(estilos).primarios.map((e) => ({
+                    nombre: e.nombre,
+                    niveles: Object.keys(e.distribucionBandas ?? {}),
+                  }))}
+                  filtro={textoFiltro}
+                />
+              ))}
             {secciones.comparativa && (
               <ComparativaDemografica
                 resueltos={resueltosFiltrados}
                 nombresEstilos={nombresEstilos}
                 filtro={textoFiltro}
+                destaca={destaca}
               />
             )}
 

@@ -9,6 +9,7 @@ import {
 import {
   GENEROS,
   RANGOS_EDAD,
+  SIN_DESTACADO,
   agrupar,
   categoriasResumen,
   contar,
@@ -155,7 +156,21 @@ Bloque.propTypes = {
  * Cómo se reparten los estilos entre géneros y entre rangos de edad. Separado
  * del resumen para que este quede en lo esencial; respeta el mismo filtro.
  */
-const ComparativaDemografica = ({ resueltos, nombresEstilos, filtro }) => {
+const ComparativaDemografica = ({
+  resueltos,
+  nombresEstilos,
+  filtro,
+  destaca = true,
+}) => {
+  if (!destaca) {
+    return (
+      <section className="adela-panel adela-aparece">
+        <h2 className="adela-panel__titulo">Comparación por género y edad</h2>
+        <p className="adela-panel__nota mb-0">{SIN_DESTACADO}</p>
+      </section>
+    )
+  }
+
   const criterio = categoriasResumen(resueltos, nombresEstilos)
 
   const porGenero = agrupar(
@@ -217,6 +232,7 @@ ComparativaDemografica.propTypes = {
   resueltos: PropTypes.arrayOf(PropTypes.object).isRequired,
   nombresEstilos: PropTypes.arrayOf(PropTypes.string).isRequired,
   filtro: PropTypes.string,
+  destaca: PropTypes.bool,
 }
 
 export default ComparativaDemografica

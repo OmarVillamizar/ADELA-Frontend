@@ -91,6 +91,16 @@ export const describirFiltro = (f) => {
 }
 
 /**
+ * Esquemas que no eligen estilos destacados ni perfil: cada estilo se lee por
+ * su nivel. Con ellos el resumen por perfil saldría siempre vacío.
+ */
+export const destacaEstilos = (esquema) =>
+  !['BAREMO', 'NINGUNA'].includes(esquema)
+
+export const SIN_DESTACADO =
+  'Este cuestionario no elige un estilo destacado: cada estilo se lee por separado según el nivel en que cae su puntaje. Cuántos estudiantes hay en cada nivel está en «Niveles del grupo por estilo», en el Resumen.'
+
+/**
  * Categorías del resumen. Si algún estudiante tiene estilos dominantes se
  * cuenta por estilo (alguien multimodal suma en varios); si no (mapa de cuatro
  * estilos, dominancia media) se cuenta por perfil, que es uno por persona.
