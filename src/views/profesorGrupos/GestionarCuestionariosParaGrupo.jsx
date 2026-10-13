@@ -205,7 +205,10 @@ const ResultadosGrupo = () => {
                 <CButton
                   color="success"
                   className="text-white adela-tactil"
-                  onClick={() => setModalVisible(true)}
+                  onClick={() => {
+                    setSelectedCuestionario(null)
+                    setModalVisible(true)
+                  }}
                 >
                   <CIcon icon={cilPlus} className="me-1" />
                   Asignar Nuevo Cuestionario
@@ -306,11 +309,21 @@ const ResultadosGrupo = () => {
                   className="mb-3"
                 >
                   <option value="">Selecciona un cuestionario</option>
-                  {cuestionarios.map((cuestionario) => (
-                    <option key={cuestionario.id} value={cuestionario.id}>
-                      {cuestionario.nombre}
-                    </option>
-                  ))}
+                  {cuestionarios.map((cuestionario) => {
+                    const asignado = grupo.cuestionarios.some(
+                      (item) => item.cuestionario.id === cuestionario.id,
+                    )
+                    return (
+                      <option
+                        key={cuestionario.id}
+                        value={cuestionario.id}
+                        disabled={asignado}
+                      >
+                        {cuestionario.nombre}
+                        {asignado ? ' (ya asignado)' : ''}
+                      </option>
+                    )
+                  })}
                 </CFormSelect>
                 {selectedCuestionario && (
                   <>
