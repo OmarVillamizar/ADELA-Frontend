@@ -731,6 +731,105 @@ textarea.adela-input {
   cursor: pointer;
 }
 
+/* Zona para subir el PDF de Nelse: toda la caja es el botón, y acepta soltar el archivo. */
+.adela-subida {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 1.6rem 1rem;
+  border: 2px dashed color-mix(in srgb, #1a73e8 45%, var(--line));
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, #1a73e8 5%, var(--surface));
+  color: #1a73e8;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color 140ms var(--ease),
+    background 140ms var(--ease);
+}
+
+.adela-subida strong {
+  color: var(--ink);
+}
+
+.adela-subida:hover,
+.adela-subida--encima {
+  border-color: #1a73e8;
+  background: color-mix(in srgb, #1a73e8 11%, var(--surface));
+}
+
+.adela-subida > input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.adela-subida:focus-within {
+  outline: 3px solid rgba(26, 115, 232, 0.35);
+  outline-offset: 2px;
+}
+
+/* Con el archivo elegido deja de ser un botón: muestra el archivo y sus acciones. */
+.adela-subida--lista {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  border-style: solid;
+  border-color: color-mix(in srgb, #6cc93a 60%, var(--line));
+  background: color-mix(in srgb, #6cc93a 7%, var(--surface));
+  color: #3f8f1f;
+  text-align: left;
+  cursor: default;
+}
+
+.adela-subida--lista:hover {
+  border-color: color-mix(in srgb, #6cc93a 60%, var(--line));
+  background: color-mix(in srgb, #6cc93a 7%, var(--surface));
+}
+
+.adela-subida__archivo {
+  display: flex;
+  flex: 1 1 12rem;
+  flex-direction: column;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Acción principal de Nelse: verde del logo, oscurecido para que el texto blanco se lea. */
+.adela-btn--nelse {
+  --btn-bg: #2e8b12;
+  --btn-fg: #ffffff;
+  --btn-border: #2e8b12;
+  --btn-lip: #1f6409;
+}
+
+.adela-btn--nelse:hover {
+  background: #277a0f;
+}
+
+/* Rehacer con las respuestas: celeste del logo, distinto del verde de generar. */
+.adela-btn--celeste {
+  --btn-bg: #12bfe8;
+  --btn-fg: #06303b;
+  --btn-border: #0fa3c6;
+  --btn-lip: #0b86a3;
+
+  font-weight: 700;
+}
+
+.adela-btn--celeste:hover {
+  background: #0fb0d6;
+}
+
+.adela-insignia-ia {
+  width: auto;
+  height: 32px;
+}
+
 .adela-archivo:focus-within {
   outline: 3px solid rgba(200, 16, 46, 0.35);
   outline-offset: 2px;

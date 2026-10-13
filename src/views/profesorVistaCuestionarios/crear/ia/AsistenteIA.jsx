@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import PropTypes from 'prop-types'
 import Swal from 'sweetalert2'
 import { CProgress, CProgressBar, CSpinner } from '@coreui/react'
+import CIcon from '@coreui/icons-react'
+import { cilCloudUpload, cilDescription } from '@coreui/icons'
 import ListaErrores from '../ListaErrores'
 import Nelse from '../Nelse'
 import {
@@ -21,6 +23,7 @@ import {
   plural,
 } from '../importar/RevisionIA'
 import useTrabajoIa from './useTrabajoIa'
+import insigniaIa from '../../../../assets/images/adela_ia_badge.svg'
 import '../crear.css'
 
 const PASOS = ['Fuente', 'Leyendo', 'Lo que entendí', 'Revisar']
@@ -123,11 +126,18 @@ const AsistenteIA = ({ trabajoId, onTrabajo, onListo, onVolver }) => {
     else paso = 1
   }
 
-  const elegirArchivo = (e) => {
-    const elegido = e.target.files?.[0]
-    e.target.value = ''
+  const [arrastrando, setArrastrando] = useState(false)
+
+  /** Valida y toma el PDF, venga del selector o de soltarlo sobre la zona. */
+  const tomarArchivo = (elegido) => {
     setErrores([])
     if (!elegido) return
+    if (!/\.pdf$/i.test(elegido.name) && elegido.type !== 'application/pdf') {
+      setErrores([
+        { seccion: 'Documento', mensaje: 'Solo se aceptan archivos PDF.' },
+      ])
+      return
+    }
     const maxMb = limites?.maxMb ?? 15
     if (elegido.size > maxMb * MB) {
       setErrores([
@@ -139,6 +149,18 @@ const AsistenteIA = ({ trabajoId, onTrabajo, onListo, onVolver }) => {
       return
     }
     setArchivo(elegido)
+  }
+
+  const elegirArchivo = (e) => {
+    const elegido = e.target.files?.[0]
+    e.target.value = ''
+    tomarArchivo(elegido)
+  }
+
+  const soltarArchivo = (e) => {
+    e.preventDefault()
+    setArrastrando(false)
+    tomarArchivo(e.dataTransfer.files?.[0])
   }
 
   const generar = async () => {
@@ -247,37 +269,60 @@ const AsistenteIA = ({ trabajoId, onTrabajo, onListo, onVolver }) => {
         <h3 className="adela-panel__titulo">De dónde parto</h3>
         <p className="adela-panel__nota mb-3">
           {limites
-            ? `PDF de hasta ${limites.maxMb} MB y ${limites.maxPaginas} páginas. Te ${limites.cuotaRestante === 1 ? 'queda 1 generación' : `quedan ${limites.cuotaRestante} generaciones`} hoy.`
+            ? `Necesitas un PDF, instrucciones o ambos. Te ${limites.cuotaRestante === 1 ? 'queda 1 generación' : `quedan ${limites.cuotaRestante} generaciones`} hoy.`
             : 'Necesitas un PDF, instrucciones o ambos.'}
         </p>
-        <div className="adela-fila mb-3">
-          <label className="adela-btn adela-btn--sm adela-archivo">
-            {archivo ? 'Cambiar el PDF' : 'Subir un PDF'}
+        {archivo ? (
+          <div className="adela-subida adela-subida--lista mb-3">
+            <CIcon icon={cilDescription} size="xl" aria-hidden="true" />
+            <div className="adela-subida__archivo">
+              <strong>{archivo.name}</strong>
+              <span className="adela-falta">
+                {(archivo.size / MB).toFixed(1)} MB · listo para enviar
+              </span>
+            </div>
+            <label className="adela-btn adela-btn--sm adela-archivo">
+              Cambiar
+              <input
+                type="file"
+                accept=".pdf,application/pdf"
+                onChange={elegirArchivo}
+              />
+            </label>
+            <button
+              type="button"
+              className="adela-btn adela-btn--sm"
+              onClick={() => setArchivo(null)}
+            >
+              Quitar
+            </button>
+          </div>
+        ) : (
+          <label
+            className={`adela-subida mb-3 ${arrastrando ? 'adela-subida--encima' : ''}`}
+            onDragOver={(e) => {
+              e.preventDefault()
+              setArrastrando(true)
+            }}
+            onDragLeave={() => setArrastrando(false)}
+            onDrop={soltarArchivo}
+          >
+            <CIcon icon={cilCloudUpload} size="3xl" aria-hidden="true" />
+            <strong>Haz clic para elegir tu PDF o arrástralo aquí</strong>
+            <span className="adela-falta">
+              Con texto o escaneado
+              {limites
+                ? ` · hasta ${limites.maxMb} MB y ${limites.maxPaginas} páginas`
+                : ''}
+              . Opcional si escribes instrucciones.
+            </span>
             <input
               type="file"
               accept=".pdf,application/pdf"
               onChange={elegirArchivo}
             />
           </label>
-          {archivo ? (
-            <>
-              <span className="adela-falta">
-                {archivo.name} · {(archivo.size / MB).toFixed(1)} MB
-              </span>
-              <button
-                type="button"
-                className="adela-btn adela-btn--sm"
-                onClick={() => setArchivo(null)}
-              >
-                Quitar
-              </button>
-            </>
-          ) : (
-            <span className="adela-falta">
-              Opcional si escribes instrucciones
-            </span>
-          )}
-        </div>
+        )}
         <label className="adela-campo">
           <span>Instrucciones (opcional)</span>
           <textarea
@@ -302,7 +347,7 @@ const AsistenteIA = ({ trabajoId, onTrabajo, onListo, onVolver }) => {
             aria-pressed={lectura === null}
             onClick={() => setLectura(null)}
           >
-            Lo que diga el documento
+            Basado en el documento
           </button>
           {LECTURAS.map(([nombre, frase]) => (
             <button
@@ -375,7 +420,7 @@ const AsistenteIA = ({ trabajoId, onTrabajo, onListo, onVolver }) => {
       titulo: 'Esto es lo que entendí',
       texto:
         preguntas.length > 0 && !trabajo.refinado
-          ? 'Me quedaron dudas: si las respondes, ajusto el cuestionario una vez. También puedes continuar así y corregir en el editor.'
+          ? 'Me quedaron dudas: si las respondes, lo rehago una vez con tus respuestas. También puedes continuar así y corregir en el editor.'
           : 'Revisa que sea lo que esperabas antes de pasar a los puntos a revisar.',
     }
     cuerpo = (
@@ -400,7 +445,9 @@ const AsistenteIA = ({ trabajoId, onTrabajo, onListo, onVolver }) => {
           <Lista titulo="Dudas que quedaron" items={preguntas} />
         ) : (
           <>
-            <h3 className="adela-panel__titulo mt-4">Ajustar (una vez)</h3>
+            <h3 className="adela-panel__titulo mt-4">
+              Rehacer con tus respuestas (una sola vez)
+            </h3>
             {preguntas.map((pregunta, i) => (
               <label key={i} className="adela-campo">
                 <span>{pregunta}</span>
@@ -497,7 +544,7 @@ const AsistenteIA = ({ trabajoId, onTrabajo, onListo, onVolver }) => {
           {paso === 0 && (
             <button
               type="button"
-              className="adela-btn adela-btn--primario"
+              className="adela-btn adela-btn--nelse"
               disabled={
                 enviando ||
                 limites?.cuotaRestante === 0 ||
@@ -508,16 +555,23 @@ const AsistenteIA = ({ trabajoId, onTrabajo, onListo, onVolver }) => {
               {enviando ? 'Enviando…' : 'Generar con Nelse'}
             </button>
           )}
+          {paso === 0 && (
+            <img
+              className="adela-insignia-ia"
+              src={insigniaIa}
+              alt="Impulsado por inteligencia artificial"
+            />
+          )}
           {paso === 2 && (
             <>
               {!trabajo.refinado && (
                 <button
                   type="button"
-                  className="adela-btn"
+                  className="adela-btn adela-btn--celeste"
                   disabled={enviando || !hayAjuste}
                   onClick={ajustar}
                 >
-                  {enviando ? 'Enviando…' : 'Ajustar con mis respuestas'}
+                  {enviando ? 'Enviando…' : 'Rehacer con mis respuestas'}
                 </button>
               )}
               <button
