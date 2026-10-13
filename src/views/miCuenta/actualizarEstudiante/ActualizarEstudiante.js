@@ -24,7 +24,13 @@ const ActualizarEstudiante = () => {
   const user = useOutletContext()
   const navigate = useNavigate()
 
+  // El nombre se escribe o corrige una sola vez (preinscritos sin nombre, o cuentas
+  // no UFPS con el nombre de Google); después queda fijo para no alterar los reportes.
+  // Lo decide el backend (nombreEditable) y aplica la misma regla al guardar.
+  const nombreBloqueado = !user.nombreEditable
+
   const [formData, setFormData] = useState({
+    nombre: user.nombre ?? '',
     codigo: user.codigo,
     // Cadena vacía, no el guión: este valor entra en un <input type="date">.
     fechaNacimiento: dateFromMsToString(user.fechaNacimiento, ''),
@@ -42,6 +48,7 @@ const ActualizarEstudiante = () => {
     // Validar campos vacíos
     // El backend decide por el correo si la cuenta es UFPS y necesita código.
     if (
+      (!nombreBloqueado && !formData.nombre.trim()) ||
       (user.requiereCodigo && !formData.codigo) ||
       !formData.fechaNacimiento ||
       !formData.genero
@@ -54,10 +61,22 @@ const ActualizarEstudiante = () => {
       return
     }
 
-    const userUpd = { ...user, ...formData }
-    // Simulación de llamada al backend
-    updateUserInfo(userUpd)
+    const userUpd = { ...user, ...formData, nombre: formData.nombre.trim() }
+    const confirmar = nombreBloqueado
+      ? Promise.resolve(true)
+      : Swal.fire({
+          title: '¿Tu nombre es correcto?',
+          text: `«${userUpd.nombre}». Después de guardarlo no podrás cambiarlo.`,
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: 'Sí, guardar',
+          cancelButtonText: 'Revisar',
+        }).then((r) => r.isConfirmed)
+
+    confirmar
+      .then((ok) => ok && updateUserInfo(userUpd))
       .then((response) => {
+        if (!response) return // canceló la confirmación del nombre
         if (response.ok) {
           Swal.fire({
             title: '¡Cuenta actualizada!',
@@ -98,6 +117,29 @@ const ActualizarEstudiante = () => {
         </CCardHeader>
         <CCardBody>
           <CForm className="row g-4" onSubmit={handleSubmit}>
+            <CCol xs={12}>
+              <CFormFloating>
+                <CFormInput
+                  type="text"
+                  id="inputNombre"
+                  placeholder="Nombre completo"
+                  name="nombre"
+                  maxLength={100}
+                  value={formData.nombre}
+                  onChange={handleChange}
+                  disabled={nombreBloqueado}
+                />
+                <label htmlFor="inputNombre">Nombre completo</label>
+              </CFormFloating>
+              <small className="text-body-secondary">
+                {nombreBloqueado
+                  ? 'El nombre no se puede modificar.'
+                  : user.nombre?.trim()
+                    ? 'Revísalo y corrígelo si hace falta. Al guardar quedará fijo.'
+                    : 'Escríbelo tal como quieres que aparezca. Al guardar quedará fijo.'}
+              </small>
+            </CCol>
+
             {user.requiereCodigo && (
               <CCol md={6}>
                 <CFormFloating>
