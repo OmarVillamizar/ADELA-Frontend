@@ -500,25 +500,6 @@
   transform: translateY(-50%) rotate(45deg);
 }
 
-/* Compacto: burbuja angosta y Nelse pequeño, juntos en la esquina derecha. */
-.nelse-mensaje-compacto {
-  justify-content: flex-end;
-  margin-bottom: 1rem;
-}
-
-.nelse-mensaje-compacto .nelse-mensaje-texto {
-  flex: 0 1 26rem;
-}
-
-.nelse-mensaje-compacto .nelse-mensaje-img {
-  height: clamp(90px, 9vw, 120px);
-}
-
-.nelse-mensaje-compacto .nelse-burbuja {
-  padding: 0.75rem 1rem;
-  font-size: 0.95rem;
-}
-
 .nelse-burbuja-exito {
   --nelse-burbuja-borde: var(--adela-verde);
 }
@@ -538,9 +519,7 @@
     gap: 0.75rem;
   }
 
-  .nelse-mensaje-texto,
-  .nelse-mensaje-compacto .nelse-mensaje-texto {
-    flex: none;
+  .nelse-mensaje-texto {
     width: 100%;
   }
 
@@ -560,6 +539,42 @@
     right: 4.25rem;
     transform: rotate(135deg);
   }
+}
+
+/* Invitación: Nelse pequeño a la izquierda (imágenes "_right"), su burbuja
+   y la acción alineada a la derecha, fuera de la burbuja. En celular la
+   acción baja a su propia línea. */
+.nelse-invita {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.nelse-invita .nelse-mensaje-img {
+  height: clamp(90px, 9vw, 120px);
+  margin: 0;
+}
+
+.nelse-invita .nelse-burbuja {
+  flex: 1 1 12rem;
+  max-width: 24rem;
+  margin-left: 0;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+}
+
+.nelse-invita .nelse-burbuja::after {
+  top: 50%;
+  bottom: auto;
+  right: auto;
+  left: -11px;
+  transform: translateY(-50%) rotate(-135deg);
+}
+
+.nelse-invita-accion {
+  margin-left: auto;
 }
 
 @keyframes nelse-entra {

@@ -30,8 +30,7 @@ import {
 import Swal from 'sweetalert2'
 import { ETIQUETA_FORMATO } from '../../util/cuestionario/validarRespuesta'
 import './ModalVistaPreguntas.css'
-import NelseMensaje from 'src/components/NelseMensaje'
-import nelseFeliz from 'src/assets/nelse_mascot/web/nelse_happy_left.webp'
+import nelseConstruye from 'src/assets/nelse_mascot/web/nelse_buildingquestionnarie_right.webp'
 
 const ProfesorVistaCuestionarios = () => {
   const navigate = useNavigate()
@@ -110,22 +109,26 @@ const ProfesorVistaCuestionarios = () => {
 
   return (
     <>
-      <NelseMensaje imagen={nelseFeliz} compacto>
+      <div className="nelse-invita">
+        <img
+          src={nelseConstruye}
+          alt=""
+          aria-hidden="true"
+          className="nelse-mensaje-img"
+        />
         <div className="nelse-burbuja">
           <strong>¿Creamos un cuestionario juntos?</strong>
-          <p className="mb-2">
-            Te guío paso a paso y te muestro cómo se calculará cada resultado.
-          </p>
-          <CButton
-            color="success"
-            className="text-white adela-tactil"
-            onClick={handleCreateCuestionario}
-          >
-            <CIcon icon={cilPlus} className="me-1" />
-            Crear cuestionario
-          </CButton>
+          Te guío paso a paso y te muestro cómo se calculará cada resultado.
         </div>
-      </NelseMensaje>
+        <CButton
+          color="success"
+          className="text-white adela-tactil nelse-invita-accion"
+          onClick={handleCreateCuestionario}
+        >
+          <CIcon icon={cilPlus} className="me-1" />
+          Crear cuestionario
+        </CButton>
+      </div>
       <CRow>
         <CCol xs={12}>
           <CCard className="mb-4">
