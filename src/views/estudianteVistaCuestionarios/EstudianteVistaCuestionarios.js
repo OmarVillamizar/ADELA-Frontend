@@ -22,6 +22,9 @@ import { dateFromMsToString } from '../../util/dateUtils'
 import { cilBook, cilCheckCircle, cilClock } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import './VistaCuestionario.css'
+import NelseMensaje from 'src/components/NelseMensaje'
+import nelsePensando from 'src/assets/nelse_mascot/web/nelse_think_left.webp'
+import nelseReporte from 'src/assets/nelse_mascot/web/nelse_report_left.webp'
 
 const EstudianteVistaCuestionario = () => {
   const user = useOutletContext()
@@ -54,7 +57,7 @@ const EstudianteVistaCuestionario = () => {
     children: PropTypes.node.isRequired,
   }
 
-  const renderEstado = (lista, vacio) => {
+  const renderEstado = (lista, vacio, nelse) => {
     if (cargando) return <CSpinner color="primary" className="mt-3" />
     if (error)
       return (
@@ -62,7 +65,13 @@ const EstudianteVistaCuestionario = () => {
           No se pudieron cargar tus cuestionarios. {error.message}
         </Aviso>
       )
-    if (lista.length === 0) return <Aviso color="info">{vacio}</Aviso>
+    if (lista.length === 0)
+      return (
+        <>
+          <Aviso color="info">{vacio}</Aviso>
+          {nelse}
+        </>
+      )
     return null
   }
 
@@ -124,7 +133,16 @@ const EstudianteVistaCuestionario = () => {
 
       <CTabContent>
         <CTabPane visible={activeTab === 0}>
-          {renderEstado(pendientes, 'Aún no tienes cuestionarios asignados.')}
+          {renderEstado(
+            pendientes,
+            'Aún no tienes cuestionarios asignados.',
+            <NelseMensaje imagen={nelsePensando}>
+              <div className="nelse-burbuja" style={{ maxWidth: '28rem' }}>
+                Tu profesor aún no te ha asignado cuestionarios. Puedes esperar
+                o contactarlo para pedirle más información.
+              </div>
+            </NelseMensaje>,
+          )}
           <CRow className="gy-4" xs={{ cols: 1 }} sm={{ cols: 2 }}>
             {pendientes.map((el, id) => (
               <CCol key={id + 'pendiente'} xs={12} md={6} lg={4}>
@@ -177,6 +195,12 @@ const EstudianteVistaCuestionario = () => {
           {renderEstado(
             resueltos,
             'Todavía no has resuelto ningún cuestionario.',
+            <NelseMensaje imagen={nelseReporte}>
+              <div className="nelse-burbuja" style={{ maxWidth: '28rem' }}>
+                Aquí aparecerán tus resultados una vez completes tus
+                cuestionarios, para que puedas consultarlos cuando quieras.
+              </div>
+            </NelseMensaje>,
           )}
           <CRow className="gy-4" xs={{ cols: 1 }} sm={{ cols: 2 }}>
             {resueltos.map((el, id) => (
