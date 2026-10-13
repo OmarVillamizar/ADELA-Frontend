@@ -20,7 +20,7 @@ export const ETIQUETA_SECCION = {
   escalones: 'Escalones',
   plano: 'Mapa de cuatro estilos',
   esquema: 'Lectura de resultados',
-  complementaria: 'Pregunta extra',
+  complementaria: 'Pregunta de desempate',
   meta: 'Datos',
 }
 

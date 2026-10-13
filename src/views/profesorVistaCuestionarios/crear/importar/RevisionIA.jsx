@@ -35,7 +35,7 @@ const PARTES = {
   bandas: 'Niveles',
   escalones: 'Escalones',
   plano: 'Mapa',
-  complementaria: 'Pregunta extra',
+  complementaria: 'Pregunta de desempate',
 }
 const ORIGEN = {
   DOCUMENTO: ['Del documento', 'adela-chip--ok'],
@@ -78,7 +78,9 @@ export const Resumen = ({ borrador }) => {
       </p>
       {modelo && (
         <p className="adela-ayuda">
-          Se parece al modelo guía «{modelo.nombre}» del asistente.
+          {borrador.ia.origen === 'NELSE'
+            ? `Se parece a «${modelo.nombre}», un cuestionario de mi conocimiento interno como I.A de cuestionarios.`
+            : `Se parece al modelo guía «${modelo.nombre}» del asistente.`}
         </p>
       )}
       {lectura?.motivo && <p className="adela-ayuda">{lectura.motivo}</p>}

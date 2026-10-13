@@ -446,7 +446,7 @@ export const MODELOS = [
   {
     id: 'CANALES',
     plantilla: PLANTILLA.VARIAS,
-    nombre: 'Canales: ver, oír, leer, hacer',
+    nombre: 'Estilos: ver, oír, leer, hacer',
     resumen:
       'Cada pregunta trae una opción por canal y se pueden marcar varias. El perfil reúne los canales que quedan cerca del más alto y, si salen los cuatro, pregunta cómo los usa.',
     config: {},
