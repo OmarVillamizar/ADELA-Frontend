@@ -36,8 +36,11 @@ const CrearCuestionarios = () => {
   const { user } = useAuth()
   // Importar con IA exige el mismo rol que el servidor pide para sus rutas.
   let esAdmin = false
+  // Solo el superadmin publica generales; el servidor rechaza a cualquier otro.
+  let esSuperadmin = false
   try {
     esAdmin = Boolean(user) && tieneRol(getRole(user), [Roles.ADMINISTRADOR])
+    esSuperadmin = Boolean(user) && getRole(user) === Roles.SUPERADMIN
   } catch {
     esAdmin = false
   }
@@ -84,21 +87,56 @@ const CrearCuestionarios = () => {
       })
       return
     }
+    let general = false
+    if (esSuperadmin) {
+      const tipo = await Swal.fire({
+        title: '¿Dónde lo publicas?',
+        input: 'radio',
+        inputOptions: {
+          personal: 'Mis cuestionarios: solo tú y tus grupos',
+          general: 'Generales de ADELA: todos los profesores',
+        },
+        inputValue: 'personal',
+        showCancelButton: true,
+        confirmButtonText: 'Continuar',
+        cancelButtonText: 'Seguir editando',
+      })
+      if (!tipo.isConfirmed) return
+      general = tipo.value === 'general'
+    }
+    const texto =
+      'Después de creado no se podrán cambiar sus preguntas ni sus estilos. La lectura de resultados sí se puede ajustar más adelante.'
     const { isConfirmed } = await Swal.fire({
-      title: '¿Crear el cuestionario?',
-      text: 'Después de creado no se podrán cambiar sus preguntas ni sus estilos. La lectura de resultados sí se puede ajustar más adelante.',
+      title: general
+        ? '¿Publicar como cuestionario general?'
+        : '¿Crear el cuestionario?',
+      text: general
+        ? `Lo verán y aplicarán todos los profesores. ${texto}`
+        : texto,
       icon: 'question',
+      // Un general se publica para todos: confirma que hay permiso para usar el instrumento.
+      ...(general && {
+        input: 'checkbox',
+        inputValue: 0,
+        inputPlaceholder:
+          'Tengo licencia o permiso de uso para publicar este cuestionario',
+        inputValidator: (marcado) =>
+          !marcado && 'Confirma que tienes licencia o permiso de uso.',
+      }),
       showCancelButton: true,
-      confirmButtonText: 'Crear',
+      confirmButtonText: general ? 'Publicar' : 'Crear',
       cancelButtonText: 'Seguir editando',
     })
     if (!isConfirmed) return
     setCreando(true)
     try {
-      await crearCuestionario(aDTO(borrador))
+      await crearCuestionario({ ...aDTO(borrador), general })
       descartar()
       await Swal.fire('Cuestionario creado', '', 'success')
-      navigate('/administrar-cuestionarios')
+      // Se abre la pestaña donde quedó: 0 generales, 1 propios.
+      navigate('/administrar-cuestionarios', {
+        state: { pestana: general ? 0 : 1 },
+      })
     } catch (e) {
       const campos = Object.entries(e.fields ?? {})
       setErroresServidor(

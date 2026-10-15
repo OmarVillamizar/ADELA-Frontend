@@ -46,6 +46,7 @@ import {
 } from '@coreui/icons'
 import CIcon from '@coreui/icons-react'
 import { ETIQUETA_FORMATO } from '../../util/cuestionario/validarRespuesta'
+import { agruparPorTipo } from '../../util/cuestionario/agruparPorTipo'
 
 // Función para formatear la fecha
 const dateFromMsToString = (timestamp) => {
@@ -309,19 +310,28 @@ const ResultadosGrupo = () => {
                   className="mb-3"
                 >
                   <option value="">Selecciona un cuestionario</option>
-                  {cuestionarios.map((cuestionario) => {
-                    const asignado = grupo.cuestionarios.some(
-                      (item) => item.cuestionario.id === cuestionario.id,
-                    )
-                    return (
-                      <option
-                        key={cuestionario.id}
-                        value={cuestionario.id}
-                        disabled={asignado}
-                      >
-                        {cuestionario.nombre}
-                        {asignado ? ' (ya asignado)' : ''}
-                      </option>
+                  {agruparPorTipo(cuestionarios).map(({ etiqueta, items }) => {
+                    const opciones = items.map((cuestionario) => {
+                      const asignado = grupo.cuestionarios.some(
+                        (item) => item.cuestionario.id === cuestionario.id,
+                      )
+                      return (
+                        <option
+                          key={cuestionario.id}
+                          value={cuestionario.id}
+                          disabled={asignado}
+                        >
+                          {cuestionario.nombre}
+                          {asignado ? ' (ya asignado)' : ''}
+                        </option>
+                      )
+                    })
+                    return etiqueta ? (
+                      <optgroup key={etiqueta} label={etiqueta}>
+                        {opciones}
+                      </optgroup>
+                    ) : (
+                      opciones
                     )
                   })}
                 </CFormSelect>

@@ -37,6 +37,7 @@ import {
   listarCapsulas,
 } from '../../util/services/capsulaService'
 import { listarCuestionarios } from '../../util/services/cuestionarioService'
+import { agruparPorTipo } from '../../util/cuestionario/agruparPorTipo'
 
 const formularioVacio = {
   nombre: '',
@@ -252,11 +253,20 @@ const Capsulas = () => {
                 }
               >
                 <option value="">Elige un cuestionario</option>
-                {cuestionarios.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.nombre} ({c.siglas})
-                  </option>
-                ))}
+                {agruparPorTipo(cuestionarios).map(({ etiqueta, items }) => {
+                  const opciones = items.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.nombre} ({c.siglas})
+                    </option>
+                  ))
+                  return etiqueta ? (
+                    <optgroup key={etiqueta} label={etiqueta}>
+                      {opciones}
+                    </optgroup>
+                  ) : (
+                    opciones
+                  )
+                })}
               </CFormSelect>
             </div>
             <div className="mb-2">

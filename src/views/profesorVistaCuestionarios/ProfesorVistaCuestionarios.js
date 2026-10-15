@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
+  CBadge,
   CCard,
   CCardBody,
   CCardHeader,
+  CNav,
+  CNavItem,
+  CNavLink,
   CTable,
   CTableBody,
   CTableDataCell,
@@ -21,7 +25,14 @@ import {
   CModalFooter,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-import { cilInfo, cilList, cilPlus, cilTrash } from '@coreui/icons'
+import {
+  cilGlobeAlt,
+  cilInbox,
+  cilInfo,
+  cilList,
+  cilPlus,
+  cilUser,
+} from '@coreui/icons'
 import {
   listarCuestionarios,
   obtenerCuestionario,
@@ -32,8 +43,15 @@ import { ETIQUETA_FORMATO } from '../../util/cuestionario/validarRespuesta'
 import './ModalVistaPreguntas.css'
 import nelseConstruye from 'src/assets/nelse_mascot/web/nelse_buildingquestionnarie_right.webp'
 
+/** Pestañas: los generales son de ADELA; los personales, solo de quien los creó. */
+const GENERALES = 0
+const PROPIOS = 1
+
 const ProfesorVistaCuestionarios = () => {
   const navigate = useNavigate()
+  const location = useLocation()
+  // Al volver de crear se abre la pestaña donde quedó el cuestionario nuevo.
+  const [pestana, setPestana] = useState(location.state?.pestana ?? GENERALES)
   const [cuestionarios, setCuestionarios] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -79,33 +97,56 @@ const ProfesorVistaCuestionarios = () => {
     setQuestionsModalVisible(true)
   }
 
-  const handleDeleteCuestionario = (id, nombre, numPreguntas) => {
+  // Archivar, no borrar: el servidor conserva los resultados ya respondidos.
+  const handleDeleteCuestionario = ({ id, nombre, general }) => {
     Swal.fire({
-      title: '¿Estás seguro?',
-      text: `¿Deseas borrar el cuestionario ${nombre} con ${numPreguntas} preguntas?`,
+      title: `¿Archivar «${nombre}»?`,
+      text: `${general ? 'Dejará de estar disponible para todos los profesores' : 'Dejará de aparecer en tu lista'} y no se podrá aplicar de nuevo. Las asignaciones sin responder se retiran; los resultados que tus estudiantes ya respondieron se conservan.`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
       cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Sí, borrar',
+      confirmButtonText: 'Sí, archivar',
       cancelButtonText: 'Cancelar',
     }).then(async (result) => {
       if (result.isConfirmed) {
         setLoading(true)
         try {
           await eliminarCuestionario(id)
-          setCuestionarios(
-            cuestionarios.filter((cuestionario) => cuestionario.id !== id),
-          )
+          setCuestionarios((lista) => lista.filter((c) => c.id !== id))
           setLoading(false)
-          Swal.fire('Borrado!', 'El cuestionario ha sido borrado.', 'success')
+          Swal.fire('Archivado', 'El cuestionario quedó archivado.', 'success')
         } catch (error) {
-          setError('Error borrando el cuestionario')
+          setError('Error archivando el cuestionario')
           setLoading(false)
         }
       }
     })
   }
+
+  const generales = cuestionarios.filter((c) => c.general)
+  const propios = cuestionarios.filter((c) => !c.general)
+  const lista = pestana === GENERALES ? generales : propios
+
+  const pestanaDe = (valor, icono, texto, total) => (
+    <CNavItem>
+      <CNavLink
+        active={pestana === valor}
+        onClick={() => setPestana(valor)}
+        className="d-flex align-items-center"
+        role="tab"
+        aria-selected={pestana === valor}
+      >
+        <CIcon icon={icono} className="me-2" />
+        {texto}
+        {!loading && !error && (
+          <CBadge color="secondary" shape="rounded-pill" className="ms-2">
+            {total}
+          </CBadge>
+        )}
+      </CNavLink>
+    </CNavItem>
+  )
 
   return (
     <>
@@ -132,16 +173,40 @@ const ProfesorVistaCuestionarios = () => {
       <CRow>
         <CCol xs={12}>
           <CCard className="mb-4">
-            <CCardHeader>Lista de Cuestionarios Creados</CCardHeader>
+            <CCardHeader className="pb-0 border-bottom-0">
+              <CNav variant="underline-border" role="tablist">
+                {pestanaDe(
+                  GENERALES,
+                  cilGlobeAlt,
+                  'Generales de ADELA',
+                  generales.length,
+                )}
+                {pestanaDe(
+                  PROPIOS,
+                  cilUser,
+                  'Mis cuestionarios',
+                  propios.length,
+                )}
+              </CNav>
+            </CCardHeader>
             <CCardBody>
+              <p className="text-body-secondary small mb-3">
+                {pestana === GENERALES
+                  ? 'Disponibles para todos los profesores en sus grupos.'
+                  : 'Solo tú los ves y los aplicas a tus grupos.'}
+              </p>
               {loading ? (
                 <div className="d-flex justify-content-center">
                   <CSpinner color="primary" />
                 </div>
               ) : error ? (
                 <p>{error}</p>
-              ) : cuestionarios.length === 0 ? (
-                <p>No hay cuestionarios disponibles</p>
+              ) : lista.length === 0 ? (
+                <p>
+                  {pestana === GENERALES
+                    ? 'Aún no hay cuestionarios generales.'
+                    : 'Aún no has creado cuestionarios propios.'}
+                </p>
               ) : (
                 <CTable hover responsive>
                   <CTableHead>
@@ -154,7 +219,7 @@ const ProfesorVistaCuestionarios = () => {
                     </CTableRow>
                   </CTableHead>
                   <CTableBody>
-                    {cuestionarios.map((cuestionario) => (
+                    {lista.map((cuestionario) => (
                       <CTableRow key={cuestionario.id}>
                         <CTableDataCell>{cuestionario.nombre}</CTableDataCell>
                         <CTableDataCell>
@@ -169,33 +234,34 @@ const ProfesorVistaCuestionarios = () => {
                               <CIcon icon={cilInfo} className="me-1" />
                               Ver Detalles
                             </CButton>
-                            <CButton
-                              color="secondary"
-                              variant="outline"
-                              className="adela-tactil"
-                              onClick={() =>
-                                navigate(
-                                  `/administrar-cuestionarios/${cuestionario.id}/interpretacion`,
-                                )
-                              }
-                            >
-                              Lectura de resultados
-                            </CButton>
-                            <CButton
-                              color="danger"
-                              className="adela-tactil adela-btn-icono adela-btn-eliminar"
-                              aria-label={`Eliminar el cuestionario ${cuestionario.nombre}`}
-                              title="Eliminar cuestionario"
-                              onClick={() =>
-                                handleDeleteCuestionario(
-                                  cuestionario.id,
-                                  cuestionario.nombre,
-                                  cuestionario.numPreguntas,
-                                )
-                              }
-                            >
-                              <CIcon icon={cilTrash} />
-                            </CButton>
+                            {/* Lo decide el servidor: un general solo lo cambia el superadmin. */}
+                            {cuestionario.editable && (
+                              <>
+                                <CButton
+                                  color="secondary"
+                                  variant="outline"
+                                  className="adela-tactil"
+                                  onClick={() =>
+                                    navigate(
+                                      `/administrar-cuestionarios/${cuestionario.id}/interpretacion`,
+                                    )
+                                  }
+                                >
+                                  Lectura de resultados
+                                </CButton>
+                                <CButton
+                                  color="danger"
+                                  className="adela-tactil adela-btn-icono adela-btn-eliminar"
+                                  aria-label={`Archivar el cuestionario ${cuestionario.nombre}`}
+                                  title="Archivar cuestionario"
+                                  onClick={() =>
+                                    handleDeleteCuestionario(cuestionario)
+                                  }
+                                >
+                                  <CIcon icon={cilInbox} />
+                                </CButton>
+                              </>
+                            )}
                           </div>
                         </CTableDataCell>
                       </CTableRow>
