@@ -4,6 +4,21 @@
     { "source": "/(.*)/assets/(.*)", "destination": "/assets/$2" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' https://*.userway.org; style-src 'self' 'unsafe-inline' https://*.userway.org; img-src 'self' data: blob: https://*.userway.org; font-src 'self' data: https://*.userway.org; connect-src 'self' https://*.userway.org https://TODO-DOMINIO-BACKEND; frame-src https://*.userway.org; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+        },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
+      ]
+    }
+  ],
   "buildCommand": "npm run build",
   "outputDirectory": "build",
   "framework": "vite"
