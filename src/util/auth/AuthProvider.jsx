@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
+import PropTypes from 'prop-types'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 import { getUserInfo } from '../services/userService'
 import { borrarTodosLosBorradores } from '../cuestionario/borradorRespuestas'
@@ -67,6 +68,10 @@ function AuthProvider({ children }) {
   const value = { user, cargando, signin, signout }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}
+
+AuthProvider.propTypes = {
+  children: PropTypes.node,
 }
 
 function useAuth() {

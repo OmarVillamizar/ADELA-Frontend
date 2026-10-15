@@ -85,4 +85,6 @@ export const AppSidebarNav = ({ items, rol }) => {
 
 AppSidebarNav.propTypes = {
   items: PropTypes.arrayOf(PropTypes.any).isRequired,
+  // Un valor de Roles; AppSidebar pasa [] mientras no hay usuario.
+  rol: PropTypes.oneOfType([PropTypes.number, PropTypes.array]),
 }

@@ -2,6 +2,7 @@ import { Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from './AuthProvider'
 import { useEffect } from 'react'
 import { CSpinner } from '@coreui/react'
+import PropTypes from 'prop-types'
 import { getRole, tieneRol } from '../userUtils'
 
 function RequireAuth({ roles }) {
@@ -27,6 +28,11 @@ function RequireAuth({ roles }) {
   }, [user, cargando, roles, navigate])
 
   return cargando ? <CSpinner variant="grow" /> : <Outlet context={user} />
+}
+
+RequireAuth.propTypes = {
+  // Valores de Roles que pueden entrar a la ruta.
+  roles: PropTypes.arrayOf(PropTypes.number).isRequired,
 }
 
 export default RequireAuth

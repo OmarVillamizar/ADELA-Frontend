@@ -18,6 +18,7 @@ import AdelaTitle from 'src/assets/images/ADELA.png'
 import nelseLeyendo from 'src/assets/nelse_mascot/web/nelse_readingbookglasses_right.webp'
 import nelsePrincipal from 'src/assets/nelse_mascot/web/nelse_primary_left.webp'
 import NelseLados from 'src/components/NelseLados'
+import PropTypes from 'prop-types'
 import Swal from 'sweetalert2'
 import { useAuth } from '../../../util/auth/AuthProvider'
 import './login.css'
@@ -99,6 +100,11 @@ const Login = () => {
       </CCardBody>
     </CCard>
   )
+  LoginButton.propTypes = {
+    userType: PropTypes.oneOf(['estudiante', 'profesor']).isRequired,
+    title: PropTypes.string.isRequired,
+    description: PropTypes.string.isRequired,
+  }
 
   return (
     <div className="adela-fondo min-vh-100 d-flex flex-column login-pagina">
