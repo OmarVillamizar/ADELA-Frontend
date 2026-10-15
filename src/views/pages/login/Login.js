@@ -19,7 +19,6 @@ import nelseLeyendo from 'src/assets/nelse_mascot/web/nelse_readingbookglasses_r
 import nelsePrincipal from 'src/assets/nelse_mascot/web/nelse_primary_left.webp'
 import NelseLados from 'src/components/NelseLados'
 import Swal from 'sweetalert2'
-import { decodeJwt } from 'jose'
 import { useAuth } from '../../../util/auth/AuthProvider'
 import './login.css'
 
@@ -61,8 +60,10 @@ const Login = () => {
       Swal.fire('Error', error, 'error')
       navigate('/login')
     } else if (token) {
-      const info = decodeJwt(token)
-      auth.signin(token, () => navigate('/'))
+      // Se borra de la URL antes de nada: con push, "atrás" volvía a
+      // /login?token=... y el JWT quedaba en el historial del navegador.
+      window.history.replaceState(null, '', window.location.pathname)
+      auth.signin(token, () => navigate('/', { replace: true }))
     }
 
     setBaseurl(
