@@ -15,7 +15,8 @@ export const Roles = Object.freeze({
  * listas de roles de rutas y menú no tienen que nombrarlo en cada entrada.
  */
 export const tieneRol = (rol, roles) =>
-  roles.includes(rol) || (rol === Roles.SUPERADMIN && roles.includes(Roles.ADMINISTRADOR))
+  roles.includes(rol) ||
+  (rol === Roles.SUPERADMIN && roles.includes(Roles.ADMINISTRADOR))
 
 export function getRoleKey(value) {
   return Object.keys(Roles).find((key) => Roles[key] === value)
@@ -42,7 +43,9 @@ export const getRole = (user) => {
         if (user.rol === 'SUPERADMIN') return Roles.SUPERADMIN
         throw new Error(`Error: rol de profesor inválido (${user.rol})`)
       }
-      throw new Error(`Error: estado de profesor activo inválido (${user.estadoProfesor})`)
+      throw new Error(
+        `Error: estado de profesor activo inválido (${user.estadoProfesor})`,
+      )
     }
     throw new Error(`Error: estado de profesor inválido (${user.estado})`)
   }

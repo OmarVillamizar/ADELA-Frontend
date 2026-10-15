@@ -19,11 +19,11 @@ const _nav = [
     name: 'Grupos',
     roles: [Roles.PROFESOR_ACTIVO, Roles.ADMINISTRADOR],
   },
-   /////////CUESTIONARIOS
-   {
+  /////////CUESTIONARIOS
+  {
     component: CNavTitle,
     name: 'Cuestionarios',
-    roles: [Roles.ESTUDIANTE_ACTIVO]
+    roles: [Roles.ESTUDIANTE_ACTIVO],
   },
   {
     component: CNavItem,
@@ -93,30 +93,36 @@ const _nav = [
     roles: [Roles.ADMINISTRADOR],
     icon: <CIcon icon={cilUser} customClassName="nav-icon" />,
   },
-    //ADMINISTRAR CUESTIONARIOS
-    {
-      component: CNavItem,
-      name: 'Administrar Cuestionarios',
-      to: '/administrar-cuestionarios/',
-      icon: <CIcon icon={cilGroup} customClassName="nav-icon" />,
-      roles: [Roles.ADMINISTRADOR],
-    },
-    {
-    component: CNavTitle,
-    name: 'SOPORTE',
-    roles: [Roles.PROFESOR_ACTIVO,
-      Roles.PROFESOR_INCOMPLETO,
-      Roles.PROFESOR_NO_APROBADO, Roles.ADMINISTRADOR],
+  //ADMINISTRAR CUESTIONARIOS
+  {
+    component: CNavItem,
+    name: 'Administrar Cuestionarios',
+    to: '/administrar-cuestionarios/',
+    icon: <CIcon icon={cilGroup} customClassName="nav-icon" />,
+    roles: [Roles.ADMINISTRADOR],
   },
   {
-      component: CNavItem,
-      name: 'Realizar Donación',
-      to: '/donar/',
-      icon: <CIcon icon={cilStar} customClassName="nav-icon" />,
-      roles: [Roles.PROFESOR_ACTIVO,
+    component: CNavTitle,
+    name: 'SOPORTE',
+    roles: [
+      Roles.PROFESOR_ACTIVO,
       Roles.PROFESOR_INCOMPLETO,
-      Roles.PROFESOR_NO_APROBADO, Roles.ADMINISTRADOR],
-    },
+      Roles.PROFESOR_NO_APROBADO,
+      Roles.ADMINISTRADOR,
+    ],
+  },
+  {
+    component: CNavItem,
+    name: 'Realizar Donación',
+    to: '/donar/',
+    icon: <CIcon icon={cilStar} customClassName="nav-icon" />,
+    roles: [
+      Roles.PROFESOR_ACTIVO,
+      Roles.PROFESOR_INCOMPLETO,
+      Roles.PROFESOR_NO_APROBADO,
+      Roles.ADMINISTRADOR,
+    ],
+  },
 ]
 
 export default _nav

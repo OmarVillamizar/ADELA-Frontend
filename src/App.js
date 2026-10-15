@@ -32,7 +32,9 @@ const ConsultarResultado = React.lazy(() =>
 )
 
 const App = () => {
-  const { setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
+  const { setColorMode } = useColorModes(
+    'coreui-free-react-admin-template-theme',
+  )
 
   useEffect(() => {
     setColorMode('light')
