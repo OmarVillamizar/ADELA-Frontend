@@ -22,7 +22,7 @@ const escribir = (b) => {
   }
 }
 
-const borrar = () => {
+export const borrar = () => {
   try {
     localStorage.removeItem(CLAVE)
   } catch {

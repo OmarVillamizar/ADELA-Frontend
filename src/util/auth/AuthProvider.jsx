@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 import { getUserInfo } from '../services/userService'
+import { borrarTodosLosBorradores } from '../cuestionario/borradorRespuestas'
+import { borrar as borrarBorradorCuestionario } from '../../views/profesorVistaCuestionarios/crear/useBorrador'
 
 const AuthContext = React.createContext({
   user: null,
@@ -53,6 +55,9 @@ function AuthProvider({ children }) {
   const signout = useCallback(
     (callback) => {
       removeToken()
+      // Borradores de esta sesión: no deben quedar para quien use el equipo después.
+      borrarTodosLosBorradores()
+      borrarBorradorCuestionario()
       setUser(null)
       callback()
     },

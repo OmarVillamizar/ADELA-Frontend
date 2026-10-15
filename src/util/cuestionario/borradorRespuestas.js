@@ -56,3 +56,14 @@ export const borrarBorrador = (clave) => {
     // Sin acceso al almacenamiento no hay nada que borrar.
   }
 }
+
+/** Al cerrar sesión: la clave lleva el correo y en un equipo compartido quedaba a la vista. */
+export const borrarTodosLosBorradores = () => {
+  try {
+    Object.keys(window.localStorage)
+      .filter((k) => k.startsWith(PREFIJO))
+      .forEach((k) => window.localStorage.removeItem(k))
+  } catch {
+    // Sin acceso al almacenamiento no hay nada que borrar.
+  }
+}
